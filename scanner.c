@@ -2,13 +2,16 @@
 
 #include <stdio.h>
 #include <ctype.h>
+#include <stdbool.h>
+
+#include "token.h"
 
 /* Global declarations */
 
 /* Variables */
 int charClass;
 char lexeme[100];
-char nextChar;
+char c;
 int lexLen;
 int token;
 int nextToken;
@@ -16,85 +19,41 @@ FILE *in_fp;
 
 /* Function declarations */
 void addChar();
-void getChar();
-void getNonBlank();
-int lex();
-
-/* Character classes */
-#define LETTER 0
-#define DIGIT 1
-#define UNKNOWN 99
-
-/* Token codes */
-#define INT_LIT 10
-#define IDENT 11
-#define ASSIGN_OP 20
-#define ADD_OP 21
-#define SUB_OP 22
-#define MULT_OP 23
-#define DIV_OP 24
-#define LEFT_PAREN 25
-#define RIGHT_PAREN 26
+char getChar();
+char getNonBlank();
+void lex();
+void add_token(TokenType token);
+void number();
+void identifier();
+bool match(char expected);
+void string();
 
 /******************************************************/
 /* main driver */
 int main() {
     /* Open the input data file and process its contents */
     const char* fname = "file.txt";
-    in_fp = fopen(fname, "r");
+    in_fp = fopen(fname, "rb");
 
     if (in_fp == NULL) {
         printf("ERROR - cannot open file \n");
-    } else {
-        getChar();
-        do {
-            lex();
-        } while (nextToken != EOF);
+        return 1;
     }
-    return 0;
-}
 
-/******************************************************/
-/* lookup - a function to lookup operators and parentheses and return the token */
-int lookup(char ch) {
-    switch (ch) {
-        case '(':
-            addChar();
-            nextToken = LEFT_PAREN;
-            break;
-        case ')':
-            addChar();
-            nextToken = RIGHT_PAREN;
-            break;
-        case '+':
-            addChar();
-            nextToken = ADD_OP;
-            break;
-        case '-':
-            addChar();
-            nextToken = SUB_OP;
-            break;
-        case '*':
-            addChar();
-            nextToken = MULT_OP;
-            break;
-        case '/':
-            addChar();
-            nextToken = DIV_OP;
-            break;
-        default:
-            addChar();
-            nextToken = EOF;
-            break;
-    }
-    return nextToken;
+    do {
+        c = getChar();
+        lex();
+        printf("Next token is: %d, Next lexeme is %s\n", nextToken, lexeme);
+    } while (nextToken != EOF);
+
+    return 0;
 }
 
 /******************************************************/
 /* addChar - a function to add nextChar to lexeme */
 void addChar() {
     if (lexLen <= 98) {
-        lexeme[lexLen++] = nextChar;
+        lexeme[lexLen++] = c;
         lexeme[lexLen] = '\0';
     } else {
         printf("Error - lexeme is too long \n");
@@ -102,74 +61,139 @@ void addChar() {
 }
 
 /******************************************************/
-/* getChar - a function to get the next character of input and determine its character class */
-void getChar() {
-    if ((nextChar = getc(in_fp)) != EOF) {
-        if (isalpha(nextChar)) {
-            charClass = LETTER;
-        } else if (isdigit(nextChar)) {
-            charClass = DIGIT;
-        } else {
-            charClass = UNKNOWN;
-        }
-    } else {
-        charClass = EOF;
-    }
+/* getChar - a function to get the next character of input */
+char getChar() {
+    return getc(in_fp);
 }
 
 /******************************************************/
 /* getNonBlank - a function to call getChar until it returns a non-whitespace character */
-void getNonBlank() {
-    while (isspace(nextChar)) {
-        getChar();
+char getNonBlank() {
+    while (isspace(c)) {
+        c = getChar();
     }
+    return c;
 }
 
 /******************************************************/
 /* lex - a simple lexical analyzer for arithmetic expressions */
-int lex()
+void lex()
 {
     lexLen = 0;
-    getNonBlank();
-    switch (charClass) {
-        /* Parse identifiers */
-        case LETTER:
-            addChar();
-            getChar();
-            while (charClass == LETTER || charClass == DIGIT) {
-                addChar();
-                getChar();
-            }
-            nextToken = IDENT;
-            break;
+    c = getNonBlank();
+    // Parse identifiers
+    if (isdigit(c)) return number();
 
-        /* Parse integer literals */
-        case DIGIT:
-            addChar();
-            getChar();
-            while (charClass == DIGIT) {
-                addChar();
-                getChar();
-            }
-            nextToken = INT_LIT;
-            break;
+    // Parse number literals
+    if (isalpha(c)) return identifier();
 
-            /* Parentheses and operators */
-        case UNKNOWN:
-            lookup(nextChar);
-            getChar();
-            break;
+    // Parse one- or two-character tokens
+    switch (c) {
+        // Single-character operators
+        case '(': return add_token(LEFT_PARENTHESIS);
+        case ')': return add_token(RIGHT_PARENTHESIS);
+        case '[': return add_token(LEFT_BRACKET);
+        case ']': return add_token(RIGHT_BRACKET);
+        case '{': return add_token(LEFT_BRACE);
+        case '}': return add_token(RIGHT_BRACE);
+        case ',': return add_token(COMMA);
+        case ';': return add_token(SEMICOLON);
+        case '*': return add_token(MULTIPLY);
+        case '^': return add_token(EXPONENT);
 
-            /* EOF */
-        case EOF:
-            nextToken = EOF;
+        // Multi-character operators
+        case '+': return add_token(match('+') ?  INCREMENT : PLUS);
+        case '-': return add_token(match('-') ?  DECREMENT : MINUS);
+        case '=': return add_token(match('=') ? EQUAL : ASSIGN);
+        case '/': return add_token(match('/') ? COMMENT : DIVIDE);
+        case '>': return add_token(match('=') ? GREATER_EQUAL : EQUAL);
+        case '<': return add_token(match('=') ? LESS_EQUAL : EQUAL);
+        case '!': return add_token(match('=') ? NOT_EQUAL : EQUAL);
+        case '|': return add_token(match('|') ? OR : OR);
+        case '&': return add_token(match('&') ? OR : OR);
+
+        default:
             lexeme[0] = 'E';
             lexeme[1] = 'O';
             lexeme[2] = 'F';
             lexeme[3] = '\0';
-            break;
-    } /* End of switch */
+            nextToken = EOF;
 
-    printf("Next token is: %d, Next lexeme is %s\n", nextToken, lexeme);
-    return nextToken;
+    }
+}
+
+/******************************************************/
+/* add_token - updates next_token and lexeme for printing */
+void add_token(TokenType token)
+{
+    addChar();
+    nextToken = token;
+}
+
+/******************************************************/
+/* match - helper function for multi-character operators */
+bool match(char expected)
+{
+    char nextChar = getChar();  // Peek at next character
+
+    if (nextChar != expected) {
+        ungetc(nextChar, in_fp);  // Put it back if no match
+        return false;
+    }
+
+    c = nextChar;  // Update c with the matched character
+    addChar();
+    return true;
+}
+
+/******************************************************/
+/* number - reads the rest of the number literal */
+void number()
+{
+    addChar();  // Add the first digit we already found
+
+    char nextChar = getChar();
+    while (isdigit(nextChar)) {
+        c = nextChar;
+        addChar();
+        nextChar = getChar();
+    }
+
+    // Check for decimal point followed by digits
+    if (nextChar == '.' && isdigit(getChar()))
+    {
+        // Put back the digit we peeked at
+        ungetc(nextChar, in_fp);
+        c = nextChar;
+        addChar();  // Add the decimal point
+
+        nextChar = getChar();
+        while (isdigit(nextChar)) {
+            c = nextChar;
+            addChar();
+            nextChar = getChar();
+        }
+    }
+
+    // Put back the last non-digit character we found
+    ungetc(nextChar, in_fp);
+    nextToken = NUMBER;
+}
+
+/******************************************************/
+/* identifier - reads the rest of the identifier */
+void identifier()
+{
+    addChar();  // Add the first letter we already found
+
+    char nextChar = getChar();
+    while (isalnum(nextChar)) {  // isalnum checks for letters or digits
+        c = nextChar;
+        addChar();
+        nextChar = getChar();
+    }
+
+    // Put back the last non-alphanumeric character we found
+    ungetc(nextChar, in_fp);
+    nextToken = IDENTIFIER;
 }

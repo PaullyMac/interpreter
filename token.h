@@ -14,22 +14,23 @@ typedef enum
     RIGHT_BRACE,
     COMMA,
     SEMICOLON,
+    MULTIPLY,
+    EXPONENT,
 
     // Possible multi-character tokens
     PLUS,
     MINUS,
-    MULTIPLY,
     DIVIDE,
-    EXPONENT,
     INCREMENT,
     DECREMENT,
     EQUAL,
     NOT_EQUAL,
+    ASSIGN,
     LESS,
     LESS_EQUAL,
     GREATER,
     GREATER_EQUAL,
-    BANG,
+    NOT,
     OR,
     AND,
     COMMENT,
@@ -41,8 +42,7 @@ typedef enum
     // Literals
     IDENTIFIER,
     STRING,
-    INTEGER_NUMBER,
-    FLOAT_NUMBER,
+    NUMBER,
 
     // Keywords
     CHAR,

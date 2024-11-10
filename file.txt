@@ -1,1 +1,1 @@
-(sum + 47) / total
+(variable + anotherVariable) / variable^2
