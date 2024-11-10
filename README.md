@@ -4,6 +4,10 @@ Scanner, Parser, Compiler for a subset of the C language written in C
 
 - [ ] Implement first part of *Crafting Interpreters* in C for a subset of the C language
 
+## Scanner
+
+The first two parts in the Scanner is the reading of the file, and the error handling. And only after is the reading of lexemes/tokens.
+
 ## References
 
 - [Crafting Interpreters](https://craftinginterpreters.com/) creates two implementations of their language `lox`:

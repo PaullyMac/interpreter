@@ -3,4 +3,7 @@ project(interpreter C)
 
 set(CMAKE_C_STANDARD 17)
 
-add_executable(interpreter main.c)
+add_executable(interpreter scanner.c
+        scanner.c
+        token.h
+)
