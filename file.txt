@@ -1,1 +1,4 @@
-(variable + anotherVariable) / variable^2
+this_is_some_function() {
+    boolean_variable = 1 != 2;
+    (variable + another_variable) / variable * 53.100 + 1234.00;
+}

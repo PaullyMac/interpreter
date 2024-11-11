@@ -6,5 +6,4 @@ set(CMAKE_C_STANDARD 17)
 add_executable(interpreter scanner.c
         scanner.c
         token.h
-        scanner_ci.c
 )

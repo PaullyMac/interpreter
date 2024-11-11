@@ -134,15 +134,18 @@ void add_token(TokenType token)
 /* match - helper function for multi-character operators */
 bool match(char expected)
 {
-    char nextChar = getChar();  // Peek at next character
+    // Peek at next character
+    char nextChar = getChar();
 
+    // Push the character back to stream for later reading if not what we expected
     if (nextChar != expected) {
-        ungetc(nextChar, in_fp);  // Put it back if no match
+        ungetc(nextChar, in_fp);
         return false;
     }
 
-    c = nextChar;  // Update c with the matched character
-    addChar();
+    // The next character matches expected and forms the token
+    addChar(); // This adds the first character of the token (the one that matched the case), the second char is done by addChar
+    c = nextChar;
     return true;
 }
 
@@ -153,20 +156,26 @@ void number()
     addChar();  // Add the first digit we already found
 
     char nextChar = getChar();
+    if (isspace(nextChar)) return; // Return fast when number ends
+
     while (isdigit(nextChar)) {
         c = nextChar;
         addChar();
         nextChar = getChar();
     }
 
-    // Check for decimal point followed by digits
-    if (nextChar == '.' && isdigit(getChar()))
+    // Check if the non-digit following the integer part of the number is a period
+    char char_after_non_digit;
+    if (isdigit(char_after_non_digit = getChar()) && nextChar == '.' )
     {
         // Put back the digit we peeked at
-        ungetc(nextChar, in_fp);
-        c = nextChar;
-        addChar();  // Add the decimal point
+        ungetc(char_after_non_digit, in_fp);
 
+        // Add the decimal point
+        c = nextChar;
+        addChar();
+
+        // Read the fractional part
         nextChar = getChar();
         while (isdigit(nextChar)) {
             c = nextChar;
@@ -184,10 +193,11 @@ void number()
 /* identifier - reads the rest of the identifier */
 void identifier()
 {
-    addChar();  // Add the first letter we already found
+    // Add the first character we found
+    addChar();
 
     char nextChar = getChar();
-    while (isalnum(nextChar)) {  // isalnum checks for letters or digits
+    while (isalnum(nextChar) || nextChar == '_') {  // isalnum checks for letters or digits
         c = nextChar;
         addChar();
         nextChar = getChar();
