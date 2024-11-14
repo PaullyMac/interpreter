@@ -207,3 +207,5 @@ void identifier()
     ungetc(nextChar, in_fp);
     nextToken = IDENTIFIER;
 }
+
+// new keywords added 
