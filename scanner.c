@@ -11,7 +11,7 @@
 /* Variables */
 int charClass;
 char lexeme[100];
-char c;
+int c;
 int lexLen;
 int token;
 int nextToken;
@@ -27,6 +27,7 @@ void number();
 void identifier();
 bool match(char expected);
 void string();
+void add_eof();
 
 /******************************************************/
 /* main driver */
@@ -43,6 +44,11 @@ int main() {
     do {
         c = getChar();
         lex();
+        if (nextToken == ERROR_INVALID_CHARACTER) {
+            printf("ERROR - invalid char %c\n", c);
+            continue;
+        }
+
         printf("Next token is: %d, Next lexeme is %s\n", nextToken, lexeme);
     } while (nextToken != EOF);
 
@@ -81,6 +87,10 @@ void lex()
 {
     lexLen = 0;
     c = getNonBlank();
+
+    // End if end of file, like in Crafting Interpreters it seems '\0' denotes end of file?
+    if (c == EOF) return add_eof();
+
     // Parse identifiers
     if (isdigit(c)) return number();
 
@@ -112,13 +122,10 @@ void lex()
         case '|': return add_token(match('|') ? OR : OR);
         case '&': return add_token(match('&') ? OR : OR);
 
+        // If reached this, then must be invalid character
         default:
-            lexeme[0] = 'E';
-            lexeme[1] = 'O';
-            lexeme[2] = 'F';
-            lexeme[3] = '\0';
-            nextToken = EOF;
-
+            nextToken = ERROR_INVALID_CHARACTER;
+            addChar();
     }
 }
 
@@ -208,4 +215,11 @@ void identifier()
     nextToken = IDENTIFIER;
 }
 
-// new keywords added 
+void add_eof()
+{
+    lexeme[0] = 'E';
+    lexeme[1] = 'O';
+    lexeme[2] = 'F';
+    lexeme[3] = '\0';
+    nextToken = EOF;
+}
