@@ -31,12 +31,13 @@ void string();
 void add_eof();
 TokenType keywords();
 TokenType checkKeyword(int start, int length, const char* rest, TokenType type);
+int peek();
 
 /******************************************************/
 /* main driver */
 int main() {
     /* Open the input data file and process its contents */
-    const char* fname = "file.txt";
+    const char* fname = "test_number.txt";
     in_fp = fopen(fname, "rb");
 
     if (in_fp == NULL) {
@@ -160,43 +161,39 @@ bool match(char expected)
 }
 
 /******************************************************/
+/* peek - a function to peek at the next character without consuming it */
+int peek() {
+    int next = getChar();
+    ungetc(next, in_fp);
+    return next;
+}
+
+/******************************************************/
 /* number - reads the rest of the number literal */
 void number()
 {
-    addChar();  // Add the first digit we already found
-    nextToken = NUMBER;
+    // Add the first digit found
+    addChar();
 
-    char nextChar = getChar();
-    if (isspace(nextChar)) return; // Return fast when number ends
-
-    while (isdigit(nextChar)) {
-        c = nextChar;
+    // Read subsequent digits
+    while (isdigit(peek())) {
+        c = getChar();
         addChar();
-        nextChar = getChar();
     }
 
-    // Check if the non-digit following the integer part of the number is a period
-    char char_after_non_digit;
-    if (isdigit(char_after_non_digit = getChar()) && nextChar == '.' )
-    {
-        // Put back the digit we peeked at
-        ungetc(char_after_non_digit, in_fp);
-
-        // Add the decimal point
-        c = nextChar;
+    // Check if decimal point, hanging decimals are valid in C
+    if (peek() == '.') {
+        // Consume and add
+        c = getChar();
         addChar();
 
-        // Read the fractional part
-        nextChar = getChar();
-        while (isdigit(nextChar)) {
-            c = nextChar;
+        // Fractional part
+        while (isdigit(peek())) {
+            c = getChar();
             addChar();
-            nextChar = getChar();
         }
     }
 
-    // Put back the last non-digit character we found
-    ungetc(nextChar, in_fp);
     nextToken = NUMBER;
 }
 
