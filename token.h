@@ -57,5 +57,8 @@ typedef enum
     PRINTF,
     SCANF,
     TRUE,
-    FALSE
+    FALSE,
+
+    // Error tokens, not part of the language just for the scanner
+    ERROR_INVALID_CHARACTER
 } TokenType;
