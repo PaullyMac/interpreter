@@ -1,5 +1,6 @@
 /* Sebesta simple Lexical Analyzer example */
 
+#include <string.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <stdbool.h>
@@ -28,6 +29,8 @@ void identifier();
 bool match(char expected);
 void string();
 void add_eof();
+TokenType keywords();
+TokenType checkKeyword(int start, int length, const char* rest, TokenType type);
 
 /******************************************************/
 /* main driver */
@@ -161,6 +164,7 @@ bool match(char expected)
 void number()
 {
     addChar();  // Add the first digit we already found
+    nextToken = NUMBER;
 
     char nextChar = getChar();
     if (isspace(nextChar)) return; // Return fast when number ends
@@ -212,7 +216,50 @@ void identifier()
 
     // Put back the last non-alphanumeric character we found
     ungetc(nextChar, in_fp);
-    nextToken = IDENTIFIER;
+
+    // Check if the identifier is a keyword or not 
+    nextToken = keywords();
+}
+
+/******************************************************/
+/* keywords - determine if the identifier is a keyword */
+TokenType keywords() { 
+    switch(lexeme[0]) { 
+        case 'b': return checkKeyword(1, 3, "ool", BOOL);
+        case 'c': return checkKeyword(1, 3, "har", CHAR);
+        case 'e': return checkKeyword(1, 3, "lse", ELSE);
+        case 'f': 
+            if (lexLen > 1) { 
+                switch (lexeme[1]) { 
+                    case 'a': return checkKeyword(2, 3, "lse", FALSE); 
+                    case 'l': return checkKeyword(2, 3, "oat", FLOAT);
+                    case 'o': return checkKeyword(2, 1, "r", FOR);
+                }
+            }
+        case 'i': 
+            if (lexLen > 1) { 
+                switch (lexeme[1]) { 
+                    case 'f': return checkKeyword(2, 0, "", IF);
+                    case 'n': return checkKeyword(2, 1, "t", INT);
+                }
+            }
+        case 'p': return checkKeyword(1, 5, "rintf", PRINTF);
+        case 'r': return checkKeyword(1, 5, "eturn", RETURN);
+        case 's': return checkKeyword(1, 4, "canf", SCANF);
+        case 't': return checkKeyword(1, 3, "rue", TRUE);
+        case 'w': return checkKeyword(1, 4, "hile", WHILE);
+    }
+
+    return IDENTIFIER;
+}
+
+/******************************************************/
+/* checkKeyword - helper function to check if the identifier matches a keyword */
+TokenType checkKeyword(int start, int length, const char* rest, TokenType type) {
+    if (lexLen == start + length && memcmp(lexeme + start, rest, length) == 0) {
+        return type;
+    }
+    return IDENTIFIER;
 }
 
 void add_eof()
