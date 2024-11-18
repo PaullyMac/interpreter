@@ -37,7 +37,7 @@ int peek();
 /* main driver */
 int main() {
     /* Open the input data file and process its contents */
-    const char* fname = "test_number.txt";
+    const char* fname = "strtest.txt";
     in_fp = fopen(fname, "rb");
 
     if (in_fp == NULL) {
@@ -95,6 +95,9 @@ void lex()
     // End if end of file, like in Crafting Interpreters it seems '\0' denotes end of file?
     if (c == EOF) return add_eof();
 
+    // Parse strings
+    if (c == '"') return string(); 
+
     // Parse identifiers
     if (isdigit(c)) return number();
 
@@ -125,6 +128,7 @@ void lex()
         case '!': return add_token(match('=') ? NOT_EQUAL : EQUAL);
         case '|': return add_token(match('|') ? OR : OR);
         case '&': return add_token(match('&') ? OR : OR);
+
 
         // If reached this, then must be invalid character
         default:
@@ -266,4 +270,47 @@ void add_eof()
     lexeme[2] = 'F';
     lexeme[3] = '\0';
     nextToken = EOF;
+}
+
+/******************************************************/
+/* string - reads the rest of the string literal */
+void string() {
+    addChar();  // Add the opening quote to lexeme
+    char nextChar = getChar();
+
+    while (nextChar != '"' && nextChar != EOF) {
+        if (nextChar == '\\') {  // Handle escape sequences
+            nextChar = getChar();  // Get the next character after the backslash
+            if (nextChar == EOF) break;  // Stop if EOF is reached
+
+            // Handle specific escape sequences
+            switch (nextChar) {
+                case 'n': c = '\n'; break;  // Newline
+                case 't': c = '\t'; break;  // Tab
+                case '\\': c = '\\'; break;  // Backslash
+                case '"': c = '"'; break;   // Double quote
+                default:
+                    // For unrecognized escape sequences, add the backslash and character as-is
+                    printf("Warning - unrecognized escape sequence \\%c\n", nextChar);
+                    c = '\\';
+                    addChar();
+                    c = nextChar;
+            }
+        } else {
+            c = nextChar;
+        }
+
+        addChar();  // Add the resolved character to the lexeme
+        nextChar = getChar();
+    }
+
+    if (nextChar == '"') {
+        c = nextChar;
+        addChar();  // Add the closing quote to lexeme
+        nextToken = STRING;  // Successfully parsed a string literal
+    } else {
+        // Handle error for unterminated string
+        printf("Error - unterminated string literal\n");
+        nextToken = ERROR_INVALID_CHARACTER;
+    }
 }
