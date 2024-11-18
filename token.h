@@ -43,7 +43,8 @@ typedef enum
     IDENTIFIER,
     STRING,
     NUMBER,
-
+    CHARACTER_LITERAL,
+    
     // Keywords
     CHAR,
     INT,
