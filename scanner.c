@@ -134,7 +134,6 @@ void lex() {
         case '/':
             if (match('/')) {
                 add_token(COMMENT);
-
                 // Read comment until newline
                 char tmp;
                 while ((tmp = get_char()) != '\n' && current_char != EOF)
@@ -142,6 +141,7 @@ void lex() {
                     current_char = tmp;
                     add_char();
                 }
+                return;
             } else {
                 return add_token(DIVIDE);
             }
@@ -163,14 +163,13 @@ void add_token(TokenType token) {
 /******************************************************/
 /* match - helper function for multi-character operators */
 bool match(char expected) {
-    char lookahead = peek();
-    if (lookahead != expected) {
+    if (peek() != expected) {
         return false;
     }
 
-    // Then must be two-character token
+    // Two-character token and we get second character
     add_char(); // Adds the first character of the token, the next add_char is handled by the addToken call
-    current_char = lookahead;
+    current_char = get_char();
     return true;
 }
 
