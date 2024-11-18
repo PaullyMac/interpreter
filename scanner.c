@@ -10,18 +10,17 @@
 /* Global declarations */
 
 /* Variables */
-int charClass;
 char lexeme[100];
-int c;
-int lexLen;
+int current_char;
+int lexeme_length;
 int token;
-int nextToken;
+int next_token;
 FILE *in_fp;
 
 /* Function declarations */
-void addChar();
-char getChar();
-char getNonBlank();
+void add_char();
+char get_char();
+char get_non_blank();
 void lex();
 void add_token(TokenType token);
 void number();
@@ -31,7 +30,7 @@ void string();
 void add_eof();
 void character_literal(); 
 TokenType keywords();
-TokenType checkKeyword(int start, int length, const char* rest, TokenType type);
+TokenType check_keyword(int start, int length, const char* rest, TokenType type);
 int peek();
 
 /******************************************************/
@@ -49,23 +48,23 @@ int main() {
     // Scanning
     do {
         lex();
-        if (nextToken == ERROR_INVALID_CHARACTER) {
-            printf("ERROR - invalid char %c\n", c);
+        if (next_token == ERROR_INVALID_CHARACTER) {
+            printf("ERROR - invalid char %c\n", current_char);
             continue;
         }
 
-        printf("Next token is: %d, Next lexeme is %s\n", nextToken, lexeme);
-    } while (nextToken != EOF);
+        printf("Next token is: %d, Next lexeme is %s\n", next_token, lexeme);
+    } while (next_token != EOF);
 
     return 0;
 }
 
 /******************************************************/
-/* addChar - a function to add nextChar to lexeme */
-void addChar() {
-    if (lexLen <= 98) {
-        lexeme[lexLen++] = c;
-        lexeme[lexLen] = '\0';
+/* add_char - a function to add next_char to lexeme */
+void add_char() {
+    if (lexeme_length <= 98) {
+        lexeme[lexeme_length++] = current_char;
+        lexeme[lexeme_length] = '\0';
     } else {
         printf("Error - lexeme is too long \n");
     }
@@ -73,44 +72,43 @@ void addChar() {
 
 /******************************************************/
 /* getChar - a function to get the next character of input */
-char getChar() {
+char get_char() {
     return getc(in_fp);
 }
 
 /******************************************************/
 /* getNonBlank - a function to call getChar until it returns a non-whitespace character */
-char getNonBlank() {
-    while (isspace(c)) {
-        c = getChar();
+char get_non_blank() {
+    while (isspace(current_char)) {
+        current_char = get_char();
     }
-    return c;
+    return current_char;
 }
 
 /******************************************************/
 /* lex - a simple lexical analyzer for arithmetic expressions */
-void lex()
-{
-    lexLen = 0;
-    c = getChar();
-    c = getNonBlank();
+void lex() {
+    lexeme_length = 0;
+    current_char = get_char();
+    current_char = get_non_blank();
 
     // End if end of file
-    if (c == EOF) return add_eof();
+    if (current_char == EOF) return add_eof();
 
     // Parse strings
-    if (c == '"') return string(); 
+    if (current_char == '"') return string();
 
     // Parse number literals
-    if (isdigit(c)) return number();
+    if (isdigit(current_char)) return number();
 
     // Parse identifiers
-    if (isalpha(c)) return identifier();
+    if (isalpha(current_char)) return identifier();
 
     // Parse character literals
-    if (c == '\'') return character_literal();
+    if (current_char == '\'') return character_literal();
 
     // Parse one- or two-character tokens
-    switch (c) {
+    switch (current_char) {
         // Single-character operators
         case '(': return add_token(LEFT_PARENTHESIS);
         case ')': return add_token(RIGHT_PARENTHESIS);
@@ -139,10 +137,10 @@ void lex()
 
                 // Read comment until newline
                 char tmp;
-                while ((tmp = getChar()) != '\n' && c != EOF)
+                while ((tmp = get_char()) != '\n' && current_char != EOF)
                 {
-                    c = tmp;
-                    addChar();
+                    current_char = tmp;
+                    add_char();
                 }
             } else {
                 return add_token(DIVIDE);
@@ -150,119 +148,115 @@ void lex()
 
         // If reached this, then must be invalid character
         default:
-            nextToken = ERROR_INVALID_CHARACTER;
-            addChar();
+            next_token = ERROR_INVALID_CHARACTER;
+            add_char();
     }
 }
 
 /******************************************************/
 /* add_token - updates next_token and lexeme for printing */
-void add_token(TokenType token)
-{
-    addChar();
-    nextToken = token;
+void add_token(TokenType token) {
+    add_char();
+    next_token = token;
 }
 
 /******************************************************/
 /* match - helper function for multi-character operators */
-bool match(char expected)
-{
+bool match(char expected) {
     char lookahead = peek();
     if (lookahead != expected) {
         return false;
     }
 
     // Then must be two-character token
-    addChar(); // Adds the first character of the token, the next addChar is handled by the addToken call
-    c = lookahead;
+    add_char(); // Adds the first character of the token, the next add_char is handled by the addToken call
+    current_char = lookahead;
     return true;
 }
 
 /******************************************************/
 /* peek - a function to peek at the next character without consuming it */
 int peek() {
-    int next = getChar();
+    int next = get_char();
     ungetc(next, in_fp);
     return next;
 }
 
 /******************************************************/
 /* number - reads the rest of the number literal */
-void number()
-{
+void number() {
     // Add the first digit found
-    addChar();
+    add_char();
 
     // Read subsequent digits
     while (isdigit(peek())) {
-        c = getChar();
-        addChar();
+        current_char = get_char();
+        add_char();
     }
 
     // Check if decimal point, hanging decimals are valid in C
     if (peek() == '.') {
         // Consume and add
-        c = getChar();
-        addChar();
+        current_char = get_char();
+        add_char();
 
         // Fractional part
         while (isdigit(peek())) {
-            c = getChar();
-            addChar();
+            current_char = get_char();
+            add_char();
         }
     }
 
-    nextToken = NUMBER;
+    next_token = NUMBER;
 }
 
 /******************************************************/
 /* identifier - reads the rest of the identifier */
-void identifier()
-{
+void identifier() {
     // Add the first character we found
-    addChar();
+    add_char();
 
-    char nextChar = getChar();
-    while (isalnum(nextChar) || nextChar == '_') {  // isalnum checks for letters or digits
-        c = nextChar;
-        addChar();
-        nextChar = getChar();
+    char next_char = get_char();
+    while (isalnum(next_char) || next_char == '_') {  // isalnum checks for letters or digits
+        current_char = next_char;
+        add_char();
+        next_char = get_char();
     }
 
     // Put back the last non-alphanumeric character we found
-    ungetc(nextChar, in_fp);
+    ungetc(next_char, in_fp);
 
     // Check if the identifier is a keyword or not 
-    nextToken = keywords();
+    next_token = keywords();
 }
 
 /******************************************************/
 /* keywords - determine if the identifier is a keyword */
 TokenType keywords() { 
     switch(lexeme[0]) { 
-        case 'b': return checkKeyword(1, 3, "ool", BOOL);
-        case 'c': return checkKeyword(1, 3, "har", CHAR);
-        case 'e': return checkKeyword(1, 3, "lse", ELSE);
+        case 'b': return check_keyword(1, 3, "ool", BOOL);
+        case 'c': return check_keyword(1, 3, "har", CHAR);
+        case 'e': return check_keyword(1, 3, "lse", ELSE);
         case 'f': 
-            if (lexLen > 1) { 
+            if (lexeme_length > 1) {
                 switch (lexeme[1]) { 
-                    case 'a': return checkKeyword(2, 3, "lse", FALSE); 
-                    case 'l': return checkKeyword(2, 3, "oat", FLOAT);
-                    case 'o': return checkKeyword(2, 1, "r", FOR);
+                    case 'a': return check_keyword(2, 3, "lse", FALSE);
+                    case 'l': return check_keyword(2, 3, "oat", FLOAT);
+                    case 'o': return check_keyword(2, 1, "r", FOR);
                 }
             }
         case 'i': 
-            if (lexLen > 1) { 
+            if (lexeme_length > 1) {
                 switch (lexeme[1]) { 
-                    case 'f': return checkKeyword(2, 0, "", IF);
-                    case 'n': return checkKeyword(2, 1, "t", INT);
+                    case 'f': return check_keyword(2, 0, "", IF);
+                    case 'n': return check_keyword(2, 1, "t", INT);
                 }
             }
-        case 'p': return checkKeyword(1, 5, "rintf", PRINTF);
-        case 'r': return checkKeyword(1, 5, "eturn", RETURN);
-        case 's': return checkKeyword(1, 4, "canf", SCANF);
-        case 't': return checkKeyword(1, 3, "rue", TRUE);
-        case 'w': return checkKeyword(1, 4, "hile", WHILE);
+        case 'p': return check_keyword(1, 5, "rintf", PRINTF);
+        case 'r': return check_keyword(1, 5, "eturn", RETURN);
+        case 's': return check_keyword(1, 4, "canf", SCANF);
+        case 't': return check_keyword(1, 3, "rue", TRUE);
+        case 'w': return check_keyword(1, 4, "hile", WHILE);
     }
 
     return IDENTIFIER;
@@ -270,8 +264,8 @@ TokenType keywords() {
 
 /******************************************************/
 /* checkKeyword - helper function to check if the identifier matches a keyword */
-TokenType checkKeyword(int start, int length, const char* rest, TokenType type) {
-    if (lexLen == start + length && memcmp(lexeme + start, rest, length) == 0) {
+TokenType check_keyword(int start, int length, const char* rest, TokenType type) {
+    if (lexeme_length == start + length && memcmp(lexeme + start, rest, length) == 0) {
         return type;
     }
     return IDENTIFIER;
@@ -279,36 +273,36 @@ TokenType checkKeyword(int start, int length, const char* rest, TokenType type) 
 
 void character_literal()
 {
-    addChar(); // Add the opening single quote
+    add_char(); // Add the opening single quote
 
     // Read the character or escape sequence
-    c = getChar();
+    current_char = get_char();
 
-    if (c == '\\') { // Handle escape sequences like '\n' or '\t'
-        addChar();
-        c = getChar(); // Add the actual escaped character
-        if (c != '\'' && c != EOF) {
-            addChar();
+    if (current_char == '\\') { // Handle escape sequences like '\n' or '\t'
+        add_char();
+        current_char = get_char(); // Add the actual escaped character
+        if (current_char != '\'' && current_char != EOF) {
+            add_char();
         } else {
-            nextToken = ERROR_INVALID_CHARACTER;
+            next_token = ERROR_INVALID_CHARACTER;
             printf("Error - unterminated character literal\n");
             return;
         }
-    } else if (c == '\'' || c == EOF) { // Handle empty or malformed character literals
-        nextToken = ERROR_INVALID_CHARACTER;
+    } else if (current_char == '\'' || current_char == EOF) { // Handle empty or malformed character literals
+        next_token = ERROR_INVALID_CHARACTER;
         printf("Error - invalid or unterminated character literal\n");
         return;
     } else {
-        addChar(); // Add the character
+        add_char(); // Add the character
     }
 
     // Read the closing single quote
-    c = getChar();
-    if (c == '\'') {
-        addChar();
-        nextToken = CHARACTER_LITERAL;
+    current_char = get_char();
+    if (current_char == '\'') {
+        add_char();
+        next_token = CHARACTER_LITERAL;
     } else { // Handle missing closing single quote
-        nextToken = ERROR_INVALID_CHARACTER;
+        next_token = ERROR_INVALID_CHARACTER;
         printf("Error - unterminated character literal\n");
     }
 }
@@ -319,48 +313,49 @@ void add_eof()
     lexeme[1] = 'O';
     lexeme[2] = 'F';
     lexeme[3] = '\0';
-    nextToken = EOF;
+    next_token = EOF;
 }
 
 /******************************************************/
 /* string - reads the rest of the string literal */
-void string() {
-    addChar();  // Add the opening quote to lexeme
-    char nextChar = getChar();
+void string()
+{
+    add_char();  // Add the opening quote to lexeme
+    char nextChar = get_char();
 
     while (nextChar != '"' && nextChar != EOF) {
         if (nextChar == '\\') {  // Handle escape sequences
-            nextChar = getChar();  // Get the next character after the backslash
+            nextChar = get_char();  // Get the next character after the backslash
             if (nextChar == EOF) break;  // Stop if EOF is reached
 
             // Handle specific escape sequences
             switch (nextChar) {
-                case 'n': c = '\n'; break;  // Newline
-                case 't': c = '\t'; break;  // Tab
-                case '\\': c = '\\'; break;  // Backslash
-                case '"': c = '"'; break;   // Double quote
+                case 'n': current_char = '\n'; break;  // Newline
+                case 't': current_char = '\t'; break;  // Tab
+                case '\\': current_char = '\\'; break;  // Backslash
+                case '"': current_char = '"'; break;   // Double quote
                 default:
                     // For unrecognized escape sequences, add the backslash and character as-is
                     printf("Warning - unrecognized escape sequence \\%c\n", nextChar);
-                    c = '\\';
-                    addChar();
-                    c = nextChar;
+                    current_char = '\\';
+                    add_char();
+                    current_char = nextChar;
             }
         } else {
-            c = nextChar;
+            current_char = nextChar;
         }
 
-        addChar();  // Add the resolved character to the lexeme
-        nextChar = getChar();
+        add_char();  // Add the resolved character to the lexeme
+        nextChar = get_char();
     }
 
     if (nextChar == '"') {
-        c = nextChar;
-        addChar();  // Add the closing quote to lexeme
-        nextToken = STRING;  // Successfully parsed a string literal
+        current_char = nextChar;
+        add_char();  // Add the closing quote to lexeme
+        next_token = STRING;  // Successfully parsed a string literal
     } else {
         // Handle error for unterminated string
         printf("Error - unterminated string literal\n");
-        nextToken = ERROR_INVALID_CHARACTER;
+        next_token = ERROR_INVALID_CHARACTER;
     }
 }
