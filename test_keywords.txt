@@ -1,0 +1,15 @@
+keyword_test { 
+    chard;
+    intd;
+    floatd;
+    boold;
+    ifd;
+    elsed;
+    ford;
+    whiled;
+    returnd;
+    printfd;
+    scanfd;
+    trued;
+    falsed;
+}

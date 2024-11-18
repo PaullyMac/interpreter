@@ -1,0 +1,4 @@
+100 abc 200 def
+var_with_number 300;
+int var;
+0 a 40 b 500
