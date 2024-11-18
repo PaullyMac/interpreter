@@ -1,0 +1,3 @@
+printf("This is a string");
+woofwoof = "Hello world!";
+123 "One 2 three" "\n" "Sound of a Cat \" meow meow\" ";
