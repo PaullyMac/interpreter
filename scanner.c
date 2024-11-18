@@ -38,7 +38,7 @@ int peek();
 /* main driver */
 int main() {
     /* Open the input data file and process its contents */
-    const char* fname = "strtest.txt";
+    const char* fname = "file.txt";
     in_fp = fopen(fname, "rb");
 
     if (in_fp == NULL) {
@@ -46,8 +46,8 @@ int main() {
         return 1;
     }
 
+    // Scanning
     do {
-        c = getChar();
         lex();
         if (nextToken == ERROR_INVALID_CHARACTER) {
             printf("ERROR - invalid char %c\n", c);
@@ -91,24 +91,23 @@ char getNonBlank() {
 void lex()
 {
     lexLen = 0;
+    c = getChar();
     c = getNonBlank();
 
-    // End if end of file, like in Crafting Interpreters it seems '\0' denotes end of file?
+    // End if end of file
     if (c == EOF) return add_eof();
 
     // Parse strings
     if (c == '"') return string(); 
 
-    // Parse identifiers
+    // Parse number literals
     if (isdigit(c)) return number();
 
-    // Parse number literals
+    // Parse identifiers
     if (isalpha(c)) return identifier();
 
     // Parse character literals
     if (c == '\'') return character_literal();
-    
- 
 
     // Parse one- or two-character tokens
     switch (c) {
@@ -123,18 +122,31 @@ void lex()
         case ';': return add_token(SEMICOLON);
         case '*': return add_token(MULTIPLY);
         case '^': return add_token(EXPONENT);
+        case '%': return add_token(MODULO);
 
         // Multi-character operators
         case '+': return add_token(match('+') ?  INCREMENT : PLUS);
         case '-': return add_token(match('-') ?  DECREMENT : MINUS);
         case '=': return add_token(match('=') ? EQUAL : ASSIGN);
-        case '/': return add_token(match('/') ? COMMENT : DIVIDE);
         case '>': return add_token(match('=') ? GREATER_EQUAL : EQUAL);
         case '<': return add_token(match('=') ? LESS_EQUAL : EQUAL);
         case '!': return add_token(match('=') ? NOT_EQUAL : EQUAL);
         case '|': return add_token(match('|') ? OR : OR);
         case '&': return add_token(match('&') ? OR : OR);
+        case '/':
+            if (match('/')) {
+                add_token(COMMENT);
 
+                // Read comment until newline
+                char tmp;
+                while ((tmp = getChar()) != '\n' && c != EOF)
+                {
+                    c = tmp;
+                    addChar();
+                }
+            } else {
+                return add_token(DIVIDE);
+            }
 
         // If reached this, then must be invalid character
         default:
@@ -155,18 +167,14 @@ void add_token(TokenType token)
 /* match - helper function for multi-character operators */
 bool match(char expected)
 {
-    // Peek at next character
-    char nextChar = getChar();
-
-    // Push the character back to stream for later reading if not what we expected
-    if (nextChar != expected) {
-        ungetc(nextChar, in_fp);
+    char lookahead = peek();
+    if (lookahead != expected) {
         return false;
     }
 
-    // The next character matches expected and forms the token
-    addChar(); // This adds the first character of the token (the one that matched the case), the second char is done by addChar
-    c = nextChar;
+    // Then must be two-character token
+    addChar(); // Adds the first character of the token, the next addChar is handled by the addToken call
+    c = lookahead;
     return true;
 }
 
