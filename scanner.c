@@ -29,6 +29,7 @@ void identifier();
 bool match(char expected);
 void string();
 void add_eof();
+void character_literal(); 
 TokenType keywords();
 TokenType checkKeyword(int start, int length, const char* rest, TokenType type);
 int peek();
@@ -103,6 +104,11 @@ void lex()
 
     // Parse number literals
     if (isalpha(c)) return identifier();
+
+    // Parse character literals
+    if (c == '\'') return character_literal();
+    
+ 
 
     // Parse one- or two-character tokens
     switch (c) {
@@ -261,6 +267,42 @@ TokenType checkKeyword(int start, int length, const char* rest, TokenType type) 
         return type;
     }
     return IDENTIFIER;
+}
+
+void character_literal()
+{
+    addChar(); // Add the opening single quote
+
+    // Read the character or escape sequence
+    c = getChar();
+
+    if (c == '\\') { // Handle escape sequences like '\n' or '\t'
+        addChar();
+        c = getChar(); // Add the actual escaped character
+        if (c != '\'' && c != EOF) {
+            addChar();
+        } else {
+            nextToken = ERROR_INVALID_CHARACTER;
+            printf("Error - unterminated character literal\n");
+            return;
+        }
+    } else if (c == '\'' || c == EOF) { // Handle empty or malformed character literals
+        nextToken = ERROR_INVALID_CHARACTER;
+        printf("Error - invalid or unterminated character literal\n");
+        return;
+    } else {
+        addChar(); // Add the character
+    }
+
+    // Read the closing single quote
+    c = getChar();
+    if (c == '\'') {
+        addChar();
+        nextToken = CHARACTER_LITERAL;
+    } else { // Handle missing closing single quote
+        nextToken = ERROR_INVALID_CHARACTER;
+        printf("Error - unterminated character literal\n");
+    }
 }
 
 void add_eof()
