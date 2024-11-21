@@ -30,7 +30,6 @@ void string();
 void add_eof();
 void character_literal(); 
 TokenType keywords();
-TokenType check_keyword(int start, int length, const char* rest, TokenType type);
 int peek();
 
 /******************************************************/
@@ -231,42 +230,66 @@ void identifier() {
 
 /******************************************************/
 /* keywords - determine if the identifier is a keyword */
-TokenType keywords() { 
-    switch(lexeme[0]) { 
-        case 'b': return check_keyword(1, 3, "ool", BOOL);
-        case 'c': return check_keyword(1, 3, "har", CHAR);
-        case 'e': return check_keyword(1, 3, "lse", ELSE);
-        case 'f': 
-            if (lexeme_length > 1) {
-                switch (lexeme[1]) { 
-                    case 'a': return check_keyword(2, 3, "lse", FALSE);
-                    case 'l': return check_keyword(2, 3, "oat", FLOAT);
-                    case 'o': return check_keyword(2, 1, "r", FOR);
-                }
-            }
-        case 'i': 
-            if (lexeme_length > 1) {
-                switch (lexeme[1]) { 
-                    case 'f': return check_keyword(2, 0, "", IF);
-                    case 'n': return check_keyword(2, 1, "t", INT);
-                }
-            }
-        case 'p': return check_keyword(1, 5, "rintf", PRINTF);
-        case 'r': return check_keyword(1, 5, "eturn", RETURN);
-        case 's': return check_keyword(1, 4, "canf", SCANF);
-        case 't': return check_keyword(1, 3, "rue", TRUE);
-        case 'w': return check_keyword(1, 4, "hile", WHILE);
+TokenType keywords() {
+    switch (lexeme[0]) {
+        // check if bool
+        case 'b':
+            if (lexeme[1] == 'o' && lexeme[2] == 'o' && lexeme[3] == 'l' && lexeme_length == 4) 
+                return BOOL;
+            break;
+        // check if char
+        case 'c':
+            if (lexeme[1] == 'h' && lexeme[2] == 'a' && lexeme[3] == 'r' && lexeme_length == 4) 
+                return CHAR;
+            break;
+        // check if else
+        case 'e':
+            if (lexeme[1] == 'l' && lexeme[2] == 's' && lexeme[3] == 'e' && lexeme_length == 4) 
+                return ELSE;
+            break;
+        // check if false, float, or for
+        case 'f':
+            if (lexeme[1] == 'a' && lexeme[2] == 'l' && lexeme[3] == 's' && lexeme[4] == 'e' && lexeme_length == 5)
+                return FALSE;
+            if (lexeme[1] == 'l' && lexeme[2] == 'o' && lexeme[3] == 'a' && lexeme[4] == 't' && lexeme_length == 5)
+                return FLOAT;
+            if (lexeme[1] == 'o' && lexeme[2] == 'r' && lexeme_length == 3) 
+                return FOR;
+            break;
+        // check if if or int
+        case 'i':
+            if (lexeme[1] == 'f' && lexeme_length == 2)
+                return IF;
+            if (lexeme[1] == 'n' && lexeme[2] == 't' && lexeme_length == 3)
+                return INT;
+            break;
+        // check if printf
+        case 'p':
+            if (lexeme[1] == 'r' && lexeme[2] == 'i' && lexeme[3] == 'n' && lexeme[4] == 't' && lexeme[5] == 'f' && lexeme_length == 6) 
+                return PRINTF;
+            break;
+        // check if return
+        case 'r':
+            if (lexeme[1] == 'e' && lexeme[2] == 't' && lexeme[3] == 'u' && lexeme[4] == 'r' && lexeme[5] == 'n' && lexeme_length == 6)
+                return RETURN;
+            break;
+        // check if scanf
+        case 's':
+            if (lexeme[1] == 'c' && lexeme[2] == 'a' && lexeme[3] == 'n' && lexeme[4] == 'f' && lexeme_length == 5) 
+                return SCANF;
+            break;
+        // check if true
+        case 't':
+            if (lexeme[1] == 'r' && lexeme[2] == 'u' && lexeme[3] == 'e' && lexeme_length == 4) 
+                return TRUE;
+            break;
+        // check if while
+        case 'w':
+            if (lexeme[1] == 'h' && lexeme[2] == 'i' && lexeme[3] == 'l' && lexeme[4] == 'e' && lexeme_length == 5) 
+                return WHILE;
+            break;
     }
 
-    return IDENTIFIER;
-}
-
-/******************************************************/
-/* checkKeyword - helper function to check if the identifier matches a keyword */
-TokenType check_keyword(int start, int length, const char* rest, TokenType type) {
-    if (lexeme_length == start + length && memcmp(lexeme + start, rest, length) == 0) {
-        return type;
-    }
     return IDENTIFIER;
 }
 
