@@ -216,18 +216,39 @@ void identifier() {
     add_char();
 
     char next_char = get_char();
-    while (isalnum(next_char) || next_char == '_') {  // isalnum checks for letters or digits
+    bool too_long = false;
+
+    while (isalnum(next_char) || next_char == '_') {  // `isalnum` checks for letters or digits
         current_char = next_char;
+
+        // Always add the character to preserve the full lexeme
         add_char();
+
+        // Check if the length exceeds the limit
+        if (lexeme_length > 31) {
+            too_long = true;
+        }
+
         next_char = get_char();
     }
 
     // Put back the last non-alphanumeric character we found
     ungetc(next_char, in_fp);
 
-    // Check if the identifier is a keyword or not 
-    next_token = keywords();
+    // If the identifier is too long, set the token type but delay error reporting
+    if (too_long) {
+        next_token = ERROR_INVALID_IDENTIFIER;
+    } else {
+        // Otherwise, check if the identifier is a keyword
+        next_token = keywords();
+    }
+
+    // Now report errors if needed
+    if (too_long) {
+        printf("ERROR - identifier is too long: %s\n", lexeme);
+    }
 }
+
 
 /******************************************************/
 /* keywords - determine if the identifier is a keyword */
