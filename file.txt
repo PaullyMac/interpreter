@@ -4,9 +4,7 @@ int this_is_some_function() {
     integer_variable = 100 float_variable + 2 - 3 * 4 / 5 % 6;
     (variable + another_variable) / variable * 53.100 + 1234.00;
     char_variable = 'a';
-    string_variable_sting_variable_string_variable = "string";
     integer;
-    string_variable_sting_variable_string_variable = "string";
     return;
     100 "He said \"blah blah\" %d";
     this_a_vari@ble

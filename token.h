@@ -61,6 +61,5 @@ typedef enum
     FALSE,
 
     // Error tokens, not part of the language just for the scanner
-    ERROR_INVALID_CHARACTER,
-    ERROR_INVALID_IDENTIFIER
+    ERROR_INVALID_CHARACTER
 } TokenType;
