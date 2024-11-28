@@ -34,9 +34,22 @@ int peek();
 
 /******************************************************/
 /* main driver */
-int main() {
-    /* Open the input data file and process its contents */
-    const char* fname = "file.txt";
+int main(int argc, char* argv[argc + 1]) {
+    // Assure a single filename was passed
+    if (argc != 2) {
+        printf("Usage: ./%s <filename>", argv[0]);
+        return 1;
+    }
+
+    const char* fname = argv[1];
+
+    // Only accept .c file
+    char *last_period = strrchr(fname, '.');
+    if(strcmp(last_period, ".core") != 0) {
+        printf("Input file passed must have .c extension");
+        return 1;
+    }
+
     in_fp = fopen(fname, "rb");
 
     if (in_fp == NULL) {
