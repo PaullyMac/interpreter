@@ -1,8 +1,6 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
-#endif //TOKEN_H
-
 typedef enum
 {
     // Tokens composed of characters exclusively part of single-character tokens
@@ -62,5 +60,8 @@ typedef enum
 
     // Error tokens, not part of the language just for the scanner
     ERROR_INVALID_CHARACTER,
-    ERROR_INVALID_IDENTIFIER
+    ERROR_INVALID_IDENTIFIER,
+    TOKEN_EOF
 } TokenType;
+
+#endif //TOKEN_H
