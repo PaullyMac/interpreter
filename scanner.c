@@ -9,6 +9,58 @@
 
 /* Global declarations */
 
+// Token names array
+char* token_names[] = {
+    "LEFT_PARENTHESIS",
+    "RIGHT_PARENTHESIS",
+    "LEFT_BRACKET",
+    "RIGHT_BRACKET",
+    "LEFT_BRACE",
+    "RIGHT_BRACE",
+    "COMMA",
+    "SEMICOLON",
+    "MULTIPLY",
+    "EXPONENT",
+    "PLUS",
+    "MINUS",
+    "DIVIDE",
+    "INCREMENT",
+    "DECREMENT",
+    "EQUAL",
+    "NOT_EQUAL",
+    "ASSIGN",
+    "LESS",
+    "LESS_EQUAL",
+    "GREATER",
+    "GREATER_EQUAL",
+    "NOT",
+    "OR",
+    "AND",
+    "COMMENT",
+    "MODULO",
+    "FORMAT",
+    "IDENTIFIER",
+    "STRING",
+    "NUMBER",
+    "CHARACTER_LITERAL",
+    "CHAR",
+    "INT",
+    "FLOAT",
+    "BOOL",
+    "IF",
+    "ELSE",
+    "FOR",
+    "WHILE",
+    "RETURN",
+    "PRINTF",
+    "SCANF",
+    "TRUE",
+    "FALSE",
+    "ERROR_INVALID_CHARACTER",
+    "ERROR_INVALID_IDENTIFIER",
+    "TOKEN_EOF"
+};
+
 /* Variables */
 char lexeme[100];
 int current_char;
@@ -65,8 +117,12 @@ int main(int argc, char* argv[argc + 1]) {
             continue;
         }
 
-        printf("Next token is: %d, Next lexeme is %s\n", next_token, lexeme);
-    } while (next_token != EOF);
+        if (next_token >= 0 && next_token < sizeof(token_names)/sizeof(token_names[0])) {
+            printf("Next token is: %s, Next lexeme is %s\n", token_names[next_token], lexeme);
+        } else {
+            printf("Next token is: Unknown, Next lexeme is %s\n", lexeme);
+        }
+    } while (next_token != TOKEN_EOF);
 
     return 0;
 }
@@ -362,13 +418,12 @@ void character_literal()
     }
 }
 
-void add_eof()
-{
+void add_eof() {
     lexeme[0] = 'E';
     lexeme[1] = 'O';
     lexeme[2] = 'F';
     lexeme[3] = '\0';
-    next_token = EOF;
+    next_token = TOKEN_EOF;
 }
 
 /******************************************************/
