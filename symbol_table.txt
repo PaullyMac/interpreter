@@ -1,0 +1,85 @@
+________________________________________________________________________________________________________________________________
+TOKEN                    | LINE #          | COLUMN #        | LEXEME                                                           |
+________________________________________________________________________________________________________________________________|
+COMMENT                  | 3               | 12              | // function
+INT                      | 4               | 4               | int
+IDENTIFIER               | 4               | 26              | this_is_some_function
+LEFT_PARENTHESIS         | 4               | 27              | (
+RIGHT_PARENTHESIS        | 4               | 28              | )
+LEFT_BRACE               | 4               | 30              | {
+IDENTIFIER               | 5               | 21              | boolean_variable
+ASSIGN                   | 5               | 23              | =
+NUMBER                   | 5               | 25              | 1
+NOT_EQUAL                | 5               | 28              | !=
+NUMBER                   | 5               | 30              | 2
+SEMICOLON                | 5               | 31              | ;
+IDENTIFIER               | 6               | 21              | integer_variable
+ASSIGN                   | 6               | 23              | =
+NUMBER                   | 6               | 27              | 100
+IDENTIFIER               | 6               | 42              | float_variable
+PLUS                     | 6               | 44              | +
+NUMBER                   | 6               | 46              | 2
+MINUS                    | 6               | 48              | -
+NUMBER                   | 6               | 50              | 3
+MULTIPLY                 | 6               | 52              | *
+NUMBER                   | 6               | 54              | 4
+DIVIDE                   | 6               | 56              | /
+NUMBER                   | 6               | 58              | 5
+MODULO                   | 6               | 60              | %
+NUMBER                   | 6               | 62              | 6
+SEMICOLON                | 6               | 63              | ;
+LEFT_PARENTHESIS         | 7               | 6               | (
+IDENTIFIER               | 7               | 14              | variable
+PLUS                     | 7               | 16              | +
+IDENTIFIER               | 7               | 33              | another_variable
+RIGHT_PARENTHESIS        | 7               | 34              | )
+DIVIDE                   | 7               | 36              | /
+IDENTIFIER               | 7               | 45              | variable
+MULTIPLY                 | 7               | 47              | *
+NUMBER                   | 7               | 54              | 53.100
+PLUS                     | 7               | 56              | +
+NUMBER                   | 7               | 64              | 1234.00
+SEMICOLON                | 7               | 65              | ;
+ERROR_INVALID_IDENTIFIER | 8               | 51              | string_variable_sting_variable_string_variable
+ASSIGN                   | 8               | 53              | =
+STRING                   | 8               | 62              | "string"
+SEMICOLON                | 8               | 63              | ;
+IDENTIFIER               | 9               | 18              | char_variable
+ASSIGN                   | 9               | 20              | =
+CHARACTER_LITERAL        | 9               | 24              | 'a'
+SEMICOLON                | 9               | 25              | ;
+IDENTIFIER               | 10              | 12              | integer
+SEMICOLON                | 10              | 13              | ;
+RETURN                   | 11              | 11              | return
+SEMICOLON                | 11              | 12              | ;
+NUMBER                   | 12              | 8               | 100
+STRING                   | 12              | 35              | "He said \"blah blah\" %d"
+SEMICOLON                | 12              | 36              | ;
+IDENTIFIER               | 13              | 16              | this_a_vari
+ERROR_INVALID_CHARACTER  | 13              | 17              | @
+IDENTIFIER               | 13              | 20              | ble
+STRING                   | 14              | 8               | "@"
+CHARACTER_LITERAL        | 14              | 12              | '@'
+COMMENT                  | 14              | 30              | // this a comment
+IDENTIFIER               | 15              | 8               | var
+INCREMENT                | 15              | 10              | ++
+GREATER_EQUAL            | 15              | 13              | >=
+IDENTIFIER               | 15              | 18              | vars
+DECREMENT                | 15              | 20              | --
+INT                      | 16              | 8               | int
+IDENTIFIER               | 16              | 12              | arr
+LEFT_BRACKET             | 16              | 13              | [
+NUMBER                   | 16              | 14              | 5
+RIGHT_BRACKET            | 16              | 15              | ]
+ASSIGN                   | 16              | 17              | =
+LEFT_BRACE               | 16              | 19              | {
+NUMBER                   | 16              | 20              | 1
+COMMA                    | 16              | 21              | ,
+NUMBER                   | 16              | 23              | 2
+COMMA                    | 16              | 24              | ,
+NUMBER                   | 16              | 26              | 3
+RIGHT_BRACE              | 16              | 27              | }
+SEMICOLON                | 16              | 28              | ;
+RIGHT_BRACE              | 17              | 2               | }
+TOKEN_EOF                | 17              | -1              | EOF
+________________________________________________________________________________________________________________________________
