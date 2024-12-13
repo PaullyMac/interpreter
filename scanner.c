@@ -167,8 +167,10 @@ void lex() {
     if (current_char == '"') return string();
 
     // Parse number literals
-    if (isdigit(current_char)) return number();
-
+    if (isdigit(current_char) ||
+        (current_char == '.' && isdigit(peek()))) {
+            return number();
+        }
     // Parse identifiers
     if (isalpha(current_char)) return identifier();
 
@@ -252,7 +254,7 @@ int peek() {
 /******************************************************/
 /* number - reads the rest of the number literal */
 void number() {
-    // Add the first digit found
+    // Add the digit or decimal point found
     add_char();
 
     // Read subsequent digits
@@ -261,8 +263,8 @@ void number() {
         add_char();
     }
 
-    // Check if decimal point, hanging decimals are valid in C
-    if (peek() == '.') {
+    // Check if next is the first decimal point
+    if (peek() == '.' && lexeme[0] != '.') {
         // Consume and add
         current_char = get_char();
         add_char();

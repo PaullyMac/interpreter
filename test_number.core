@@ -16,14 +16,14 @@
 0.5
 
 
-// Leading decimal point must be interpreted as .{n} -> 0.{n}
+// Leading decimal point allowed .{n} -> 0.{n}
 .1
 .2
 .3
 .0001
 .99999
 
-// Trailing decimal point must be interpreted as {n}. -> {n}.0
+// Trailing decimal allowed  {n}. -> {n}.0
 1.
 2.
 12345.
@@ -36,3 +36,7 @@
 123..45
 // Will this be two lexemes: 0.12 and 0.3
 .12.3
+
+// Ignore independent decimal points
+.
+10 . 5
