@@ -149,7 +149,7 @@ int main(int argc, char* argv[argc + 1]) {
         // Write to symbol_table.txt
         if (next_token >= 0 && next_token < sizeof(token_names)/sizeof(token_names[0])) {
         fprintf(symbol_fp, "%-24s | %-15d | %-15d | %s\n",
-                token_names[next_token], token_start_line, token_end_column, lexeme);
+                token_names[next_token], token_start_line, token_start_column, lexeme);
         } else {
             fprintf(symbol_fp, "Unknown            | %-15d | %-15d | %s\n",
                     token_start_column, token_start_line, lexeme);
@@ -256,7 +256,7 @@ void lex() {
                 next_token = COMMENT;
 
                 // Set token_start_column before consuming any characters
-                token_start_column = column_number - 1;
+                token_start_column = column_number;
 
                 // Add the first '/'
                 add_char();
