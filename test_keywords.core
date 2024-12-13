@@ -1,15 +1,34 @@
-keyword_test { 
-    chard;
-    intd;
-    floatd;
-    boold;
-    ifd;
-    elsed;
-    ford;
-    whiled;
-    returnd;
-    printfd;
-    scanfd;
-    trued;
-    falsed;
-}
+// testing keywords
+char;
+int;
+float;
+bool;
+if;
+else;
+for;
+while;
+return;
+printf;
+scanf;
+true;
+false;
+
+// testing keywords as substrings within identifiers
+chard;    
+intd;     
+floatd;   
+boold;    
+ifd;      
+elsed;    
+ford;     
+whiled;   
+returnd;  
+printfd;  
+scanfd;   
+trued;    
+falsed;   
+
+// testing maximal munching cases
+printfscanf;   
+intfloatbool;  
+ifelsewhile;   

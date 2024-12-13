@@ -1,4 +1,38 @@
-100 abc 200 def
-var_with_number 300;
-int var;
-0 a 40 b 500
+// Integers
+123
+0
+456
+789
+10000000
+
+// Signed numbers are not taken together, lex independently
++7
+-14.2
+
+// Floating-point numbers with decimal
+3.14
+2.718
+123.00
+0.5
+
+
+// Leading decimal point must be interpreted as .{n} -> 0.{n}
+.1
+.2
+.3
+.0001
+.99999
+
+// Trailing decimal point must be interpreted as {n}. -> {n}.0
+1.
+2.
+12345.
+
+
+// Complicated combinations
+// Will this be two lexemes: 12.34 and 0.56, or will this be 12 and 0.34 and 0.56
+12.34.56 
+// Will this be two lexemes: 123.0 and 0.45
+123..45
+// Will this be two lexemes: 0.12 and 0.3
+.12.3

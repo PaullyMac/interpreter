@@ -118,7 +118,7 @@ int main(int argc, char* argv[argc + 1]) {
         }
 
         if (next_token >= 0 && next_token < sizeof(token_names)/sizeof(token_names[0])) {
-            printf("Next token is: %s, Next lexeme is %s\n", token_names[next_token], lexeme);
+            printf("Next token is: %-30s Next lexeme: is %s\n", token_names[next_token], lexeme);
         } else {
             printf("Next token is: Unknown, Next lexeme is %s\n", lexeme);
         }
