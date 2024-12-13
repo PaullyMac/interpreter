@@ -61,6 +61,8 @@ typedef enum
     // Error tokens, not part of the language just for the scanner
     ERROR_INVALID_CHARACTER,
     ERROR_INVALID_IDENTIFIER,
+
+    // End of file token
     TOKEN_EOF
 } TokenType;
 

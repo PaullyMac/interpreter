@@ -67,7 +67,15 @@ int current_char;
 int lexeme_length;
 int token;
 int next_token;
+int line_number = 1;
+int column_number = 0;
+int token_start_line;
+int token_start_column;
+int token_end_column;
+
 FILE *in_fp;
+FILE *symbol_fp;
+
 
 /* Function declarations */
 void add_char();
@@ -83,46 +91,76 @@ void add_eof();
 void character_literal(); 
 TokenType keywords();
 int peek();
+void unget_char(int ch);
+void set_token_end_column();
 
 /******************************************************/
 /* main driver */
 int main(int argc, char* argv[argc + 1]) {
-    // Assure a single filename was passed
     if (argc != 2) {
-        printf("Usage: ./%s <filename>", argv[0]);
+        printf("Usage: ./%s <filename>\n", argv[0]);
         return 1;
     }
 
     const char* fname = argv[1];
-
-    // Only accept .c file
     char *last_period = strrchr(fname, '.');
-    if(strcmp(last_period, ".core") != 0) {
-        printf("Input file passed must have .c extension");
+    if (strcmp(last_period, ".core") != 0) {
+        printf("Input file passed must have .core extension\n");
         return 1;
     }
 
     in_fp = fopen(fname, "rb");
-
     if (in_fp == NULL) {
-        printf("ERROR - cannot open file \n");
+        printf("ERROR - cannot open file\n");
         return 1;
     }
 
-    // Scanning
+    symbol_fp = fopen("symbol_table.txt", "w");
+    if (symbol_fp == NULL) {
+        printf("ERROR - cannot open output file\n");
+        fclose(in_fp);
+        return 1;
+    }
+
+    // Design for header
+    for(int i=0; i<128; i++) fprintf(symbol_fp, "_");
+    fprintf(symbol_fp, "\n");
+    fprintf(symbol_fp, "TOKEN                    | LINE #          | COLUMN #        | LEXEME                                                           |\n");
+    for(int i=0; i<128; i++) fprintf(symbol_fp, "_");
+    fprintf(symbol_fp, "|\n");
+
     do {
         lex();
+
+        // Print error messages based on the error type
         if (next_token == ERROR_INVALID_CHARACTER) {
-            printf("ERROR - invalid char %c\n", current_char);
-            continue;
+            printf("ERROR - invalid char %c\n", lexeme[0]);
+        } else if (next_token == ERROR_INVALID_IDENTIFIER) {
+            printf("ERROR - invalid identifier: %s\n", lexeme);
         }
 
+        // Print to console
         if (next_token >= 0 && next_token < sizeof(token_names)/sizeof(token_names[0])) {
             printf("Next token is: %-30s Next lexeme: is %s\n", token_names[next_token], lexeme);
         } else {
             printf("Next token is: Unknown, Next lexeme is %s\n", lexeme);
         }
+
+        // Write to symbol_table.txt
+        if (next_token >= 0 && next_token < sizeof(token_names)/sizeof(token_names[0])) {
+        fprintf(symbol_fp, "%-24s | %-15d | %-15d | %s\n",
+                token_names[next_token], token_start_line, token_end_column, lexeme);
+        } else {
+            fprintf(symbol_fp, "Unknown            | %-15d | %-15d | %s\n",
+                    token_start_column, token_start_line, lexeme);
+        }
     } while (next_token != TOKEN_EOF);
+
+    // Design for footer
+    for(int i=0; i<128; i++) fprintf(symbol_fp, "_");
+    fprintf(symbol_fp, "\n");
+    fclose(symbol_fp);
+    fclose(in_fp);
 
     return 0;
 }
@@ -141,9 +179,17 @@ void add_char() {
 /******************************************************/
 /* getChar - a function to get the next character of input */
 char get_char() {
-    return getc(in_fp);
-}
+    int ch = fgetc(in_fp);
 
+    if (ch == '\n') {
+        line_number++;
+        column_number = 0; // Reset column number at the start of a new line
+    } else if (ch != EOF) {
+        column_number++;
+    }
+
+    return ch;
+}
 /******************************************************/
 /* getNonBlank - a function to call getChar until it returns a non-whitespace character */
 char get_non_blank() {
@@ -156,10 +202,13 @@ char get_non_blank() {
 /******************************************************/
 /* lex - a simple lexical analyzer for arithmetic expressions */
 void lex() {
-    lexeme_length = 0;
     current_char = get_char();
     current_char = get_non_blank();
-
+    lexeme_length = 0;
+    token_start_line = line_number;
+    // this is for the global tokens to retain their column number
+    token_start_column = column_number;
+    
     // End if end of file
     if (current_char == EOF) return add_eof();
 
@@ -202,24 +251,37 @@ void lex() {
         case '|': return add_token(match('|') ? OR : OR);
         case '&': return add_token(match('&') ? OR : OR);
         case '/':
-            if (match('/')) {
-                add_token(COMMENT);
-                // Read comment until newline
-                char tmp;
-                while ((tmp = get_char()) != '\n' && current_char != EOF)
-                {
-                    current_char = tmp;
+            if (peek() == '/') {
+                // It's a comment
+                next_token = COMMENT;
+
+                // Set token_start_column before consuming any characters
+                token_start_column = column_number - 1;
+
+                // Add the first '/'
+                add_char();
+
+                // Consume and add the second '/'
+                current_char = get_char(); // Get the second '/'
+                add_char();
+
+                // Proceed to read the rest of the comment
+                current_char = get_char();
+                while (current_char != '\n' && current_char != EOF) {
                     add_char();
+                    current_char = get_char();
                 }
-                return;
+                set_token_end_column();
+                break;
             } else {
                 return add_token(DIVIDE);
             }
-
         // If reached this, then must be invalid character
         default:
-            next_token = ERROR_INVALID_CHARACTER;
             add_char();
+            next_token = ERROR_INVALID_CHARACTER;
+            set_token_end_column();
+            break;
     }
 }
 
@@ -228,6 +290,7 @@ void lex() {
 void add_token(TokenType token) {
     add_char();
     next_token = token;
+    set_token_end_column();
 }
 
 /******************************************************/
@@ -246,9 +309,9 @@ bool match(char expected) {
 /******************************************************/
 /* peek - a function to peek at the next character without consuming it */
 int peek() {
-    int next = get_char();
-    ungetc(next, in_fp);
-    return next;
+    int ch = fgetc(in_fp);
+    ungetc(ch, in_fp);
+    return ch;
 }
 
 /******************************************************/
@@ -277,6 +340,7 @@ void number() {
     }
 
     next_token = NUMBER;
+    set_token_end_column();
 }
 
 /******************************************************/
@@ -303,19 +367,19 @@ void identifier() {
     }
 
     // Put back the last non-alphanumeric character we found
-    ungetc(next_char, in_fp);
+    unget_char(next_char);
 
     // If the identifier is too long, set the token type but delay error reporting
     if (too_long) {
         next_token = ERROR_INVALID_IDENTIFIER;
     } else {
-        // Otherwise, check if the identifier is a keyword
         next_token = keywords();
     }
+    set_token_end_column(); // Moved outside the if-else block
 
     // Now report errors if needed
     if (too_long) {
-        printf("ERROR - identifier is too long: %s\n", lexeme);
+        next_token = ERROR_INVALID_IDENTIFIER;
     }
 }
 
@@ -414,6 +478,7 @@ void character_literal()
     if (current_char == '\'') {
         add_char();
         next_token = CHARACTER_LITERAL;
+        set_token_end_column();
     } else { // Handle missing closing single quote
         next_token = ERROR_INVALID_CHARACTER;
         printf("Error - unterminated character literal\n");
@@ -426,6 +491,9 @@ void add_eof() {
     lexeme[2] = 'F';
     lexeme[3] = '\0';
     next_token = TOKEN_EOF;
+    token_start_line = line_number;
+    token_start_column = -1;
+    token_end_column = -1;
 }
 
 /******************************************************/
@@ -437,37 +505,48 @@ void string()
 
     while (nextChar != '"' && nextChar != EOF) {
         if (nextChar == '\\') {  // Handle escape sequences
-            nextChar = get_char();  // Get the next character after the backslash
-            if (nextChar == EOF) break;  // Stop if EOF is reached
-
-            // Handle specific escape sequences
-            switch (nextChar) {
-                case 'n': current_char = '\n'; break;  // Newline
-                case 't': current_char = '\t'; break;  // Tab
-                case '\\': current_char = '\\'; break;  // Backslash
-                case '"': current_char = '"'; break;   // Double quote
-                default:
-                    // For unrecognized escape sequences, add the backslash and character as-is
-                    printf("Warning - unrecognized escape sequence \\%c\n", nextChar);
-                    current_char = '\\';
-                    add_char();
-                    current_char = nextChar;
-            }
+            current_char = nextChar;
+            add_char(); // Add backslash to lexeme
+            nextChar = get_char();
+            // Increment column_number inside get_char()
+            // Handle escape character
+            current_char = nextChar;
+            add_char();
         } else {
             current_char = nextChar;
+            add_char();
         }
-
-        add_char();  // Add the resolved character to the lexeme
         nextChar = get_char();
     }
 
     if (nextChar == '"') {
         current_char = nextChar;
         add_char();  // Add the closing quote to lexeme
-        next_token = STRING;  // Successfully parsed a string literal
+        next_token = STRING;
+        set_token_end_column();  // Successfully parsed a string literal
     } else {
         // Handle error for unterminated string
         printf("Error - unterminated string literal\n");
         next_token = ERROR_INVALID_CHARACTER;
     }
+}
+
+void unget_char(int ch) {
+    if (ch == EOF) return; // Do nothing for EOF
+
+    ungetc(ch, in_fp);
+
+    if (ch == '\n') {
+        line_number--;
+        // Column number cannot be accurately adjusted here unless you track line lengths
+        // You may need to handle this if your lexer allows for multi-line ungets
+    } else {
+        column_number--;
+    }
+}
+
+/******************************************************/
+/* helper function to set token_end_column */
+void set_token_end_column() {
+    token_end_column = token_start_column + lexeme_length;
 }
