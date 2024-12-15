@@ -317,26 +317,44 @@ int peek() {
 /******************************************************/
 /* number - reads the rest of the number literal */
 void number() {
-    // Add the digit or decimal point found
-    add_char();
+    // Handle leading decimal point
+    if (current_char == '.' && isdigit(peek())) { 
+        lexeme[0] = '0'; // Adds 0 
+        lexeme[1] = '.';
+        lexeme_length = 2;
 
-    // Read subsequent digits
-    while (isdigit(peek())) {
-        current_char = get_char();
+        // Read subsequent digits
+        while (isdigit(peek())) {
+            current_char = get_char();
+            lexeme[lexeme_length++] = current_char;
+        }
+    } else {
+        //Handle regular numbers
         add_char();
-    }
 
-    // Check if next is the first decimal point
-    if (peek() == '.' && lexeme[0] != '.') {
-        // Consume and add
-        current_char = get_char();
-        add_char();
-
-        // Fractional part
         while (isdigit(peek())) {
             current_char = get_char();
             add_char();
         }
+
+        //Handle fractional parts
+        if (peek() == '.') {
+            current_char = get_char();
+            add_char();
+
+            while (isdigit(peek())) {
+                current_char = get_char();
+                add_char();
+            }
+        }
+    }
+
+    // Handle trailing decimal points
+    if (lexeme[lexeme_length - 1] == '.') { 
+        lexeme[lexeme_length++] = '0';
+        lexeme[lexeme_length] = '\0';
+    } else {
+        lexeme[lexeme_length] = '\0';
     }
 
     next_token = NUMBER;
