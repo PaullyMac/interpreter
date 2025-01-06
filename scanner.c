@@ -80,11 +80,13 @@ int main(int argc, char* argv[argc + 1]) {
     do {
         lex();
 
-        // Print error messages based on the error type
+        // Print error messages based on the error type, also not write into symbol_table.txt
         if (next_token == ERROR_INVALID_CHARACTER) {
             printf("ERROR - invalid char %c\n", lexeme[0]);
+            continue;
         } else if (next_token == ERROR_INVALID_IDENTIFIER) {
             printf("ERROR - invalid identifier: %s\n", lexeme);
+            continue;
         }
 
         // Print to console
@@ -92,6 +94,7 @@ int main(int argc, char* argv[argc + 1]) {
             printf("Next token is: %-30s Next lexeme: is %s\n", token_names[next_token], lexeme);
         } else {
             printf("Next token is: Unknown, Next lexeme is %s\n", lexeme);
+            continue;
         }
 
         // Try not writing comment tokens into the symbol table
