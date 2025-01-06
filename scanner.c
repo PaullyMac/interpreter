@@ -9,60 +9,8 @@
 
 /* Global declarations */
 
-// Token names array
-char* token_names[] = {
-    "LEFT_PARENTHESIS",
-    "RIGHT_PARENTHESIS",
-    "LEFT_BRACKET",
-    "RIGHT_BRACKET",
-    "LEFT_BRACE",
-    "RIGHT_BRACE",
-    "COMMA",
-    "SEMICOLON",
-    "MULTIPLY",
-    "EXPONENT",
-    "PLUS",
-    "MINUS",
-    "DIVIDE",
-    "INCREMENT",
-    "DECREMENT",
-    "EQUAL",
-    "NOT_EQUAL",
-    "ASSIGN",
-    "LESS",
-    "LESS_EQUAL",
-    "GREATER",
-    "GREATER_EQUAL",
-    "NOT",
-    "OR",
-    "AND",
-    "COMMENT",
-    "MODULO",
-    "FORMAT",
-    "IDENTIFIER",
-    "STRING",
-    "NUMBER",
-    "CHARACTER_LITERAL",
-    "CHAR",
-    "INT",
-    "FLOAT",
-    "BOOL",
-    "IF",
-    "ELSE",
-    "FOR",
-    "WHILE",
-    "RETURN",
-    "PRINTF",
-    "SCANF",
-    "TRUE",
-    "FALSE",
-    "ERROR_INVALID_CHARACTER",
-    "ERROR_INVALID_IDENTIFIER",
-    "TOKEN_EOF"
-};
-
 /* Variables */
-char lexeme[100];
+char lexeme[MAX_LEXEME_LENGTH];
 int current_char;
 int lexeme_length;
 int token;
@@ -125,9 +73,9 @@ int main(int argc, char* argv[argc + 1]) {
     // Design for header
     for(int i=0; i<128; i++) fprintf(symbol_fp, "_");
     fprintf(symbol_fp, "\n");
-    fprintf(symbol_fp, "TOKEN                    | LINE #          | COLUMN #        | LEXEME                                                           |\n");
+    fprintf(symbol_fp, "TOKEN CODE      | TOKEN                    | LINE #          | COLUMN #        | LEXEME\n");
     for(int i=0; i<128; i++) fprintf(symbol_fp, "_");
-    fprintf(symbol_fp, "|\n");
+    fprintf(symbol_fp, "\n");
 
     do {
         lex();
@@ -148,8 +96,8 @@ int main(int argc, char* argv[argc + 1]) {
 
         // Write to symbol_table.txt
         if (next_token >= 0 && next_token < sizeof(token_names)/sizeof(token_names[0])) {
-        fprintf(symbol_fp, "%-24s | %-15d | %-15d | %s\n",
-                token_names[next_token], token_start_line, token_start_column, lexeme);
+        fprintf(symbol_fp, "%-15d | %-24s | %-15d | %-15d | %s\n",
+                next_token, token_names[next_token], token_start_line, token_start_column, lexeme);
         } else {
             fprintf(symbol_fp, "Unknown            | %-15d | %-15d | %s\n",
                     token_start_column, token_start_line, lexeme);
@@ -168,7 +116,7 @@ int main(int argc, char* argv[argc + 1]) {
 /******************************************************/
 /* add_char - a function to add next_char to lexeme */
 void add_char() {
-    if (lexeme_length <= 98) {
+    if (lexeme_length <= MAX_LEXEME_LENGTH - 2) {
         lexeme[lexeme_length++] = current_char;
         lexeme[lexeme_length] = '\0';
     } else {
