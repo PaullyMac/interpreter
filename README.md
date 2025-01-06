@@ -2,7 +2,8 @@
 
 Scanner, Parser, Compiler for a subset of the C language written in C
 
-- [ ] Implement first part of *Crafting Interpreters* in C for a subset of the C language
+- [ ] For the parser follow [Writing a C Compiler](https://nostarch.com/writing-c-compiler), it slowly builds each C feature by chapter and its parsing (together with the grammar, BNF, AST, etc.)
+- [ ] Checkout the accompanying parser tests in [Test cases for Writing a C Compiler](https://github.com/nlsandler/writing-a-c-compiler-tests/tree/main)
 
 ## Scanner
 
@@ -40,6 +41,21 @@ But it feels icky to read one-at-a-time directly from the symbol table file. Wil
 10. Declaration Statement
 11. Error Recovery Method used:
 12. Error Messages
+
+**Testing the parser**
+
+For now just call `scanner.c` on the `test_parse.core` files and then call `parser.c`.
+
+**Recursive Descent parser and Pratt parsing**
+
+We will use *recursive descent* in parsing the program: a subprogram to parse each non-terminal symbol in the formal grammar. 
+
+Discussions and references seem to recommend utilizing Pratt parsing or Precedence climbing to parse expressions to tackle the difficulty of precedence in recrusive descent.
+
+- *Writing a C Compiler*
+- [Simple but powerful Pratt parsing](https://matklad.github.io/2020/04/13/simple-but-powerful-pratt-parsing.html)
+- [What are the advantages of pratt parsing over recursive descent parsing?](https://www.reddit.com/r/ProgrammingLanguages/comments/zfnb1s/what_are_the_advantages_of_pratt_parsing_over/)
+- [Pratt Parsers: Expression Parsing Made Easy](https://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/)
 
 ## References
 
