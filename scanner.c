@@ -94,6 +94,11 @@ int main(int argc, char* argv[argc + 1]) {
             printf("Next token is: Unknown, Next lexeme is %s\n", lexeme);
         }
 
+        // Try not writing comment tokens into the symbol table
+        if (next_token == COMMENT) {
+            continue;
+        }
+
         // Write to symbol_table.txt
         if (next_token >= 0 && next_token < sizeof(token_names)/sizeof(token_names[0])) {
         fprintf(symbol_fp, "%-15d | %-24s | %-15d | %-15d | %s\n",
