@@ -1,7 +1,6 @@
 <program> ::= <function>
-<function> ::= "int" <identifier> "(" "void" ")" "{" <statement> "}"
+<function> ::= "int" <identifier> "(" ")" "{" <statement> "}"
 <statement> ::= "return" <exp> ";"
-<exp> ::= <int> | <unop> <exp> | "(" <exp> ")"
-<unop> ::= "++" | "--"
+<exp> ::= <int> | <exp> | "(" <exp> ")"
 <identifier> ::= ? identifier token ?
 <int> ::= ? constant token ?

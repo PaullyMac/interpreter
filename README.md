@@ -46,6 +46,10 @@ But it feels icky to read one-at-a-time directly from the symbol table file. Wil
 
 For now just call `scanner.c` on the `test_parse.core` files and then call `parser.c`.
 
+```
+.\scanner {filename}.core; .\parser;
+```
+
 **Recursive Descent parser and Pratt parsing**
 
 We will use *recursive descent* in parsing the program: a subprogram to parse each non-terminal symbol in the formal grammar. 

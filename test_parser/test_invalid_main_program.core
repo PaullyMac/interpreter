@@ -1,0 +1,4 @@
+// Test simple main function with unary operators
+int main() {
+    return
+}
