@@ -61,6 +61,49 @@ Discussions and references seem to recommend utilizing Pratt parsing or Preceden
 - [What are the advantages of pratt parsing over recursive descent parsing?](https://www.reddit.com/r/ProgrammingLanguages/comments/zfnb1s/what_are_the_advantages_of_pratt_parsing_over/)
 - [Pratt Parsers: Expression Parsing Made Easy](https://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/)
 
+### Parse tree output
+
+The parser must output a parse tree. For now our goal is a pretty-printer outputting the parse tree (not necessarilly a working data structure). I think this is done by each parse function for each grammar rule outputting the rule and its contents.
+
+I am not sure what notation we will use for the parse tree, I don't think it really matters.
+
+**Example code**
+
+```
+int main() {
+    ;
+}
+```
+
+**Example parse tree output** 
+
+Made up the notation similar from *Writing a C Compiler*)
+
+```ebnf
+Program(
+  Declaration(
+    Function_Declaration(
+      Data_type(INT),
+      IDENTIFIER("main"),
+      LEFT_PARENTHESIS,
+      Parameter_List(),
+      Block(
+        LEFT_BRACE,
+        Block_Item_List(
+          Block_Item(
+            Statement(
+              SEMICOLON
+            )
+          )
+        )
+        RIGHT_BRACE
+      )
+      RIGHT_PARENTHESIS,
+    )
+  )
+)
+```
+
 ## References
 
 - [Crafting Interpreters](https://craftinginterpreters.com/) creates two implementations of their language `lox`:
