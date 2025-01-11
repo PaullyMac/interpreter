@@ -8,6 +8,7 @@ Token *tokens;
 int current_token = 0;
 int num_tokens;
 int indent_level = 0;
+FILE *output_file;
 
 // Function prototypes
 Token *load_tokens(const char *filename, int *num_tokens);
@@ -19,6 +20,7 @@ void parse_array_declaration();
 void parse_data_type();
 void parse_identifier();
 void parse_parameter_list();
+void parse_argument_list();
 void parse_block();
 void parse_block_item_list();
 void parse_block_item();
@@ -27,6 +29,7 @@ void parse_exp();
 void match(TokenType type);
 void print_indent();
 char* get_data_type_string(TokenType type);
+char* get_token_string(TokenType type);
 
 int main(void) {
     tokens = load_tokens("symbol_table.txt", &num_tokens);
@@ -34,13 +37,16 @@ int main(void) {
         return 1;
     }
 
-    printf("['program',\n");
-    indent_level++;
+    output_file = fopen("parse_tree_output.ebnf", "w");
+    if (output_file == NULL) {
+        fprintf(stderr, "Error opening output file.\n");
+        return 1;
+    }
+
     parse_program();
-    indent_level--;
-    printf("]\n");
     printf("Parsing successful!\n");
 
+    fclose(output_file);
     free(tokens);
     return 0;
 }
@@ -50,7 +56,7 @@ void match(TokenType type) {
     if (current_token < num_tokens && tokens[current_token].type == type) {
         current_token++;
     } else {
-        printf("Error: Expected token type %s but found %s at line %d\n",
+        fprintf(stderr, "Error: Expected token type %s but found %s at line %d\n",
                token_names[type], token_names[tokens[current_token].type],
                tokens[current_token].line_number);
         exit(1);
@@ -59,172 +65,255 @@ void match(TokenType type) {
 
 void print_indent() {
     for (int i = 0; i < indent_level; i++) {
-        printf("  ");
+        fprintf(output_file, "  ");
     }
 }
 
 // <program> ::= { <declaration> }
 void parse_program() {
-    print_indent();
-    printf("['declarations',\n");
+    fprintf(output_file, "Program(\n");
     indent_level++;
     while (current_token < num_tokens && tokens[current_token].type != TOKEN_EOF) {
         parse_declaration();
         if (current_token < num_tokens && tokens[current_token].type != TOKEN_EOF) {
-            printf(",\n");
+            fprintf(output_file, ",\n");
         } else {
-            printf("\n");
+            fprintf(output_file, "\n");
         }
     }
     indent_level--;
-    print_indent();
-    printf("]\n");
+    fprintf(output_file, ")\n");
 }
 
 // <declaration> ::= <variable_declaration> | <array_declaration> | <function_declaration>
 void parse_declaration() {
     print_indent();
-    printf("[");
+    fprintf(output_file, "Declaration(\n");
+    indent_level++;
+    
     if (current_token < num_tokens && (tokens[current_token].type == INT || tokens[current_token].type == FLOAT ||
                                        tokens[current_token].type == CHAR || tokens[current_token].type == BOOL)) {
-        
-        char* type_string = get_data_type_string(tokens[current_token].type);
-
-        parse_data_type();
-        char* identifier_string = strdup(tokens[current_token].lexeme);
-        parse_identifier();
-
-        if (current_token < num_tokens && tokens[current_token].type == LEFT_PARENTHESIS)
+        if (current_token + 1 < num_tokens && tokens[current_token+1].type == IDENTIFIER && current_token + 2 < num_tokens && tokens[current_token+2].type == LEFT_PARENTHESIS)
         {
-            printf("'function_declaration',\n");
-            indent_level++;
-            print_indent();
-            printf("'%s',\n", identifier_string);
-            print_indent();
-            printf("'%s',\n", type_string);
             parse_function_declaration();
-            indent_level--;
         }
         
-        else if(current_token < num_tokens && tokens[current_token].type == LEFT_BRACKET)
+        else if(current_token + 1 < num_tokens && tokens[current_token+1].type == IDENTIFIER && current_token + 2 < num_tokens && tokens[current_token+2].type == LEFT_BRACKET)
         {
-            printf("'array_declaration',\n");
-            indent_level++;
-            print_indent();
-            printf("'%s',\n", identifier_string);
-            print_indent();
-            printf("'%s',\n", type_string);
             parse_array_declaration();
-            indent_level--;
         }
         else{
-            printf("'variable_declaration',\n");
-            indent_level++;
-            print_indent();
-            printf("'%s',\n", identifier_string);
-            print_indent();
-            printf("'%s',\n", type_string);
             parse_variable_declaration();
-            indent_level--;
         }
         
     } else {
-        printf("Error: Invalid declaration at line %d\n", tokens[current_token].line_number);
+        fprintf(output_file, "Error: Invalid declaration at line %d\n", tokens[current_token].line_number);
         exit(1);
     }
-    printf("]");
-    // free(type_string);
+    indent_level--;
+    print_indent();
+    fprintf(output_file, ")");
 }
 
 // <variable_declaration> ::= <data_type> <identifier> [ “=” <exp> ] “;”
 //                         | <data_type> <identifier> { “,” <identifier> } “;”
 void parse_variable_declaration(){
     print_indent();
-    printf("['variable_declaration',\n");
+    fprintf(output_file, "Variable_Declaration(\n");
     indent_level++;
+    parse_data_type();
+    fprintf(output_file, ",\n");
+
+    parse_identifier();
     if (current_token < num_tokens && tokens[current_token].type == SEMICOLON) {
+        fprintf(output_file, ",\n");
+        print_indent();
+
+        fprintf(output_file, "%s\n", get_token_string(tokens[current_token].type));
         match(SEMICOLON);
     } else if (current_token < num_tokens && tokens[current_token].type == ASSIGN) {
+        fprintf(output_file, ",\n");
+        print_indent();
+        fprintf(output_file, "%s\n", get_token_string(tokens[current_token].type));
         match(ASSIGN);
         parse_exp();
+        fprintf(output_file, ",\n");
+        print_indent();
+        fprintf(output_file, "%s\n", get_token_string(tokens[current_token].type));
         match(SEMICOLON);
     } else if (current_token < num_tokens && tokens[current_token].type == COMMA) {
         while (current_token < num_tokens && tokens[current_token].type == COMMA) {
+            fprintf(output_file, ",\n");
+            print_indent();
+
+            fprintf(output_file, "%s,\n", get_token_string(tokens[current_token].type));
             match(COMMA);
             parse_identifier();
         }
+        fprintf(output_file, ",\n");
+        print_indent();
+        fprintf(output_file, "%s\n", get_token_string(tokens[current_token].type));
         match(SEMICOLON);
     } else {
-        printf("Error: Invalid variable declaration at line %d\n", tokens[current_token].line_number);
+        fprintf(output_file, "Error: Invalid variable declaration at line %d\n", tokens[current_token].line_number);
         exit(1);
     }
     indent_level--;
     print_indent();
-    printf("]\n");
+    fprintf(output_file, ")\n");
 }
 
 // <array_declaration> ::= <data_type> <identifier> “[“ [<const>]  “]”  [ “=” “{“ <argument_list>“}” ] “;”
 void parse_array_declaration(){
     print_indent();
-    printf("['array_declaration',\n");
+    fprintf(output_file, "Array_Declaration(\n");
     indent_level++;
+    parse_data_type();
+    fprintf(output_file, ",\n");
+    parse_identifier();
+    fprintf(output_file, ",\n");
+    print_indent();
+
+    fprintf(output_file, "%s", get_token_string(tokens[current_token].type));
     match(LEFT_BRACKET);
+    fprintf(output_file, ",\n");
+
     if (current_token < num_tokens && tokens[current_token].type == NUMBER) {
+        print_indent();
+        fprintf(output_file, "Constant(%s)", tokens[current_token].lexeme);
         match(NUMBER);
     }
+    fprintf(output_file, ",\n");
+    print_indent();
+    fprintf(output_file, "%s", get_token_string(tokens[current_token].type));
     match(RIGHT_BRACKET);
+
     if (current_token < num_tokens && tokens[current_token].type == ASSIGN) {
+        fprintf(output_file, ",\n");
+        print_indent();
+        fprintf(output_file, "%s,\n", get_token_string(tokens[current_token].type));
         match(ASSIGN);
+        //fprintf(output_file, ",\n");
+
+        print_indent();
+        fprintf(output_file, "%s,\n", get_token_string(tokens[current_token].type));
         match(LEFT_BRACE);
-        //parse_argument_list(); // You haven't implemented parse_argument_list yet
+
+        parse_argument_list();
+
+        fprintf(output_file, ",\n");
+        print_indent();
+        fprintf(output_file, "%s", get_token_string(tokens[current_token].type));
         match(RIGHT_BRACE);
     }
+    fprintf(output_file, ",\n");
+    print_indent();
+    fprintf(output_file, "%s\n", get_token_string(tokens[current_token].type));
     match(SEMICOLON);
     indent_level--;
     print_indent();
-    printf("]\n");
+    fprintf(output_file, ")\n");
 }
 
 // <function_declaration> ::= <data_type> <identifier> "(" <parameter_list> ")" ( <block> | “;” )
 void parse_function_declaration() {
     print_indent();
-    printf("['function_declaration',\n");
+    fprintf(output_file, "Function_Declaration(\n");
     indent_level++;
-    
+
+    parse_data_type();
+    fprintf(output_file, ",\n");
+
+    parse_identifier();
+    fprintf(output_file, ",\n");
+
+    print_indent();
+    fprintf(output_file, "%s,\n", get_token_string(tokens[current_token].type));
     match(LEFT_PARENTHESIS);
-    print_indent();
-    printf("['parameters', \n");
-    indent_level++;
+    
     parse_parameter_list();
-    indent_level--;
-    print_indent();
-    printf("],\n");
-    match(RIGHT_PARENTHESIS);
+
+    if (current_token < num_tokens && tokens[current_token].type == RIGHT_PARENTHESIS){
+        fprintf(output_file, ",\n");
+        print_indent();
+        fprintf(output_file, "%s,\n", get_token_string(tokens[current_token].type));
+
+        match(RIGHT_PARENTHESIS);
+    }
+
     if (current_token < num_tokens && tokens[current_token].type == LEFT_BRACE) {
         parse_block();
+        fprintf(output_file, "\n");
     } else {
+        //fprintf(output_file, ",\n");
+        print_indent();
+        fprintf(output_file, "%s\n", get_token_string(tokens[current_token].type));
+
         match(SEMICOLON);
     }
+
     indent_level--;
     print_indent();
-    printf("]\n");
+    fprintf(output_file, ")\n");
 }
 
-// <parameter_list> ::= [“void”]
+// <parameter_list> ::= [“void”] 
 //   | <data_type> <identifier> {"," <data_type> <identifier>}
 void parse_parameter_list() {
-    // For now, we'll only handle the [“void”] case
-    // You can expand this later to handle the full grammar
-    // if (current_token < num_tokens && tokens[current_token].type == VOID) {
-    //     match(VOID);
-    // }
+    print_indent();
+    fprintf(output_file, "Parameter_List(\n");
+    indent_level++;
+
+    // Check if the parameter list is empty
+    if (current_token < num_tokens && tokens[current_token].type == RIGHT_PARENTHESIS) {
+        // Empty parameter list, do nothing
+    } else {
+        // Non-empty parameter list
+        // Parse the first parameter
+        if (current_token < num_tokens && (tokens[current_token].type == INT || tokens[current_token].type == FLOAT ||
+                                           tokens[current_token].type == CHAR || tokens[current_token].type == BOOL)) {
+            parse_data_type();
+            fprintf(output_file, ",\n");
+            parse_identifier();
+
+            // Parse subsequent parameters
+            while (current_token < num_tokens && tokens[current_token].type == COMMA) {
+                match(COMMA);
+                fprintf(output_file, ",\n");
+
+                // Expect a data type for each subsequent parameter
+                if (current_token < num_tokens && (tokens[current_token].type == INT || tokens[current_token].type == FLOAT ||
+                                                   tokens[current_token].type == CHAR || tokens[current_token].type == BOOL)) {
+                    parse_data_type();
+                    fprintf(output_file, ",\n");
+                    parse_identifier();
+                } else {
+                    // Error: Expected data type after comma in parameter list
+                    fprintf(stderr, "Error: Expected data type after comma in parameter list at line %d\n", tokens[current_token].line_number);
+                    exit(1);
+                }
+            }
+        } else {
+            // Error: Expected data type or ')' at the start of parameter list
+            fprintf(stderr, "Error: Expected data type or ')' at the start of parameter list at line %d\n", tokens[current_token].line_number);
+            exit(1);
+        }
+    }
+
+    fprintf(output_file, "\n");
+    indent_level--;
+    print_indent();
+    fprintf(output_file, ")");
 }
 
 // <data_type> ::= “int” | “float” | “char” | “bool”
 void parse_data_type() {
+    
+    print_indent();
+    fprintf(output_file, "Data_Type(%s)", get_token_string(tokens[current_token].type));
     if (!(current_token < num_tokens && (tokens[current_token].type == INT || tokens[current_token].type == FLOAT ||
                                        tokens[current_token].type == CHAR || tokens[current_token].type == BOOL))) {
-        printf("Error: Expected data type at line %d\n", tokens[current_token].line_number);
+        fprintf(output_file, "Error: Expected data type at line %d\n", tokens[current_token].line_number);
         exit(1);
     }
     match(tokens[current_token].type);
@@ -233,13 +322,116 @@ void parse_data_type() {
 char* get_data_type_string(TokenType type) {
     switch (type) {
         case INT:
-            return strdup("int");
+            return strdup("INT");
         case FLOAT:
-            return strdup("float");
+            return strdup("FLOAT");
         case CHAR:
-            return strdup("char");
+            return strdup("CHAR");
         case BOOL:
-            return strdup("bool");
+            return strdup("BOOL");
+        default:
+            return strdup("");
+    }
+}
+
+char* get_token_string(TokenType type) {
+    switch (type) {
+        case LEFT_PARENTHESIS:
+            return strdup("LEFT_PARENTHESIS");
+        case RIGHT_PARENTHESIS:
+            return strdup("RIGHT_PARENTHESIS");
+        case LEFT_BRACKET:
+            return strdup("LEFT_BRACKET");
+        case RIGHT_BRACKET:
+            return strdup("RIGHT_BRACKET");
+        case LEFT_BRACE:
+            return strdup("LEFT_BRACE");
+        case RIGHT_BRACE:
+            return strdup("RIGHT_BRACE");
+        case COMMA:
+            return strdup("COMMA");
+        case SEMICOLON:
+            return strdup("SEMICOLON");
+        case MULTIPLY:
+            return strdup("MULTIPLY");
+        case EXPONENT:
+            return strdup("EXPONENT");
+        case PLUS:
+            return strdup("PLUS");
+        case MINUS:
+            return strdup("MINUS");
+        case DIVIDE:
+            return strdup("DIVIDE");
+        case INCREMENT:
+            return strdup("INCREMENT");
+        case DECREMENT:
+            return strdup("DECREMENT");
+        case EQUAL:
+            return strdup("EQUAL");
+        case NOT_EQUAL:
+            return strdup("NOT_EQUAL");
+        case ASSIGN:
+            return strdup("ASSIGN");
+        case LESS:
+            return strdup("LESS");
+        case LESS_EQUAL:
+            return strdup("LESS_EQUAL");
+        case GREATER:
+            return strdup("GREATER");
+        case GREATER_EQUAL:
+            return strdup("GREATER_EQUAL");
+        case NOT:
+            return strdup("NOT");
+        case OR:
+            return strdup("OR");
+        case AND:
+            return strdup("AND");
+        case COMMENT:
+            return strdup("COMMENT");
+        case MODULO:
+            return strdup("MODULO");
+        case FORMAT:
+            return strdup("FORMAT");
+        case IDENTIFIER:
+            return (char *)tokens[current_token].lexeme;
+        case STRING:
+            return (char *)tokens[current_token].lexeme;
+        case NUMBER:
+            return (char *)tokens[current_token].lexeme;
+        case CHARACTER_LITERAL:
+            return (char *)tokens[current_token].lexeme;
+        case CHAR:
+            return strdup("CHAR");
+        case INT:
+            return strdup("INT");
+        case FLOAT:
+            return strdup("FLOAT");
+        case BOOL:
+            return strdup("BOOL");
+        case IF:
+            return strdup("IF");
+        case ELSE:
+            return strdup("ELSE");
+        case FOR:
+            return strdup("FOR");
+        case WHILE:
+            return strdup("WHILE");
+        case RETURN:
+            return strdup("RETURN");
+        case PRINTF:
+            return strdup("PRINTF");
+        case SCANF:
+            return strdup("SCANF");
+        case TRUE:
+            return strdup("TRUE");
+        case FALSE:
+            return strdup("FALSE");
+        case ERROR_INVALID_CHARACTER:
+            return strdup("ERROR_INVALID_CHARACTER");
+        case ERROR_INVALID_IDENTIFIER:
+            return strdup("ERROR_INVALID_IDENTIFIER");
+        case TOKEN_EOF:
+            return strdup("TOKEN_EOF");
         default:
             return strdup("");
     }
@@ -247,57 +439,93 @@ char* get_data_type_string(TokenType type) {
 
 // <identifier> ::= identifier token
 void parse_identifier() {
+    print_indent();
+    fprintf(output_file, "IDENTIFIER(\"%s\")", tokens[current_token].lexeme);
     match(IDENTIFIER);
 }
 
 // <block> ::= "{" <block-item-list>  "}"
 void parse_block() {
     print_indent();
-    printf("['block',\n");
+    fprintf(output_file, "Block(\n");
     indent_level++;
+    print_indent();
+
+    fprintf(output_file, "%s,\n", get_token_string(tokens[current_token].type));
     match(LEFT_BRACE);
+
     parse_block_item_list();
+    fprintf(output_file, ",\n");
+
+    print_indent();
+    fprintf(output_file, "%s\n", get_token_string(tokens[current_token].type));
     match(RIGHT_BRACE);
     indent_level--;
     print_indent();
-    printf("]\n");
+    fprintf(output_file, ")");
 }
 
 // <block_item_list> ::= (<block_item_list> <block_item>) | <block_item>
 void parse_block_item_list() {
     print_indent();
-    printf("['block_items',\n");
+    fprintf(output_file, "Block_Item_List(\n");
     indent_level++;
     while (current_token < num_tokens && tokens[current_token].type != RIGHT_BRACE) {
         parse_block_item();
-        if (current_token < num_tokens && tokens[current_token].type != RIGHT_BRACE) {
-            printf(",\n");
+        if (current_token < num_tokens && tokens[current_token].type == RIGHT_BRACE) {
+            break;
         } else {
-            printf("\n");
+            fprintf(output_file, ",\n");
         }
     }
+    fprintf(output_file, "\n");
     indent_level--;
     print_indent();
-    printf("]\n");
+    fprintf(output_file, ")");
 }
 
-// <block_item> ::= <statement> | <declaration>
+// <block_item> ::= <statement> | <variable_declaration> | <array_declaration>
 void parse_block_item() {
-    // Simplified for now, assuming only statements
-    parse_statement();
+    print_indent();
+    fprintf(output_file, "Block_Item(\n");
+    indent_level++;
+
+    // Check if the current token could start a variable or array declaration
+    if (current_token < num_tokens && (tokens[current_token].type == INT || tokens[current_token].type == FLOAT ||
+                                       tokens[current_token].type == CHAR || tokens[current_token].type == BOOL)) {
+        // Lookahead to check for identifier and then '[' or not
+        if (current_token + 1 < num_tokens && tokens[current_token + 1].type == IDENTIFIER) {
+            if (current_token + 2 < num_tokens && tokens[current_token + 2].type == LEFT_BRACKET) {
+                parse_array_declaration();
+            } else {
+                parse_variable_declaration();
+            }
+        } else {
+            // Error: Expected identifier after data type in declaration
+            fprintf(output_file, "Error: Expected identifier after data type at line %d\n", tokens[current_token].line_number);
+            exit(1);
+        }
+    } else {
+        // Otherwise, assume it's a statement
+        parse_statement();
+    }
+
+    indent_level--;
+    print_indent();
+    fprintf(output_file, ")");
 }
 
 // <statement> ::= ";"
 void parse_statement() {
     print_indent();
-    printf("['statement', \n");
+    fprintf(output_file, "Statement(\n");
     indent_level++;
     print_indent();
-    printf("';'\n");
+    fprintf(output_file, "%s\n", get_token_string(tokens[current_token].type));
     match(SEMICOLON);
     indent_level--;
     print_indent();
-    printf("]\n");
+    fprintf(output_file, ")\n");
 }
 
 // <exp> ::= <int>
@@ -344,4 +572,38 @@ Token *load_tokens(const char *filename, int *num_tokens) {
 
     fclose(fp);
     return token_list;
+}
+
+void parse_argument_list() {
+    print_indent();
+    fprintf(output_file, "Argument_List(\n");
+    indent_level++;
+
+    // Parse the first constant
+    if (current_token < num_tokens && tokens[current_token].type == NUMBER) {
+        print_indent();
+        fprintf(output_file, "Constant(%s)", tokens[current_token].lexeme);
+        match(NUMBER);
+
+        // Parse subsequent constants separated by commas
+        while (current_token < num_tokens && tokens[current_token].type == COMMA) {
+            fprintf(output_file, ",\n");
+            match(COMMA);
+
+            if (current_token < num_tokens && tokens[current_token].type == NUMBER) {
+                print_indent();
+                fprintf(output_file, "Constant(%s)", tokens[current_token].lexeme);
+                match(NUMBER);
+            } else {
+                // Error: Expected a number after comma in argument list
+                fprintf(stderr, "Error: Expected a number after comma in argument list at line %d\n", tokens[current_token].line_number);
+                exit(1);
+            }
+        }
+    } 
+
+    fprintf(output_file, "\n");
+    indent_level--;
+    print_indent();
+    fprintf(output_file, ")");
 }

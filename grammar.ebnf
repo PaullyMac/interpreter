@@ -11,7 +11,7 @@
 <data_type> ::= “int” | “float” | “char” | “bool”
 <block> ::= "{" <block-item-list>  "}"
 <block_item_list> ::= (<block_item_list> <block_item>) | <block_item>
-<block_item> ::= <statement> | <declaration> 
+<block_item> ::= <statement> | <variable_declaration> | <array_declaration> 
 <statement> ::= "return" <exp> ";"
               | <exp> ";"
               | ";"

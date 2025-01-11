@@ -2,8 +2,249 @@
 
 Scanner, Parser, Compiler for a subset of the C language written in C
 
-- [ ] For the parser follow [Writing a C Compiler](https://nostarch.com/writing-c-compiler), it slowly builds each C feature by chapter and its parsing (together with the grammar, BNF, AST, etc.)
-- [ ] Checkout the accompanying parser tests in [Test cases for Writing a C Compiler](https://github.com/nlsandler/writing-a-c-compiler-tests/tree/main)
+## Progress tracker of parser
+
+**Grammar rule the parser.c can parse**
+
+Will serve to show our progress on parser.c, and will eventually match our grammar rule. This shows the current grammar rule that the parser can read and output a working parse tree.
+
+```ebnf
+<program> ::= { <declaration> }
+<declaration> ::= <variable_declaration> | <array_declaration> | <function_declaration>
+<variable_declaration> ::= <data_type> <identifier> [ "=" <exp> ] ";"
+                        | <data_type> <identifier> { "," <identifier> } ";"
+<array_declaration> ::= <data_type> <identifier> "[" [ <const> ] "]" [ "=" "{" [ <argument_list> ] "}" ] ";"
+<function_declaration> ::= <data_type> <identifier> "(" <parameter_list> ")" ( <block> | ";" )
+<parameter_list> ::= <data_type> <identifier> { "," <data_type> <identifier> } | /* epsilon */
+<argument_list> ::= <const> { "," <const> }
+<data_type> ::= "int" | "float" | "char" | "bool"
+<block> ::= "{" <block_item_list> "}"
+<block_item_list> ::= { <block_item> }
+<block_item> ::= <statement> | <variable_declaration> | <array_declaration>
+<statement> ::= ";"
+            ::= <block>
+<const> ::= NUMBER
+<identifier> ::= IDENTIFIER
+<int> ::= constant token
+<float> ::= float token
+<char> ::= char token
+<bool> ::= bool token
+```
+
+**Test `test_main_program.core`**
+
+The following test code
+
+```c
+bool array[5] = {1, 2};
+int array[10];
+
+int a, b, c;
+int d;
+
+int isValid(bool x, int y, char z);
+int isNotValid();
+
+int main() {
+    bool array[5] = {};
+    int array[1];
+    ;
+    int e;
+    ;
+    int f;
+    int g;
+}
+
+bool isValid(bool x, int y, char z) {
+    int a, b;
+}
+```
+
+produces the following parse tree using my gawa-gawang notation ala *Writing a C Compiler*. The output of the parser is also stored at `parse_tree_output.ebnf`
+
+```ebnf
+Program(
+  Declaration(
+    Array_Declaration(
+      Data_Type(BOOL),
+      IDENTIFIER("array"),
+      LEFT_BRACKET,
+      Constant(5),
+      RIGHT_BRACKET,
+      ASSIGN,
+      LEFT_BRACE,
+      Argument_List(
+        Constant(1),
+        Constant(2)
+      ),
+      RIGHT_BRACE,
+      SEMICOLON
+    )
+  ),
+  Declaration(
+    Array_Declaration(
+      Data_Type(INT),
+      IDENTIFIER("array"),
+      LEFT_BRACKET,
+      Constant(10),
+      RIGHT_BRACKET,
+      SEMICOLON
+    )
+  ),
+  Declaration(
+    Variable_Declaration(
+      Data_Type(INT),
+      IDENTIFIER("a"),
+      COMMA,
+      IDENTIFIER("b"),
+      COMMA,
+      IDENTIFIER("c"),
+      SEMICOLON
+    )
+  ),
+  Declaration(
+    Variable_Declaration(
+      Data_Type(INT),
+      IDENTIFIER("d"),
+      SEMICOLON
+    )
+  ),
+  Declaration(
+    Function_Declaration(
+      Data_Type(INT),
+      IDENTIFIER("isValid"),
+      LEFT_PARENTHESIS,
+      Parameter_List(
+        Data_Type(BOOL),
+        IDENTIFIER("x"),
+        Data_Type(INT),
+        IDENTIFIER("y"),
+        Data_Type(CHAR),
+        IDENTIFIER("z")
+      ),
+      RIGHT_PARENTHESIS,
+      SEMICOLON
+    )
+  ),
+  Declaration(
+    Function_Declaration(
+      Data_Type(INT),
+      IDENTIFIER("isNotValid"),
+      LEFT_PARENTHESIS,
+      Parameter_List(
+
+      ),
+      RIGHT_PARENTHESIS,
+      SEMICOLON
+    )
+  ),
+  Declaration(
+    Function_Declaration(
+      Data_Type(INT),
+      IDENTIFIER("main"),
+      LEFT_PARENTHESIS,
+      Parameter_List(
+
+      ),
+      RIGHT_PARENTHESIS,
+      Block(
+        LEFT_BRACE,
+        Block_Item_List(
+          Block_Item(
+            Array_Declaration(
+              Data_Type(BOOL),
+              IDENTIFIER("array"),
+              LEFT_BRACKET,
+              Constant(5),
+              RIGHT_BRACKET,
+              ASSIGN,
+              LEFT_BRACE,
+              Argument_List(
+
+              ),
+              RIGHT_BRACE,
+              SEMICOLON
+            )
+          ),
+          Block_Item(
+            Array_Declaration(
+              Data_Type(INT),
+              IDENTIFIER("array"),
+              LEFT_BRACKET,
+              Constant(1),
+              RIGHT_BRACKET,
+              SEMICOLON
+            )
+          ),
+          Block_Item(
+            Statement(
+              SEMICOLON
+            )
+          ),
+          Block_Item(
+            Variable_Declaration(
+              Data_Type(INT),
+              IDENTIFIER("e"),
+              SEMICOLON
+            )
+          ),
+          Block_Item(
+            Statement(
+              SEMICOLON
+            )
+          ),
+          Block_Item(
+            Variable_Declaration(
+              Data_Type(INT),
+              IDENTIFIER("f"),
+              SEMICOLON
+            )
+          ),
+          Block_Item(
+            Variable_Declaration(
+              Data_Type(INT),
+              IDENTIFIER("g"),
+              SEMICOLON
+            )
+          )
+        ),
+        RIGHT_BRACE
+      )
+    )
+  ),
+  Declaration(
+    Function_Declaration(
+      Data_Type(BOOL),
+      IDENTIFIER("isValid"),
+      LEFT_PARENTHESIS,
+      Parameter_List(
+        Data_Type(BOOL),
+        IDENTIFIER("x"),
+        Data_Type(INT),
+        IDENTIFIER("y"),
+        Data_Type(CHAR),
+        IDENTIFIER("z")
+      ),
+      RIGHT_PARENTHESIS,
+      Block(
+        LEFT_BRACE,
+        Block_Item_List(
+          Block_Item(
+            Variable_Declaration(
+              Data_Type(INT),
+              IDENTIFIER("a"),
+              COMMA,
+              IDENTIFIER("b"),
+              SEMICOLON
+            )
+          )
+        ),
+        RIGHT_BRACE
+      )
+    )
+  )
+)
+```
 
 ## Scanner
 
@@ -102,6 +343,23 @@ Program(
     )
   )
 )
+```
+
+**Pretty-printing general rules**
+It's a bit hard handling all the ways to close of non-terminals with a comma and newline. It seems like the formatting should be handled by the non-terminal function that called the next non-terminal instead of it being within the latter's code. 
+
+For example, <declaration> does not have any sibling nodes when within <block-item>, while within <progam> it can happen. So I'll try formatting be a responsibility of the calling function.
+
+### Notes on grammar errors while trying to implement the parser
+
+**Can not do function declaration within functions**
+
+We can have `<function_declaration>` within `<block>`, and since the body of a function is itself a block our grammar rules allows for this. Either specificy the <block> to only allow for <variable_declaration> and <array_declaration>.
+
+**Array declaration without assignment, without array size**
+
+```
+int arr[]; // is this allowed?
 ```
 
 ## References

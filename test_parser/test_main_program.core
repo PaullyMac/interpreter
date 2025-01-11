@@ -1,3 +1,22 @@
+bool array[5] = {1, 2};
+int array[10];
+
+int a, b, c;
+int d;
+
+int isValid(bool x, int y, char z);
+int isNotValid();
+
 int main() {
+    bool array[5] = {};
+    int array[1];
     ;
+    int e;
+    ;
+    int f;
+    int g;
+}
+
+bool isValid(bool x, int y, char z) {
+    int a, b;
 }
