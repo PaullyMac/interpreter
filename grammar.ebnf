@@ -1,6 +1,51 @@
-<program> ::= <function>
-<function> ::= "int" <identifier> "(" ")" "{" <statement> "}"
+<program> ::= { <declaration> }
+<declaration> ::= <variable_declaration> 
+                | <array_declaration> 
+                | <function_declaration> 
+<variable_declaration> ::= <data_type> <identifier> [ “=” <exp> ] “;”
+                        | <data_type> <identifier> { “,” <identifier> } “;”
+<array_declaration> ::= <data_type> <identifier> “[“ [<const>]  “]”  [ “=” “{“ <argument_list>“}” ] “;”
+<function_declaration> ::= <data_type> <identifier> "(" <parameter_list> ")" ( <block> | “;” )
+<parameter_list> ::= [“void”]
+  | <data_type> <identifier> {"," <data_type> <identifier>}
+<data_type> ::= “int” | “float” | “char” | “bool”
+<block> ::= "{" <block-item-list>  "}"
+<block_item_list> ::= (<block_item_list> <block_item>) | <block_item>
+<block_item> ::= <statement> | <declaration> 
 <statement> ::= "return" <exp> ";"
-<exp> ::= <int> | <exp> | "(" <exp> ")"
-<identifier> ::= ? identifier token ?
-<int> ::= ? constant token ?
+              | <exp> ";"
+              | ";"
+              | "if" "(" <exp> ")"  <block>   [ "else" <block> | <statement> ]
+              | <block>
+              | "while" "(" <exp> ")" <block>
+              | "for" "(" (<variable_declaration> | <array_declaration> | <exp>) <exp> ";" <exp> ")" <statement>
+              | <input_statement> “;” 
+              | <output_statement> “;”
+<exp> ::= <logical_or_exp> | <unary_exp> "=" <exp>
+<logical_or_exp> ::= <logical_and_exp> | <logical_or_exp>  "||" <logical_and_exp> 
+<logical_and_exp> ::= <equality_exp> | <logical_and_exp>  "&&" <equality_exp> 
+<equality_exp> ::= <relational_exp> | <equality_exp> ("==" | "!=") <relational_exp> 
+<relational_exp> ::= <additive_exp> | <relational_exp> ("<" | ">" | "<=" | ">=") <additive_exp> 
+<additive_exp> ::= <multiplicative_exp> |  <additive_exp> ("+" | "-") <multiplicative_exp> 
+<multiplicative_exp> ::= <unary_exp> | <multiplicative_exp> ("*" | "/" | "%") <power_exp>
+<power_exp> ::= <unary_exp> | <unary_exp> ”^” <power_exp> 
+<unary_exp> ::= <factor> | <unop> <unary_exp>
+<unop> ::= "!" | "+" | "-" 
+<factor> ::= <const>
+           | <identifier>
+           | "(" <exp> ")"
+           | <identifier> "(" [ <argument_list> ] ")"
+           | <identifier> “[“ <const> “]” 
+<argument_list> ::= <exp> { "," <exp> }
+<input_statement> ::= "scanf" "(" <string> { "," <identifier> } ")"
+<output_statement> ::= "printf" "(" <string> ")"  
+                                    | "printf" "(" <string> “,” <exp> ")" 
+                                    |"printf" "(" <string> { "," <exp> } ")" 
+                                    | “printf” “(” <exp> “)”
+<string> ::= string token
+<const> ::= <int> | <float> | <char> | <bool>
+<identifier> ::= identifier token
+<int> ::= constant token
+<float> ::= float token
+<char> ::= char token
+<bool> ::= bool token
