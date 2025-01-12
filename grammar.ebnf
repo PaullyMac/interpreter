@@ -7,7 +7,8 @@
 <array_declaration> ::= <data_type> <identifier> “[“ [<const>]  “]”  [ “=” “{“ <argument_list>“}” ] “;”
 <function_declaration> ::= <data_type> <identifier> "(" <parameter_list> ")" ( <block> | “;” )
 <parameter_list> ::= [“void”]
-  | <data_type> <identifier> {"," <data_type> <identifier>}
+                  | <data_type> <identifier> {"," <data_type> <identifier>}
+<argument_list> ::= <exp> { "," <exp> }
 <data_type> ::= “int” | “float” | “char” | “bool”
 <block> ::= "{" <block-item-list>  "}"
 <block_item_list> ::= (<block_item_list> <block_item>) | <block_item>
@@ -15,12 +16,23 @@
 <statement> ::= "return" <exp> ";"
               | <exp> ";"
               | ";"
-              | "if" "(" <exp> ")"  <block>   [ "else" <block> | <statement> ]
               | <block>
-              | "while" "(" <exp> ")" <block>
-              | "for" "(" (<variable_declaration> | <array_declaration> | <exp>) <exp> ";" <exp> ")" <statement>
-              | <input_statement> “;” 
-              | <output_statement> “;”
+              | <for_statement>
+              | <while_statement>
+              | <if_statement>
+              | <input_statement> 
+              | <output_statement>
+<for_statement> ::= "for" "(" (<variable_declaration> | <array_declaration> | <exp> ";") <exp> ";" <exp> ")" <block>    
+<while_statement> ::= "while" "(" <exp> ")" <block>
+<input_statement> ::= "scanf" "(" <string> { "," <identifier> } ")" ";"
+<output_statement> ::= "printf" "(" <string> ")"  
+                                    | "printf" "(" <string> “,” <exp> ")" 
+                                    |"printf" "(" <string> { "," <exp> } ")" 
+                                    | "printf" "(" <exp> ")"
+<if-statement> ::= "if" "(" <exp> ")" <block> [<else-clause>]
+<else-clause> ::= "else" <block>
+              | "else" <if_statement>
+              
 <exp> ::= <logical_or_exp> | <unary_exp> "=" <exp>
 <logical_or_exp> ::= <logical_and_exp> | <logical_or_exp>  "||" <logical_and_exp> 
 <logical_and_exp> ::= <equality_exp> | <logical_and_exp>  "&&" <equality_exp> 
@@ -35,15 +47,9 @@
            | <identifier>
            | "(" <exp> ")"
            | <identifier> "(" [ <argument_list> ] ")"
-           | <identifier> “[“ <const> “]” 
-<argument_list> ::= <exp> { "," <exp> }
-<input_statement> ::= "scanf" "(" <string> { "," <identifier> } ")"
-<output_statement> ::= "printf" "(" <string> ")"  
-                                    | "printf" "(" <string> “,” <exp> ")" 
-                                    |"printf" "(" <string> { "," <exp> } ")" 
-                                    | “printf” “(” <exp> “)”
-<string> ::= string token
+           | <identifier> "[" <const> "]" 
 <const> ::= <int> | <float> | <char> | <bool>
+<string> ::= string token
 <identifier> ::= identifier token
 <int> ::= constant token
 <float> ::= float token
