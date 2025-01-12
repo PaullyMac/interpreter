@@ -105,6 +105,43 @@ Program(
                   SEMICOLON
                 ),
                 Constant(100),
+                Constant(1000),
+                Block(
+                  LEFT_BRACE,
+                  Block_Item_List(
+                    Block_Item(
+                      Statement(
+                        Return_Statement(
+                          RETURN,
+                          Constant(0),
+                          SEMICOLON
+                        )
+                      )
+                    )
+                  ),
+                  RIGHT_BRACE
+                )
+              )
+            )
+          ),
+          Block_Item(
+            Statement(
+              For_Statement(
+                Array_Declaration(
+                  Data_Type(INT),
+                  IDENTIFIER("arr"),
+                  LEFT_BRACKET,
+                  Constant(5),
+                  RIGHT_BRACKET,
+                  ASSIGN,
+                  LEFT_BRACE,
+                  Argument_List(
+                    Constant(1)
+                  ),
+                  RIGHT_BRACE,
+                  SEMICOLON
+                ),
+                Constant(100),
                 Constant(100),
                 Block(
                   LEFT_BRACE,

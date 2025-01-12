@@ -106,6 +106,7 @@ void parse_declaration() {
         else if(current_token + 1 < num_tokens && tokens[current_token+1].type == IDENTIFIER && current_token + 2 < num_tokens && tokens[current_token+2].type == LEFT_BRACKET)
         {
             parse_array_declaration();
+            fprintf(output_file, "\n");
         }
         else{
             parse_variable_declaration();
@@ -221,7 +222,7 @@ void parse_array_declaration(){
     match(SEMICOLON);
     indent_level--;
     print_indent();
-    fprintf(output_file, ")\n");
+    fprintf(output_file, ")");
 }
 
 // <function_declaration> ::= <data_type> <identifier> "(" <parameter_list> ")" ( <block> | “;” )
@@ -506,6 +507,7 @@ void parse_block_item() {
         if (current_token + 1 < num_tokens && tokens[current_token + 1].type == IDENTIFIER) {
             if (current_token + 2 < num_tokens && tokens[current_token + 2].type == LEFT_BRACKET) {
                 parse_array_declaration();
+                fprintf(output_file, "\n");
             } else {
                 parse_variable_declaration();
                 fprintf(output_file, "\n");
@@ -751,6 +753,7 @@ void parse_for_statement() {
         if (current_token + 1 < num_tokens && tokens[current_token + 1].type == IDENTIFIER) {
             if (current_token + 2 < num_tokens && tokens[current_token + 2].type == LEFT_BRACKET) {
                 parse_array_declaration();
+                fprintf(output_file, ",\n");
             } else {
                 parse_variable_declaration();
                 fprintf(output_file, ",\n");
