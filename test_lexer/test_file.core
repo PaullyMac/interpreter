@@ -10,6 +10,6 @@ int this_is_some_function() {
     100 "He said \"blah blah\" %d";
     this_a_vari@ble
     "@" '@' // this a comment
-    var++ >= vars--
+    var >= vars
     int arr[5] = {1, 2, 3};
 }

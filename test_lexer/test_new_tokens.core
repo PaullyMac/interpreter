@@ -1,0 +1,7 @@
+int main() {
+    scanf("hello %d", &variable);
+    
+    if (1 < 2) {
+        return 0;
+    }
+}

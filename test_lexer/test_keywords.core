@@ -12,6 +12,7 @@ printf;
 scanf;
 true;
 false;
+void;
 
 // testing keywords as substrings within identifiers
 chard;    

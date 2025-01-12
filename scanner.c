@@ -193,19 +193,19 @@ void lex() {
         case '}': return add_token(RIGHT_BRACE);
         case ',': return add_token(COMMA);
         case ';': return add_token(SEMICOLON);
+        case '+': return add_token(PLUS);
+        case '-': return add_token(MINUS);
         case '*': return add_token(MULTIPLY);
         case '^': return add_token(EXPONENT);
         case '%': return add_token(MODULO);
 
         // Multi-character operators
-        case '+': return add_token(match('+') ?  INCREMENT : PLUS);
-        case '-': return add_token(match('-') ?  DECREMENT : MINUS);
         case '=': return add_token(match('=') ? EQUAL : ASSIGN);
-        case '>': return add_token(match('=') ? GREATER_EQUAL : EQUAL);
-        case '<': return add_token(match('=') ? LESS_EQUAL : EQUAL);
-        case '!': return add_token(match('=') ? NOT_EQUAL : EQUAL);
+        case '>': return add_token(match('=') ? GREATER_EQUAL : GREATER);
+        case '<': return add_token(match('=') ? LESS_EQUAL : LESS);
+        case '!': return add_token(match('=') ? NOT_EQUAL : NOT);
+        case '&': return add_token(match('&') ? AND : AMPERSAND);
         case '|': return add_token(match('|') ? OR : OR);
-        case '&': return add_token(match('&') ? OR : OR);
         case '/':
             if (peek() == '/') {
                 // It's a comment

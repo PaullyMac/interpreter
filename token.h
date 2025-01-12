@@ -18,13 +18,12 @@ typedef enum
     SEMICOLON,
     MULTIPLY,
     EXPONENT,
+    AMPERSAND,
 
     // Possible multi-character tokens
     PLUS,
     MINUS,
     DIVIDE,
-    INCREMENT,
-    DECREMENT,
     EQUAL,
     NOT_EQUAL,
     ASSIGN,
@@ -61,6 +60,7 @@ typedef enum
     SCANF,
     TRUE,
     FALSE,
+    VOID,
 
     // Error tokens, not part of the language just for the scanner
     ERROR_INVALID_CHARACTER,
@@ -89,11 +89,10 @@ char* token_names[] = {
     "SEMICOLON",
     "MULTIPLY",
     "EXPONENT",
+    "AMPERSAND",
     "PLUS",
     "MINUS",
     "DIVIDE",
-    "INCREMENT",
-    "DECREMENT",
     "EQUAL",
     "NOT_EQUAL",
     "ASSIGN",
@@ -124,6 +123,7 @@ char* token_names[] = {
     "SCANF",
     "TRUE",
     "FALSE",
+    "VOID",
     "ERROR_INVALID_CHARACTER",
     "ERROR_INVALID_IDENTIFIER",
     "TOKEN_EOF"

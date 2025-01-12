@@ -1,0 +1,80 @@
+// Starts with a single main function
+int main(void) {
+    // Basic declaration of all data types
+    int var_i_a;
+    int var_i_b, var_i_c;
+    int var_i_d = 1;
+
+    float var_f_a;
+    float var_f_b, var_f_c;
+    float var_f_d = 1.0;
+
+    char var_c_a;
+    char var_c_b, var_c_c;
+    char var_c_d = ‘d’;
+
+    bool var_b_a;
+    bool var_b_b, var_b_c;
+    bool var_b_d = true;
+
+    char var_arr_str[] = “yaR!”;
+    int var_arr_a[] = {1, 2, 3};
+    int var_arr_b[2] = {10, 20};
+
+    // Input statements
+    scanf(“%c”, &var_c_a);
+
+    // Output statements
+    printf(“Prints this string literal”);
+    printf(var_arr_str);
+    printf(“Prints an integer %d”, var_i_a);
+
+    // Conditional statements
+    if (true) {
+        printf(“T”);
+    }
+
+    if (false) {
+        printf(“F”);
+    }
+    else {
+        printf(“T”);
+    }
+
+    if (false) {
+        printf(“F”);
+    }
+    else if {true} {
+        printf(“T”)
+    }
+    else {
+        printf(“T”);
+    }
+
+    // Iterative statement
+    for (int i = 0; i < 4; i++) {
+        printf(“Four loop”);
+    }
+
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 7; j++) {
+            printf(“Fourteen loop”);
+            }
+    }
+
+    // Assignment statements
+    int var_assign_a = 1;
+    int var_assign_b = a;
+    int var_assign_c = (1 + 2) + 3;
+
+    // Test expressions, arithmetic, logic operators/precedence
+    return (var_i_d + 5 * ((var_i_d * 10)-- % 2));
+    return 5 % 2 + (2 * 3) / 1^2;
+    if (!true || !false) {
+        printf(“in”);
+    }
+
+    // More declarations???
+
+    // Function declaration/definition/statements???
+}
