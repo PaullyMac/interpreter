@@ -1,19 +1,20 @@
 [##\<statement\>
-  [##<>if<>]
-  [##<>(<>]
-  [##\<exp\>
-    [##\<logical\_or\_exp\>
-      [##\<logical\_and\_exp\>
-        [##\<equality\_exp\>
+  [##\<if\_statement\>
+    [##if]
+    [##(]
+    [##\<exp\>
+      [##\<logical\_or\_exp\>
+        [##\<logical\_and\_exp\>
+          [##\<equality\_exp\>
             [##\<relational\_exp\>
-              [##\<relational\_exp\
+              [##\<relational\_exp\>
                 [##\<additive\_exp\>
                   [##\<multiplicative\_exp\>
                     [##\<power\_exp\>
                       [##\<unary\_exp\>
                         [##\<factor\>
                           [##\<identifier\>
-                            [##<>z<>]
+                            [##z]
                           ]
                         ]
                       ]
@@ -21,7 +22,7 @@
                   ]
                 ]
               ]
-              [##<>\><>]
+              [##\>]
               [##\<additive\_exp\>
                 [##\<multiplicative\_exp\>
                   [##\<power\_exp\>
@@ -29,7 +30,7 @@
                       [##\<factor\>
                         [##\<const\>
                           [##\<int\>
-                            [##<>10<>]
+                            [##10]
                           ]
                         ]
                       ]
@@ -38,35 +39,37 @@
                 ]
               ]
             ]
-        ]
-      ]
-    ]
-  ]
-  [##<>)<>]
-  [##\<block\>
-    [##<>\{<>]
-    [##\<block\-item\-list\>
-      [##\<block\-item\-list\>
-        [##\<block\_item\>
-          [##\<declaration\>
-            [##\<variable\_declaration\>
-              [##\<data\_type\>
-                [##<>int<>]
-              ]
-              [##\<identifier\>
-                [##<>a<>]
-              ]
-              [##<>;<>]
-            ]
           ]
         ]
       ]
-      [##\<block\_item\>
-        [##\<statement\>
-          [##<>return<>]
-          [##\<exp\>
-            [##\<logical\_or\_exp\>
-              [##\<logical\_and\_exp\>
+    ]
+    [##)]
+    [##\<block\>
+      [##\{]
+      [##\<block\_item\_list\>
+        [##\<block\_item\>
+          [##\<variable\_declaration\>
+            [##\<data\_type\>
+              [##int]
+            ]
+            [##\<identifier\>
+              [##a]
+            ]
+            [##\;]
+          ]
+        ]
+      ]
+      [##\}]
+    ]
+    [##\<else\_clause\>
+      [##else]
+      [##\<if\_statement\>
+        [##if]
+        [##(]
+        [##\<exp\>
+          [##\<logical\_or\_exp\>
+            [##\<logical\_and\_exp\>
+              [##\<equality\_exp\>
                 [##\<equality\_exp\>
                   [##\<relational\_exp\>
                     [##\<additive\_exp\>
@@ -74,10 +77,26 @@
                         [##\<power\_exp\>
                           [##\<unary\_exp\>
                             [##\<factor\>
-                              [##\<const\>
-                                [##\<int\>
-                                  [##<>1<>]
-                                ]
+                              [##\<identifier\>
+                                [##z]
+                              ]
+                            ]
+                          ]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+                [##\=\=]
+                [##\<relational\_exp\>
+                  [##\<additive\_exp\>
+                    [##\<multiplicative\_exp\>
+                      [##\<power\_exp\>
+                        [##\<unary\_exp\>
+                          [##\<factor\>
+                            [##\<const\>
+                              [##\<int\>
+                                [##10]
                               ]
                             ]
                           ]
@@ -89,71 +108,51 @@
               ]
             ]
           ]
-          [##<>;<>]
         ]
-      ]
-    ]
-    [##<>\}<>]
-  ]
-  [##<>else<>]
-  [##\<statement\>
-    [##<>if<>]
-    [##<>(<>]
-    [##\<exp\>
-      [##\<logical\_or\_exp\>
-        [##\<logical\_and\_exp\>
-          [##\<equality\_exp\>
-            [##\<equality\_exp\>
-                [##\<relational\_exp\>
-                  [##\<additive\_exp\>
-                    [##\<multiplicative\_exp\>
-                      [##\<power\_exp\>
-                        [##\<unary\_exp\>
-                          [##\<factor\>
-                            [##\<identifier\>
-                              [##<>z<>]
-                            ]
-                          ]
-                        ]
-                      ]
-                    ]
-                  ]
+        [##)]
+        [##\<block\>
+          [##\{]
+          [##\<block\_item\_list\>
+            [##\<block\_item\>
+              [##\<variable\_declaration\>
+                [##\<data\_type\>
+                  [##char]
                 ]
-              ]
-              [##<>\=\=<>]
-              [##\<relational\_exp\>
-                [##\<additive\_exp\>
-                  [##\<multiplicative\_exp\>
-                    [##\<power\_exp\>
-                      [##\<unary\_exp\>
-                        [##\<factor\>
-                          [##\<const\>
-                            [##\<int\>
-                              [##<>10<>]
-                            ]
-                          ]
-                        ]
-                      ]
-                    ]
-                  ]
+                [##\<identifier\>
+                  [##b]
                 ]
+                [##\;]
               ]
             ]
+          ]
+          [##\}]
         ]
-      ]
-    ]
-    [##<>)<>]
-    [##\<block\>
-      [##<>\{<>]
-      [##\<block\-item\-list\>
-        [##\<block\_item\>
-          [##\<statement\>
-            [##<>return<>]
+        [##\<else\_clause\>
+          [##else]
+          [##\<if\_statement\>
+            [##if]
+            [##(]
             [##\<exp\>
               [##\<logical\_or\_exp\>
                 [##\<logical\_and\_exp\>
                   [##\<equality\_exp\>
                     [##\<relational\_exp\>
+                      [##\<relational\_exp\>
+                        [##\<additive\_exp\>
+                          [##\<multiplicative\_exp\>
+                            [##\<power\_exp\>
+                              [##\<unary\_exp\>
+                                [##\<factor\>
+                                  [##\<identifier\>
+                                    [##z]
+                                  ]
+                                ]
+                              ]
+                            ]
+                          ]
+                        ]
+                      ]
+                      [##\<]
                       [##\<additive\_exp\>
                         [##\<multiplicative\_exp\>
                           [##\<power\_exp\>
@@ -161,7 +160,7 @@
                               [##\<factor\>
                                 [##\<const\>
                                   [##\<int\>
-                                    [##<>0<>]
+                                    [##10]
                                   ]
                                 ]
                               ]
@@ -174,54 +173,47 @@
                 ]
               ]
             ]
-            [##<>;<>]
-          ]
-        ]
-      ]
-      [##<>\}<>]
-    ]
-    [##<>else<>]
-    [##\<block\>
-      [##<>\{<>]
-      [##\<block\-item\-list\>
-        [##\<block\_item\>
-          [##\<statement\>
-            [##<>return<>]
-            [##\<exp\>
-              [##\<logical\_or\_exp\>
-                [##\<logical\_and\_exp\>
-                  [##\<equality\_exp\>
-                    [##\<relational\_exp\>
-                      [##\<additive\_exp\>
-                        [##\<multiplicative\_exp\>
-                          [##\<power\_exp\>
-                            [##\<unary\_exp\>
-                              [##\<unop\>
-                                [##<>\-<>]
-                              ]
-                              [##\<unary\_exp\>
-                                [##\<factor\>
-                                  [##\<const\>
-                                    [##\<int\>
-                                      [##<>1<>]
-                                    ]
-                                  ]
-                                ]
-                              ]
-                            ]
-                          ]
-                        ]
-                      ]
+            [##)]
+            [##\<block\>
+              [##\{]
+              [##\<block\_item\_list\>
+                [##\<block\_item\>
+                  [##\<variable\_declaration\>
+                    [##\<data\_type\>
+                      [##float]
                     ]
+                    [##\<identifier\>
+                      [##c]
+                    ]
+                    [##\;]
                   ]
                 ]
               ]
+              [##\}]
             ]
-            [##<>;<>]
+            [##\<else\_clause\>
+              [##else]
+              [##\<block\>
+                [##\{]
+                [##\<block\_item\_list\>
+                  [##\<block\_item\>
+                    [##\<variable\_declaration\>
+                      [##\<data\_type\>
+                        [##bool]
+                      ]
+                      [##\<identifier\>
+                        [##d]
+                      ]
+                      [##\;]
+                    ]
+                  ]
+                ]
+                [##\}]
+              ]
+            ]
           ]
         ]
       ]
-      [##<>\}<>]
     ]
   ]
 ]
