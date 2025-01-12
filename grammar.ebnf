@@ -2,16 +2,20 @@
 <declaration> ::= <variable_declaration> 
                 | <array_declaration> 
                 | <function_declaration> 
-<variable_declaration> ::= <data_type> <identifier> [ “=” <exp> ] “;”
-                        | <data_type> <identifier> { “,” <identifier> } “;”
-<array_declaration> ::= <data_type> <identifier> “[“ [<const>]  “]”  [ “=” “{“ <argument_list>“}” ] “;”
-<function_declaration> ::= <data_type> <identifier> "(" <parameter_list> ")" ( <block> | “;” )
-<parameter_list> ::= [“void”]
-                  | <data_type> <identifier> {"," <data_type> <identifier>}
+
+<variable_declaration> ::= <data_type> <identifier> "=" <exp>  { "," <identifier> "=" <exp> } ";" 
+                        | <data_type> <identifier> { "," <identifier> } ";" 
+<array_declaration> ::= <data_type> <identifier> "[" [<const>]  "]"  [ "=" "{" <argument_list>"}" ] ";"
+<function_declaration> ::= <data_type> <identifier> "(" <parameter_list> ")" ( <block> | ";" )
+
+<parameter_list> ::= ["void"] | <data_type> <identifier> {"," <data_type> <identifier>}
 <argument_list> ::= <exp> { "," <exp> }
-<data_type> ::= “int” | “float” | “char” | “bool”
+
+<data_type> ::= "int" | "float" | "char" | "bool"
+
 <block> ::= "{" <block-item-list>  "}"
-<block_item_list> ::= (<block_item_list> <block_item>) | <block_item>
+<block_item_list> ::= <block_item_list> <block_item>
+                                | <block_item>
 <block_item> ::= <statement> | <variable_declaration> | <array_declaration> 
 <statement> ::= "return" <exp> ";"
               | <exp> ";"
@@ -22,36 +26,39 @@
               | <if_statement>
               | <input_statement> 
               | <output_statement>
+
 <for_statement> ::= "for" "(" (<variable_declaration> | <array_declaration> | <exp> ";") <exp> ";" <exp> ")" <block>    
 <while_statement> ::= "while" "(" <exp> ")" <block>
-<input_statement> ::= "scanf" "(" <string> { "," <identifier> } ")" ";"
+<input_statement> ::= "scanf" "(" <string> { "," "&" <identifier> } ")" ";"
 <output_statement> ::= "printf" "(" <string> ")"  
-                                    | "printf" "(" <string> “,” <exp> ")" 
-                                    |"printf" "(" <string> { "," <exp> } ")" 
-                                    | "printf" "(" <exp> ")"
-<if-statement> ::= "if" "(" <exp> ")" <block> [<else-clause>]
+                                    | "printf" "(" <string> "," <exp> ")" 
+                                    | "printf" "(" <string> { "," <exp> } ")" 
+                                    | "printf" "(" <identifier> ")"
+<if_statement> ::= "if" "(" <exp> ")" <block> [<else-clause>]
 <else-clause> ::= "else" <block>
-              | "else" <if_statement>
+                           | "else" <if_statement>
               
-<exp> ::= <logical_or_exp> | <unary_exp> "=" <exp>
+<exp> ::= <logical_or_exp> | (<identifier> | <identifier> "[" <const> "]" ) "=" <exp>  
 <logical_or_exp> ::= <logical_and_exp> | <logical_or_exp>  "||" <logical_and_exp> 
 <logical_and_exp> ::= <equality_exp> | <logical_and_exp>  "&&" <equality_exp> 
-<equality_exp> ::= <relational_exp> | <equality_exp> ("==" | "!=") <relational_exp> 
+<equality_exp> ::= <relational_exp> | <equality_exp>  ("==" | "!=") <relational_exp> 
 <relational_exp> ::= <additive_exp> | <relational_exp> ("<" | ">" | "<=" | ">=") <additive_exp> 
-<additive_exp> ::= <multiplicative_exp> |  <additive_exp> ("+" | "-") <multiplicative_exp> 
-<multiplicative_exp> ::= <unary_exp> | <multiplicative_exp> ("*" | "/" | "%") <power_exp>
-<power_exp> ::= <unary_exp> | <unary_exp> ”^” <power_exp> 
-<unary_exp> ::= <factor> | <unop> <unary_exp>
+<additive_exp> ::= <multiplicative_exp> | <additive_exp> ("+" | "-") <multiplicative_exp> 
+<multiplicative_exp> ::= <power_exp> | <multiplicative_exp> ("*" | "/" | "%") <power_exp>
+<power_exp> ::= <unary_exp> | <unary_exp> "^" <power_exp> 
+<unary_exp> ::= <factor> 
+                | <unop> <unary_exp>
 <unop> ::= "!" | "+" | "-" 
 <factor> ::= <const>
-           | <identifier>
-           | "(" <exp> ")"
-           | <identifier> "(" [ <argument_list> ] ")"
-           | <identifier> "[" <const> "]" 
+                 | <identifier>
+                 | "(" <exp> ")"
+                 | <identifier> "(" [ <argument_list> ] ")"
+                 | <identifier> "[" <const> "]" 
+
 <const> ::= <int> | <float> | <char> | <bool>
-<string> ::= string token
-<identifier> ::= identifier token
-<int> ::= constant token
-<float> ::= float token
-<char> ::= char token
-<bool> ::= bool token
+<string> ::= STRING
+<identifier> ::= IDENTIFIER
+<int> ::= INTEGER_LITERAL
+<float> ::= FLOAT_LITERAL
+<char> ::= CHARACTER_LITERAL
+<bool> ::= "true" | "false"
