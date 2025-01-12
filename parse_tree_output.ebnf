@@ -110,54 +110,54 @@ Program(
                   LEFT_BRACE,
                   Block_Item_List(
                     Block_Item(
-                      Statement(
-                        Return_Statement(
-                          RETURN,
-                          Constant(0),
-                          SEMICOLON
-                        )
-                      )
-                    )
-                  ),
-                  RIGHT_BRACE
-                )
-              )
-            )
-          ),
-          Block_Item(
-            Statement(
-              For_Statement(
-                Array_Declaration(
-                  Data_Type(INT),
-                  IDENTIFIER("arr"),
-                  LEFT_BRACKET,
-                  Constant(5),
-                  RIGHT_BRACKET,
-                  ASSIGN,
-                  LEFT_BRACE,
-                  Argument_List(
-                    Constant(1)
-                  ),
-                  RIGHT_BRACE,
-                  SEMICOLON
-                ),
-                Constant(100),
-                Constant(100),
-                Block(
-                  LEFT_BRACE,
-                  Block_Item_List(
-                    Block_Item(
                       Variable_Declaration(
                         Data_Type(INT),
-                        IDENTIFIER("b"),
+                        IDENTIFIER("a"),
+                        ASSIGN,
+                        Constant(0),
                         SEMICOLON
                       )
                     ),
                     Block_Item(
                       Statement(
-                        Const_Statement(
-                          Constant(1000),
-                          SEMICOLON
+                        For_Statement(
+                          Array_Declaration(
+                            Data_Type(INT),
+                            IDENTIFIER("arr"),
+                            LEFT_BRACKET,
+                            Constant(5),
+                            RIGHT_BRACKET,
+                            ASSIGN,
+                            LEFT_BRACE,
+                            Argument_List(
+                              Constant(1)
+                            ),
+                            RIGHT_BRACE,
+                            SEMICOLON
+                          ),
+                          Constant(100),
+                          Constant(100),
+                          Block(
+                            LEFT_BRACE,
+                            Block_Item_List(
+                              Block_Item(
+                                Variable_Declaration(
+                                  Data_Type(INT),
+                                  IDENTIFIER("b"),
+                                  SEMICOLON
+                                )
+                              ),
+                              Block_Item(
+                                Statement(
+                                  Const_Statement(
+                                    Constant(1000),
+                                    SEMICOLON
+                                  )
+                                )
+                              )
+                            ),
+                            RIGHT_BRACE
+                          )
                         )
                       )
                     ),
@@ -195,9 +195,25 @@ Program(
                     ),
                     Block_Item(
                       Statement(
-                        Const_Statement(
+                        While_Statement(
+                          WHILE,
+                          LEFT_PARENTHESIS,
                           Constant(5),
-                          SEMICOLON
+                          RIGHT_PARENTHESIS,
+                          Block(
+                            LEFT_BRACE,
+                            Block_Item_List(
+                              Block_Item(
+                                Statement(
+                                  Const_Statement(
+                                    Constant(5),
+                                    SEMICOLON
+                                  )
+                                )
+                              )
+                            ),
+                            RIGHT_BRACE
+                          )
                         )
                       )
                     ),
