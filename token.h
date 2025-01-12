@@ -43,7 +43,8 @@ typedef enum
     // Literals
     IDENTIFIER,
     STRING,
-    NUMBER,
+    INTEGER_LITERAL,
+    FLOAT_LITERAL,
     CHARACTER_LITERAL,
     
     // Keywords
@@ -108,7 +109,8 @@ char* token_names[] = {
     "FORMAT",
     "IDENTIFIER",
     "STRING",
-    "NUMBER",
+    "INTEGER_LITERAL",
+    "FLOAT_LITERAL",
     "CHARACTER_LITERAL",
     "CHAR",
     "INT",

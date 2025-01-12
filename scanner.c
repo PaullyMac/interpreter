@@ -172,8 +172,7 @@ void lex() {
     if (current_char == '"') return string();
 
     // Parse number literals
-    if (isdigit(current_char) ||
-        (current_char == '.' && isdigit(peek()))) {
+    if (isdigit(current_char) || (current_char == '.' && isdigit(peek()))) {
             return number();
         }
     // Parse identifiers
@@ -313,7 +312,15 @@ void number() {
         lexeme[lexeme_length] = '\0';
     }
 
-    next_token = NUMBER;
+    bool isFloat = false;
+    for (int i = 0; i < lexeme_length; i++) {
+        if (lexeme[i] == '.') {
+            isFloat = true;
+            break;
+        }
+    }
+
+    next_token = isFloat ? FLOAT_LITERAL : INTEGER_LITERAL;
     set_token_end_column();
 }
 
