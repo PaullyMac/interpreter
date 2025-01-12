@@ -26,6 +26,7 @@ void parse_block_item_list();
 void parse_block_item();
 void parse_statement();
 void parse_exp();
+void parse_const();
 void match(TokenType type);
 void print_indent();
 char* get_data_type_string(TokenType type);
@@ -134,9 +135,9 @@ void parse_variable_declaration(){
     } else if (current_token < num_tokens && tokens[current_token].type == ASSIGN) {
         fprintf(output_file, ",\n");
         print_indent();
-        fprintf(output_file, "%s\n", get_token_string(tokens[current_token].type));
+        fprintf(output_file, "%s,\n", get_token_string(tokens[current_token].type));
         match(ASSIGN);
-        parse_exp();
+        parse_const();
         fprintf(output_file, ",\n");
         print_indent();
         fprintf(output_file, "%s\n", get_token_string(tokens[current_token].type));
@@ -178,12 +179,15 @@ void parse_array_declaration(){
     match(LEFT_BRACKET);
     fprintf(output_file, ",\n");
 
-    if (current_token < num_tokens && tokens[current_token].type == NUMBER) {
-        print_indent();
-        fprintf(output_file, "Constant(%s)", tokens[current_token].lexeme);
-        match(NUMBER);
+    // Use parse_const to handle the optional <const>
+    if (current_token < num_tokens && (tokens[current_token].type == NUMBER || 
+                                       tokens[current_token].type == CHARACTER_LITERAL ||
+                                       tokens[current_token].type == TRUE ||
+                                       tokens[current_token].type == FALSE)) {
+        parse_const();
+        fprintf(output_file, ",\n"); // Add comma after parsing the constant
     }
-    fprintf(output_file, ",\n");
+
     print_indent();
     fprintf(output_file, "%s", get_token_string(tokens[current_token].type));
     match(RIGHT_BRACKET);
@@ -579,31 +583,58 @@ void parse_argument_list() {
     fprintf(output_file, "Argument_List(\n");
     indent_level++;
 
-    // Parse the first constant
-    if (current_token < num_tokens && tokens[current_token].type == NUMBER) {
-        print_indent();
-        fprintf(output_file, "Constant(%s)", tokens[current_token].lexeme);
-        match(NUMBER);
+    // Parse the first constant (updated to use parse_const)
+    if (current_token < num_tokens && (tokens[current_token].type == NUMBER ||
+                                       tokens[current_token].type == CHARACTER_LITERAL ||
+                                       tokens[current_token].type == TRUE ||
+                                       tokens[current_token].type == FALSE)) {
+        parse_const();
 
-        // Parse subsequent constants separated by commas
+        // Parse subsequent constants separated by commas (updated to use parse_const)
         while (current_token < num_tokens && tokens[current_token].type == COMMA) {
             fprintf(output_file, ",\n");
             match(COMMA);
 
-            if (current_token < num_tokens && tokens[current_token].type == NUMBER) {
-                print_indent();
-                fprintf(output_file, "Constant(%s)", tokens[current_token].lexeme);
-                match(NUMBER);
+            if (current_token < num_tokens && (tokens[current_token].type == NUMBER ||
+                                               tokens[current_token].type == CHARACTER_LITERAL ||
+                                               tokens[current_token].type == TRUE ||
+                                               tokens[current_token].type == FALSE)) {
+                parse_const();
             } else {
-                // Error: Expected a number after comma in argument list
-                fprintf(stderr, "Error: Expected a number after comma in argument list at line %d\n", tokens[current_token].line_number);
+                // Error: Expected a constant after comma in argument list
+                fprintf(stderr, "Error: Expected a constant after comma in argument list at line %d\n", tokens[current_token].line_number);
+                fprintf(output_file, "Error: Expected a constant after comma in argument list\n");
                 exit(1);
             }
         }
-    } 
+    }
 
     fprintf(output_file, "\n");
     indent_level--;
     print_indent();
+    fprintf(output_file, ")");
+}
+
+// Function to parse a constant: <const> ::= <int> | <float> | <char> | <bool>
+void parse_const() {
+    print_indent();
+    fprintf(output_file, "Constant(");
+
+    if (current_token < num_tokens && tokens[current_token].type == NUMBER) {
+        // Could be either int or float, based on our simplification
+        fprintf(output_file, "%s", tokens[current_token].lexeme);
+        match(NUMBER);
+    } else if (current_token < num_tokens && tokens[current_token].type == CHARACTER_LITERAL) {
+        fprintf(output_file, "%s", tokens[current_token].lexeme);
+        match(CHARACTER_LITERAL);
+    } else if (current_token < num_tokens && (tokens[current_token].type == TRUE || tokens[current_token].type == FALSE)) {
+        fprintf(output_file, "%s", tokens[current_token].type == TRUE ? "true" : "false");
+        match(tokens[current_token].type); // Match either TRUE or FALSE
+    } else {
+        fprintf(stderr, "Error: Expected a constant (int, float, char, or bool) at line %d\n", tokens[current_token].line_number);
+        fprintf(output_file, "Error: Expected a constant (int, float, char, or bool))");
+        exit(1);
+    }
+
     fprintf(output_file, ")");
 }

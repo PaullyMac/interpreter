@@ -1,20 +1,23 @@
 bool array[5] = {1, 2};
 int array[10];
 
+// Test variables
 int a, b, c;
-int d;
+int d = 5;
+int c;
 
+// Function prototypes
 int isValid(bool x, int y, char z);
 int isNotValid();
 
 int main() {
-    bool array[5] = {};
-    int array[1];
+    // Test arrays
+    int arr[1];
+    bool array[5] = {1, 2};
+    int array[2] = {'c', true, 0, 1.0};
     ;
-    int e;
-    ;
-    int f;
-    int g;
+    int e = 'c';
+    bool validity = true;
 }
 
 bool isValid(bool x, int y, char z) {

@@ -11,11 +11,11 @@ Will serve to show our progress on parser.c, and will eventually match our gramm
 ```ebnf
 <program> ::= { <declaration> }
 <declaration> ::= <variable_declaration> | <array_declaration> | <function_declaration>
-<variable_declaration> ::= <data_type> <identifier> [ "=" <exp> ] ";"
+<variable_declaration> ::= <data_type> <identifier> [ "=" <const> ] ";"
                         | <data_type> <identifier> { "," <identifier> } ";"
 <array_declaration> ::= <data_type> <identifier> "[" [ <const> ] "]" [ "=" "{" [ <argument_list> ] "}" ] ";"
 <function_declaration> ::= <data_type> <identifier> "(" <parameter_list> ")" ( <block> | ";" )
-<parameter_list> ::= <data_type> <identifier> { "," <data_type> <identifier> } | /* epsilon */
+<parameter_list> ::= <data_type> <identifier> { "," <data_type> <identifier> }
 <argument_list> ::= <const> { "," <const> }
 <data_type> ::= "int" | "float" | "char" | "bool"
 <block> ::= "{" <block_item_list> "}"
@@ -23,7 +23,7 @@ Will serve to show our progress on parser.c, and will eventually match our gramm
 <block_item> ::= <statement> | <variable_declaration> | <array_declaration>
 <statement> ::= ";"
             ::= <block>
-<const> ::= NUMBER
+<const> ::= <int> | <float> | <char> | <bool>
 <identifier> ::= IDENTIFIER
 <int> ::= constant token
 <float> ::= float token

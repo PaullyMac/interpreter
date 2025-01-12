@@ -41,6 +41,15 @@ Program(
     Variable_Declaration(
       Data_Type(INT),
       IDENTIFIER("d"),
+      ASSIGN,
+      Constant(5),
+      SEMICOLON
+    )
+  ),
+  Declaration(
+    Variable_Declaration(
+      Data_Type(INT),
+      IDENTIFIER("c"),
       SEMICOLON
     )
   ),
@@ -87,6 +96,16 @@ Program(
         Block_Item_List(
           Block_Item(
             Array_Declaration(
+              Data_Type(INT),
+              IDENTIFIER("arr"),
+              LEFT_BRACKET,
+              Constant(1),
+              RIGHT_BRACKET,
+              SEMICOLON
+            )
+          ),
+          Block_Item(
+            Array_Declaration(
               Data_Type(BOOL),
               IDENTIFIER("array"),
               LEFT_BRACKET,
@@ -95,7 +114,8 @@ Program(
               ASSIGN,
               LEFT_BRACE,
               Argument_List(
-
+                Constant(1),
+                Constant(2)
               ),
               RIGHT_BRACE,
               SEMICOLON
@@ -106,8 +126,17 @@ Program(
               Data_Type(INT),
               IDENTIFIER("array"),
               LEFT_BRACKET,
-              Constant(1),
+              Constant(2),
               RIGHT_BRACKET,
+              ASSIGN,
+              LEFT_BRACE,
+              Argument_List(
+                Constant('c'),
+                Constant(true),
+                Constant(0),
+                Constant(1.0)
+              ),
+              RIGHT_BRACE,
               SEMICOLON
             )
           ),
@@ -120,25 +149,17 @@ Program(
             Variable_Declaration(
               Data_Type(INT),
               IDENTIFIER("e"),
-              SEMICOLON
-            )
-          ),
-          Block_Item(
-            Statement(
-              SEMICOLON
-            )
-          ),
-          Block_Item(
-            Variable_Declaration(
-              Data_Type(INT),
-              IDENTIFIER("f"),
+              ASSIGN,
+              Constant('c'),
               SEMICOLON
             )
           ),
           Block_Item(
             Variable_Declaration(
-              Data_Type(INT),
-              IDENTIFIER("g"),
+              Data_Type(BOOL),
+              IDENTIFIER("validity"),
+              ASSIGN,
+              Constant(true),
               SEMICOLON
             )
           )
