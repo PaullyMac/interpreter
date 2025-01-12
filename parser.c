@@ -27,6 +27,8 @@ void parse_block_item();
 void parse_statement();
 void parse_return_statement();
 void parse_const_statement();
+void parse_while_statement();
+void parse_for_statement();
 void parse_exp();
 void parse_const();
 void match(TokenType type);
@@ -107,6 +109,7 @@ void parse_declaration() {
         }
         else{
             parse_variable_declaration();
+            fprintf(output_file, "\n");
         }
         
     } else {
@@ -163,7 +166,7 @@ void parse_variable_declaration(){
     }
     indent_level--;
     print_indent();
-    fprintf(output_file, ")\n");
+    fprintf(output_file, ")");
 }
 
 // <array_declaration> ::= <data_type> <identifier> “[“ [<const>]  “]”  [ “=” “{“ <argument_list>“}” ] “;”
@@ -505,6 +508,7 @@ void parse_block_item() {
                 parse_array_declaration();
             } else {
                 parse_variable_declaration();
+                fprintf(output_file, "\n");
             }
         } else {
             // Error: Expected identifier after data type in declaration
@@ -534,7 +538,12 @@ void parse_statement() {
                 tokens[current_token].type == TRUE ||
                 tokens[current_token].type == FALSE)) {
         parse_const_statement();
-    }else if (current_token < num_tokens && tokens[current_token].type == SEMICOLON) {
+        
+    } else if (current_token < num_tokens && tokens[current_token].type == WHILE) {
+        parse_while_statement();
+    } else if (current_token < num_tokens && tokens[current_token].type == FOR) {
+        parse_for_statement();
+    } else if (current_token < num_tokens && tokens[current_token].type == SEMICOLON) {
         print_indent();
         fprintf(output_file, "%s\n", get_token_string(tokens[current_token].type));
         match(SEMICOLON);
@@ -690,6 +699,90 @@ void parse_const_statement() {
     print_indent();
     fprintf(output_file, "%s\n", get_token_string(tokens[current_token].type));
     match(SEMICOLON);
+    indent_level--;
+    print_indent();
+    fprintf(output_file, ")\n");
+}
+
+// Function to parse a while statement: "while" "(" <const> ")" <block>
+void parse_while_statement() {
+    print_indent();
+    fprintf(output_file, "While_Statement(\n");
+    indent_level++;
+
+    print_indent();
+    fprintf(output_file, "%s,\n", get_token_string(tokens[current_token].type));
+    match(WHILE);
+
+    print_indent();
+    fprintf(output_file, "%s,\n", get_token_string(tokens[current_token].type));
+    match(LEFT_PARENTHESIS);
+
+    // Parse the condition (simplified to <const>)
+    parse_const();
+    fprintf(output_file, ",\n");
+
+    print_indent();
+    fprintf(output_file, "%s,\n", get_token_string(tokens[current_token].type));
+    match(RIGHT_PARENTHESIS);
+
+    // Parse the block
+    parse_block();
+    fprintf(output_file, "\n");
+
+    indent_level--;
+    print_indent();
+    fprintf(output_file, ")\n");
+}
+
+// Function to parse a for loop statement
+void parse_for_statement() {
+    print_indent();
+    fprintf(output_file, "For_Statement(\n");
+    indent_level++;
+
+    match(FOR);
+    match(LEFT_PARENTHESIS);
+
+    // Parse the initialization part
+    if (current_token < num_tokens && (tokens[current_token].type == INT || tokens[current_token].type == FLOAT ||
+                                       tokens[current_token].type == CHAR || tokens[current_token].type == BOOL)) {
+        // Check if it's a variable or array declaration
+        if (current_token + 1 < num_tokens && tokens[current_token + 1].type == IDENTIFIER) {
+            if (current_token + 2 < num_tokens && tokens[current_token + 2].type == LEFT_BRACKET) {
+                parse_array_declaration();
+            } else {
+                parse_variable_declaration();
+                fprintf(output_file, ",\n");
+            }
+        } else {
+            // Error: Expected identifier after data type
+            fprintf(stderr, "Error: Expected identifier after data type in for loop initialization at line %d\n", tokens[current_token].line_number);
+            exit(1);
+        }
+    } else {
+        // It can also be a <const>
+        parse_const_statement();
+        fprintf(output_file, ",\n");
+        match(SEMICOLON);
+    }
+
+    // Parse the condition part
+    parse_const();
+    fprintf(output_file, ",\n");
+
+    match(SEMICOLON);
+
+    // Parse the increment/decrement part
+    parse_const();
+    fprintf(output_file, ",\n");
+    
+    match(RIGHT_PARENTHESIS);
+
+    // Parse the block
+    parse_block();
+    fprintf(output_file, "\n");
+
     indent_level--;
     print_indent();
     fprintf(output_file, ")\n");

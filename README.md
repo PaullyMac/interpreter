@@ -25,6 +25,8 @@ Will serve to show our progress on parser.c, and will eventually match our gramm
             ::= <const> ";"
             ::= ";"
             ::= <block>
+            ::= "while" "(" <const> ")" <block>
+            ::= "for" "(" (<variable_declaration> | <array_declaration> | <const> ";") <const> ";" <const> ")" <block>
 <const> ::= <int> | <float> | <char> | <bool>
 <identifier> ::= IDENTIFIER
 <int> ::= constant token
