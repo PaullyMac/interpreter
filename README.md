@@ -21,7 +21,9 @@ Will serve to show our progress on parser.c, and will eventually match our gramm
 <block> ::= "{" <block_item_list> "}"
 <block_item_list> ::= { <block_item> }
 <block_item> ::= <statement> | <variable_declaration> | <array_declaration>
-<statement> ::= ";"
+<statement> ::= return <const> ";"
+            ::= <const> ";"
+            ::= ";"
             ::= <block>
 <const> ::= <int> | <float> | <char> | <bool>
 <identifier> ::= IDENTIFIER

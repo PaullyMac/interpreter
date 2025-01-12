@@ -95,6 +95,54 @@ Program(
         LEFT_BRACE,
         Block_Item_List(
           Block_Item(
+            Statement(
+              Return_Statement(
+                RETURN,
+                Constant(true),
+                SEMICOLON
+              )
+            )
+          ),
+          Block_Item(
+            Statement(
+              Return_Statement(
+                RETURN,
+                Constant('c'),
+                SEMICOLON
+              )
+            )
+          ),
+          Block_Item(
+            Statement(
+              Return_Statement(
+                RETURN,
+                Constant(0),
+                SEMICOLON
+              )
+            )
+          ),
+          Block_Item(
+            Statement(
+              Const_Statement(
+                Constant(5),
+                SEMICOLON
+              )
+            )
+          ),
+          Block_Item(
+            Statement(
+              Const_Statement(
+                Constant(false),
+                SEMICOLON
+              )
+            )
+          ),
+          Block_Item(
+            Statement(
+              SEMICOLON
+            )
+          ),
+          Block_Item(
             Array_Declaration(
               Data_Type(INT),
               IDENTIFIER("arr"),
@@ -137,11 +185,6 @@ Program(
                 Constant(1.0)
               ),
               RIGHT_BRACE,
-              SEMICOLON
-            )
-          ),
-          Block_Item(
-            Statement(
               SEMICOLON
             )
           ),

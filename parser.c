@@ -25,6 +25,8 @@ void parse_block();
 void parse_block_item_list();
 void parse_block_item();
 void parse_statement();
+void parse_return_statement();
+void parse_const_statement();
 void parse_exp();
 void parse_const();
 void match(TokenType type);
@@ -519,20 +521,39 @@ void parse_block_item() {
     fprintf(output_file, ")");
 }
 
-// <statement> ::= ";"
+// <statement> ::= "return" <const> ;" | <const> ";" | ";" 
 void parse_statement() {
     print_indent();
     fprintf(output_file, "Statement(\n");
     indent_level++;
-    print_indent();
-    fprintf(output_file, "%s\n", get_token_string(tokens[current_token].type));
-    match(SEMICOLON);
+
+    if (current_token < num_tokens && tokens[current_token].type == RETURN) {
+        parse_return_statement();
+    } else if (current_token < num_tokens && (tokens[current_token].type == NUMBER ||
+                tokens[current_token].type == CHARACTER_LITERAL ||
+                tokens[current_token].type == TRUE ||
+                tokens[current_token].type == FALSE)) {
+        parse_const_statement();
+    }else if (current_token < num_tokens && tokens[current_token].type == SEMICOLON) {
+        print_indent();
+        fprintf(output_file, "%s\n", get_token_string(tokens[current_token].type));
+        match(SEMICOLON);
+    } else if (current_token < num_tokens && tokens[current_token].type == LEFT_BRACE) {
+        parse_block();
+        fprintf(output_file, "\n");
+    }
+    else {
+        fprintf(stderr, "Error: Invalid statement at line %d\n", tokens[current_token].line_number);
+        fprintf(output_file, "Error: Invalid statement at line %d\n", tokens[current_token].line_number);
+        exit(1);
+    }
+
     indent_level--;
     print_indent();
     fprintf(output_file, ")\n");
 }
 
-// <exp> ::= <int>
+// Implement last and only use <const> in place of <exp> for now
 void parse_exp() {
     match(NUMBER);
 }
@@ -637,4 +658,39 @@ void parse_const() {
     }
 
     fprintf(output_file, ")");
+}
+
+// Function to parse a return statement: "return" <const> ";"
+void parse_return_statement() {
+    print_indent();
+    fprintf(output_file, "Return_Statement(\n");
+    indent_level++;
+    print_indent();
+    fprintf(output_file, "%s,\n", get_token_string(tokens[current_token].type));
+    match(RETURN);
+    // Assuming <exp> is simplified to <const>
+    parse_const();
+    fprintf(output_file, ",\n");
+    print_indent();
+    fprintf(output_file, "%s\n", get_token_string(tokens[current_token].type));
+    match(SEMICOLON);
+    indent_level--;
+    print_indent();
+    fprintf(output_file, ")\n");
+}
+
+// Function to parse a constant statement: <const> ";"
+void parse_const_statement() {
+    print_indent();
+    fprintf(output_file, "Const_Statement(\n");
+    indent_level++;
+    // Assuming <exp> is simplified to <const> which is a NUMBER
+    parse_const();
+    fprintf(output_file, ",\n");
+    print_indent();
+    fprintf(output_file, "%s\n", get_token_string(tokens[current_token].type));
+    match(SEMICOLON);
+    indent_level--;
+    print_indent();
+    fprintf(output_file, ")\n");
 }

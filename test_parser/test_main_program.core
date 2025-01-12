@@ -11,14 +11,20 @@ int isValid(bool x, int y, char z);
 int isNotValid();
 
 int main() {
+    return true;
+    return 'c';
+    return 0;
+    5;
+    false;
+    ;
     // Test arrays
     int arr[1];
     bool array[5] = {1, 2};
     int array[2] = {'c', true, 0, 1.0};
-    ;
     int e = 'c';
     bool validity = true;
 }
+
 
 bool isValid(bool x, int y, char z) {
     int a, b;
