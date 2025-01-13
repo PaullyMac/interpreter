@@ -186,7 +186,8 @@ void parse_array_declaration(){
     fprintf(output_file, ",\n");
 
     // Use parse_const to handle the optional <const>
-    if (current_token < num_tokens && (tokens[current_token].type == NUMBER || 
+    if (current_token < num_tokens && (tokens[current_token].type == INTEGER_LITERAL || 
+                                       tokens[current_token].type == FLOAT_LITERAL ||
                                        tokens[current_token].type == CHARACTER_LITERAL ||
                                        tokens[current_token].type == TRUE ||
                                        tokens[current_token].type == FALSE)) {
@@ -372,10 +373,6 @@ char* get_token_string(TokenType type) {
             return strdup("MINUS");
         case DIVIDE:
             return strdup("DIVIDE");
-        case INCREMENT:
-            return strdup("INCREMENT");
-        case DECREMENT:
-            return strdup("DECREMENT");
         case EQUAL:
             return strdup("EQUAL");
         case NOT_EQUAL:
@@ -400,13 +397,13 @@ char* get_token_string(TokenType type) {
             return strdup("COMMENT");
         case MODULO:
             return strdup("MODULO");
-        case FORMAT:
-            return strdup("FORMAT");
         case IDENTIFIER:
             return (char *)tokens[current_token].lexeme;
         case STRING:
             return (char *)tokens[current_token].lexeme;
-        case NUMBER:
+        case INTEGER_LITERAL:
+            return (char *)tokens[current_token].lexeme;
+        case FLOAT_LITERAL:
             return (char *)tokens[current_token].lexeme;
         case CHARACTER_LITERAL:
             return (char *)tokens[current_token].lexeme;
@@ -535,7 +532,8 @@ void parse_statement() {
 
     if (current_token < num_tokens && tokens[current_token].type == RETURN) {
         parse_return_statement();
-    } else if (current_token < num_tokens && (tokens[current_token].type == NUMBER ||
+    } else if (current_token < num_tokens && (tokens[current_token].type == INTEGER_LITERAL ||
+                tokens[current_token].type == FLOAT_LITERAL ||
                 tokens[current_token].type == CHARACTER_LITERAL ||
                 tokens[current_token].type == TRUE ||
                 tokens[current_token].type == FALSE)) {
@@ -566,7 +564,8 @@ void parse_statement() {
 
 // Implement last and only use <const> in place of <exp> for now
 void parse_exp() {
-    match(NUMBER);
+    match(INTEGER_LITERAL);
+    match(FLOAT_LITERAL);
 }
 
 Token *load_tokens(const char *filename, int *num_tokens) {
@@ -616,7 +615,8 @@ void parse_argument_list() {
     indent_level++;
 
     // Parse the first constant (updated to use parse_const)
-    if (current_token < num_tokens && (tokens[current_token].type == NUMBER ||
+    if (current_token < num_tokens && (tokens[current_token].type == INTEGER_LITERAL ||
+                                       tokens[current_token].type == FLOAT_LITERAL ||
                                        tokens[current_token].type == CHARACTER_LITERAL ||
                                        tokens[current_token].type == TRUE ||
                                        tokens[current_token].type == FALSE)) {
@@ -627,7 +627,8 @@ void parse_argument_list() {
             fprintf(output_file, ",\n");
             match(COMMA);
 
-            if (current_token < num_tokens && (tokens[current_token].type == NUMBER ||
+            if (current_token < num_tokens && (tokens[current_token].type == INTEGER_LITERAL ||
+                                               tokens[current_token].type == FLOAT_LITERAL ||
                                                tokens[current_token].type == CHARACTER_LITERAL ||
                                                tokens[current_token].type == TRUE ||
                                                tokens[current_token].type == FALSE)) {
@@ -652,10 +653,14 @@ void parse_const() {
     print_indent();
     fprintf(output_file, "Constant(");
 
-    if (current_token < num_tokens && tokens[current_token].type == NUMBER) {
+    if (current_token < num_tokens && tokens[current_token].type == INTEGER_LITERAL) {
         // Could be either int or float, based on our simplification
         fprintf(output_file, "%s", tokens[current_token].lexeme);
-        match(NUMBER);
+        match(INTEGER_LITERAL);
+    } else if (current_token < num_tokens && tokens[current_token].type == FLOAT_LITERAL) {
+        // Could be either int or float, based on our simplificationse if (current_token < num_tokens && tokens[current_token].type == CHARACTER_LITERAL) {
+        fprintf(output_file, "%s", tokens[current_token].lexeme);
+        match(FLOAT_LITERAL);
     } else if (current_token < num_tokens && tokens[current_token].type == CHARACTER_LITERAL) {
         fprintf(output_file, "%s", tokens[current_token].lexeme);
         match(CHARACTER_LITERAL);

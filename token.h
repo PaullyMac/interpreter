@@ -38,7 +38,6 @@ typedef enum
 
     // Tokens using the same characters
     MODULO,
-    FORMAT,
 
     // Literals
     IDENTIFIER,
@@ -106,7 +105,6 @@ char* token_names[] = {
     "AND",
     "COMMENT",
     "MODULO",
-    "FORMAT",
     "IDENTIFIER",
     "STRING",
     "INTEGER_LITERAL",
