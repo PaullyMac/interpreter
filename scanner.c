@@ -279,7 +279,7 @@ void number() {
         lexeme_length = 2;
 
         // Read subsequent digits
-        while (isdigit(peek())) {
+        while (isdigit(peek()) || peek() == '\'') {
             current_char = get_char();
             lexeme[lexeme_length++] = current_char;
         }
@@ -287,7 +287,7 @@ void number() {
         //Handle regular numbers
         add_char();
 
-        while (isdigit(peek())) {
+        while (isdigit(peek()) || peek() == '\'') {
             current_char = get_char();
             add_char();
         }
@@ -297,12 +297,21 @@ void number() {
             current_char = get_char();
             add_char();
 
-            while (isdigit(peek())) {
+            while (isdigit(peek()) || peek() == '\'') {
                 current_char = get_char();
                 add_char();
             }
         }
     }
+
+    // Remove noise characters before checking for trailing decimal points
+    int new_length = 0;
+    for (int i = 0; i < lexeme_length; i++) {
+        if (lexeme[i] != '\'') {
+            lexeme[new_length++] = lexeme[i];
+        }
+    }
+    lexeme_length = new_length;
 
     // Handle trailing decimal points
     if (lexeme[lexeme_length - 1] == '.') { 
