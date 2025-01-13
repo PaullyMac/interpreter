@@ -28,6 +28,8 @@ ParseTreeNode *create_block_item_list_node();
 ParseTreeNode *create_block_item_node();
 ParseTreeNode *create_statement_node();
 ParseTreeNode *create_return_statement_node();
+ParseTreeNode *create_expression_statement_node();
+ParseTreeNode *create_factor_statement_node();
 ParseTreeNode *create_const_statement_node();
 ParseTreeNode *create_while_statement_node();
 ParseTreeNode *create_for_statement_node();
@@ -35,6 +37,7 @@ ParseTreeNode *create_if_statement_node();
 ParseTreeNode *create_input_statement_node();
 ParseTreeNode *create_output_statement_node();
 ParseTreeNode *create_exp_node();
+ParseTreeNode *create_factor_node();
 ParseTreeNode *create_const_node();
 ParseTreeNode *create_int_literal_node();
 ParseTreeNode *create_float_literal_node();
@@ -76,6 +79,8 @@ ParseTreeNode *parse_block_item_list();
 ParseTreeNode *parse_block_item();
 ParseTreeNode *parse_statement();
 ParseTreeNode *parse_return_statement();
+ParseTreeNode *parse_expression_statement();
+ParseTreeNode *parse_factor_statement();
 ParseTreeNode *parse_const_statement();
 ParseTreeNode *parse_while_statement();
 ParseTreeNode *parse_for_statement();
@@ -84,6 +89,7 @@ ParseTreeNode *parse_output_statement();
 ParseTreeNode *parse_if_statement();
 ParseTreeNode *parse_else_clause();
 ParseTreeNode *parse_exp();
+ParseTreeNode *parse_factor();
 ParseTreeNode *parse_const();
 ParseTreeNode *parse_int_literal();
 ParseTreeNode *parse_float_literal();
@@ -468,7 +474,7 @@ ParseTreeNode *parse_statement() {
 
 // Implement last and only use <const> in place of <exp> for now
 ParseTreeNode *parse_exp() {
-    return parse_const();
+    return parse_factor();
 }
 
 Token *load_tokens(const char *filename, int *num_tokens) {
@@ -602,6 +608,47 @@ ParseTreeNode *parse_const() {
     return node; 
 }
 
+ParseTreeNode *parse_factor() {
+    ParseTreeNode *node = create_node("Factor");
+
+    if (current_token < num_tokens) {
+        switch (tokens[current_token].type) {
+            case INTEGER_LITERAL:
+            case FLOAT_LITERAL:
+            case CHARACTER_LITERAL:
+            case TRUE:
+            case FALSE:
+                add_child(node, parse_const());
+                break;
+            case IDENTIFIER:
+                add_child(node, parse_identifier());
+                if (current_token < num_tokens && tokens[current_token].type == LEFT_PARENTHESIS) {
+                    add_child(node, match_and_create_node(LEFT_PARENTHESIS, "Left_Parenthesis"));
+                    if (current_token < num_tokens && tokens[current_token].type != RIGHT_PARENTHESIS) {
+                        add_child(node, parse_argument_list());
+                    }
+                    add_child(node, match_and_create_node(RIGHT_PARENTHESIS, "Right_Parenthesis"));
+                } else if (current_token < num_tokens && tokens[current_token].type == LEFT_BRACKET) {
+                    add_child(node, match_and_create_node(LEFT_BRACKET, "Left_Bracket"));
+                    add_child(node, parse_const());
+                    add_child(node, match_and_create_node(RIGHT_BRACKET, "Right_Bracket"));
+                }
+                break;
+            case LEFT_PARENTHESIS:
+                add_child(node, match_and_create_node(LEFT_PARENTHESIS, "Left_Parenthesis"));
+                add_child(node, parse_const());
+                add_child(node, match_and_create_node(RIGHT_PARENTHESIS, "Right_Parenthesis"));
+                break;
+            default:
+                fprintf(stderr, "Error: Unexpected token in factor at line %d\n", tokens[current_token].line_number);
+                synchronize();
+                break;
+        }
+    }
+
+    return node;
+}
+
 // Function to parse a return statement: "return" <const> ";"
 ParseTreeNode *parse_return_statement() {
     ParseTreeNode *node = create_return_statement_node();
@@ -612,6 +659,16 @@ ParseTreeNode *parse_return_statement() {
 
     add_child(node, match_and_create_node(SEMICOLON, "SEMICOLONN"));
     return node;
+}
+
+ParseTreeNode *parse_expression_statement()
+{
+    return nullptr;
+}
+
+ParseTreeNode *parse_factor_statement()
+{
+    return nullptr;
 }
 
 // Function to parse a constant statement: <const> ";"
@@ -876,6 +933,16 @@ ParseTreeNode *create_return_statement_node() {
     return create_node("Return_Statement");
 }
 
+ParseTreeNode *create_expression_statement_node()
+{
+    return nullptr;
+}
+
+ParseTreeNode *create_factor_statement_node()
+{
+    return nullptr;
+}
+
 ParseTreeNode *create_const_statement_node() {
     return create_node("Const_Statement");
 }
@@ -905,6 +972,11 @@ ParseTreeNode *create_output_statement_node()
 
 ParseTreeNode *create_exp_node() {
     return create_node("Exp");
+}
+
+ParseTreeNode *create_factor_node()
+{
+    return create_node("Factor");
 }
 
 ParseTreeNode *create_const_node() {

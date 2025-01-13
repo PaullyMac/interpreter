@@ -37,6 +37,11 @@
 <else-clause> ::= "else" <block>
                 | "else" <if_statement>
 
+<factor> ::= <const>
+                 | <identifier>
+                 | "(" <const> ")"
+                 | <identifier> "(" [ <argument_list> ] ")"
+                 | <identifier> "[" <const> "]" 
 <const> ::= <int> | <float> | <char> | <bool>
 <string> ::= STRING
 <identifier> ::= IDENTIFIER
