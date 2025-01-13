@@ -30,6 +30,7 @@ ParseTreeNode *create_return_statement_node();
 ParseTreeNode *create_const_statement_node();
 ParseTreeNode *create_while_statement_node();
 ParseTreeNode *create_for_statement_node();
+ParseTreeNode *create_if_statement_node();
 ParseTreeNode *create_exp_node();
 ParseTreeNode *create_const_node();
 ParseTreeNode *create_int_literal_node();
@@ -75,6 +76,8 @@ ParseTreeNode *parse_return_statement();
 ParseTreeNode *parse_const_statement();
 ParseTreeNode *parse_while_statement();
 ParseTreeNode *parse_for_statement();
+ParseTreeNode *parse_if_statement();
+ParseTreeNode *parse_else_clause();
 ParseTreeNode *parse_exp();
 ParseTreeNode *parse_const();
 ParseTreeNode *parse_int_literal();
@@ -431,6 +434,9 @@ ParseTreeNode *parse_statement() {
                 tokens[current_token].type == FALSE)) {
         ParseTreeNode *const_statement = parse_const_statement();
         add_child(node, const_statement);
+    } else if (current_token < num_tokens && tokens[current_token].type == IF) {
+        ParseTreeNode *if_statement = parse_if_statement();
+        add_child(node, if_statement);
     } else if (current_token < num_tokens && tokens[current_token].type == WHILE) {
         ParseTreeNode *while_statement = parse_while_statement();
         add_child(node, while_statement);
@@ -656,6 +662,41 @@ ParseTreeNode *parse_for_statement() {
     return node;
 }
 
+ParseTreeNode *parse_if_statement() {
+    ParseTreeNode *node = create_node("If_Statement");
+    add_child(node, match_and_create_node(IF, "If"));
+    add_child(node, match_and_create_node(LEFT_PARENTHESIS, "Left_Parenthesis"));
+
+    ParseTreeNode *condition = parse_const();
+    add_child(node, condition);
+
+    add_child(node, match_and_create_node(RIGHT_PARENTHESIS, "Right_Parenthesis"));
+
+    ParseTreeNode *if_block = parse_block();
+    add_child(node, if_block);
+
+    if (current_token < num_tokens && tokens[current_token].type == ELSE) {
+        ParseTreeNode *else_clause = parse_else_clause();
+        add_child(node, else_clause);
+    }
+    return node;
+}
+
+// "else" <block> | "else" <if_statement>
+ParseTreeNode *parse_else_clause() {
+    ParseTreeNode *node = create_node("Else_Clause");
+    add_child(node, match_and_create_node(ELSE, "Else"));
+
+    if (current_token < num_tokens && tokens[current_token].type == IF) {
+        ParseTreeNode *if_statement = parse_if_statement();
+        add_child(node, if_statement);
+    } else {
+        ParseTreeNode *else_block = parse_block();
+        add_child(node, else_block);
+    }
+    return node;
+}
+
 ParseTreeNode *parse_int_literal() {
     ParseTreeNode *node = create_int_literal_node();
     add_child(node, match_and_create_node(INTEGER_LITERAL, "INTEGER_LITERALL"));
@@ -771,6 +812,11 @@ ParseTreeNode *create_while_statement_node() {
 
 ParseTreeNode *create_for_statement_node() {
     return create_node("For_Statement");
+}
+
+ParseTreeNode *create_if_statement_node()
+{
+    return create_node("If_Statement");
 }
 
 ParseTreeNode *create_exp_node() {

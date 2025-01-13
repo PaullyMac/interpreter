@@ -1,0 +1,29 @@
+int main (void) {
+    if (true) {
+        return 0;
+    }
+
+    if (false) {
+        bool a;
+    } else {
+        bool b;
+    }
+
+    if (false) {
+        return 0;
+    } else if (true) {
+        int a;
+    } else if (1){
+        int b;
+    } else {
+        int c;
+    }
+
+    if (false) {
+        if (true) {
+            int test;
+        }
+    } else {
+        bool b;
+    }
+}

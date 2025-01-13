@@ -11,6 +11,36 @@ int isValid(bool x, int y, char z);
 int empty(void);
 
 int main(void) {
+    // Test if statements
+    if (true) {
+        return 0;
+    }
+
+    if (false) {
+        bool a;
+    } else {
+        bool b;
+    }
+
+    if (false) {
+        return 0;
+    } else if (true) {
+        int a;
+    } else if (1){
+        int b;
+    } else {
+        int c;
+    }
+
+    if (false) {
+        if (true) {
+            int test;
+        }
+    } else {
+        bool b;
+    }
+
+
     // Test for loops
     for (int i = 0; 1; 1) {
         int result = 2;
