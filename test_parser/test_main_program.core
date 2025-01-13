@@ -39,6 +39,9 @@ int main() {
     int value;
     char grade = 'a';
 
+    float a = 1, b = 2, c = 3;
+    bool a, b, c;
+
     int arr[1];
     bool array[5] = {1, 2};
     int array[2] = {'c', true, 0, 1.0};

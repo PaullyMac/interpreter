@@ -4,7 +4,7 @@ int array[10];
 // Test variables
 int a, b, c;
 int d = 5;
-int c = bool;
+int c = bool; // Error
 
 isValid(bool x, int y, char z); // Error
 int isNotValid();

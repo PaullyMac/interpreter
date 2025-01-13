@@ -191,24 +191,44 @@ ParseTreeNode *parse_variable_declaration() {
     ParseTreeNode *identifier_node = parse_identifier();
     add_child(node, identifier_node);
 
-    if (current_token < num_tokens && tokens[current_token].type == SEMICOLON) {
-        add_child(node, match_and_create_node(SEMICOLON, "Semicolon"));
-    } else if (current_token < num_tokens && tokens[current_token].type == ASSIGN) {
+    if (current_token < num_tokens && tokens[current_token].type == ASSIGN) {
         add_child(node, match_and_create_node(ASSIGN, "Assign"));
         ParseTreeNode *const_node = parse_const();
         add_child(node, const_node);
-        add_child(node, match_and_create_node(SEMICOLON, "Semicolon"));
-    } else if (current_token < num_tokens && tokens[current_token].type == COMMA) {
+
         while (current_token < num_tokens && tokens[current_token].type == COMMA) {
             add_child(node, match_and_create_node(COMMA, "Comma"));
             ParseTreeNode *identifier = parse_identifier();
             add_child(node, identifier);
+            if (current_token < num_tokens && tokens[current_token].type == ASSIGN) {
+                add_child(node, match_and_create_node(ASSIGN, "Assign"));
+                ParseTreeNode *const_node = parse_const();
+                add_child(node, const_node);
+            } else {
+                fprintf(stderr, "Error: Expected assignment after comma in variable declaration at line %d\n", tokens[current_token].line_number);
+                synchronize();
+                break; 
+            }
+            
         }
+    } else {
+        while (current_token < num_tokens && tokens[current_token].type == COMMA) {
+            add_child(node, match_and_create_node(COMMA, "Comma"));
+            ParseTreeNode *identifier = parse_identifier();
+            add_child(node, identifier);
+             if (current_token >= num_tokens || tokens[current_token].type == SEMICOLON) {
+                break;
+            }
+        }
+    }
+
+    if (current_token < num_tokens && tokens[current_token].type == SEMICOLON) {
         add_child(node, match_and_create_node(SEMICOLON, "Semicolon"));
     } else {
-        printf("Error: Invalid variable declaration at line %d\n", tokens[current_token].line_number);
+        fprintf(stderr, "Error: Expected semicolon at end of variable declaration at line %d\n", tokens[current_token].line_number);
         synchronize();
     }
+    
     return node;
 }
 
