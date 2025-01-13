@@ -301,6 +301,8 @@ ParseTreeNode *parse_parameter_list() {
     ParseTreeNode *node = create_parameter_list_node();
     if (current_token < num_tokens && tokens[current_token].type == RIGHT_PARENTHESIS) {
         // Empty parameter list
+    } else if (current_token < num_tokens && tokens[current_token].type == VOID) {
+            add_child(node, match_and_create_node(VOID, "VOID"));
     } else {
         if (current_token < num_tokens && (tokens[current_token].type == INT || tokens[current_token].type == FLOAT ||
                                            tokens[current_token].type == CHAR || tokens[current_token].type == BOOL)) {

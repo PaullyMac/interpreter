@@ -139,10 +139,12 @@ Program(
         INT
       ),
       Identifier(
-        IDENTIFIER: "isNotValid"
+        IDENTIFIER: "empty"
       ),
       LEFT_PARENTHESIS,
-      Parameter_List(),
+      Parameter_List(
+        VOID
+      ),
       RIGHT_PARENTHESIS,
       SEMICOLON
     )
@@ -156,7 +158,9 @@ Program(
         IDENTIFIER: "main"
       ),
       LEFT_PARENTHESIS,
-      Parameter_List(),
+      Parameter_List(
+        VOID
+      ),
       RIGHT_PARENTHESIS,
       Block(
         LEFT_BRACE,
@@ -451,6 +455,62 @@ Program(
                 Char(
                   CHARACTER_LITERAL: "'a'"
                 )
+              ),
+              SEMICOLON
+            )
+          ),
+          Block_Item(
+            Variable_Declaration(
+              Data_Type(
+                FLOAT
+              ),
+              Identifier(
+                IDENTIFIER: "a"
+              ),
+              ASSIGN,
+              Const(
+                Int(
+                  INTEGER_LITERAL: "1"
+                )
+              ),
+              COMMA,
+              Identifier(
+                IDENTIFIER: "b"
+              ),
+              ASSIGN,
+              Const(
+                Int(
+                  INTEGER_LITERAL: "2"
+                )
+              ),
+              COMMA,
+              Identifier(
+                IDENTIFIER: "c"
+              ),
+              ASSIGN,
+              Const(
+                Int(
+                  INTEGER_LITERAL: "3"
+                )
+              ),
+              SEMICOLON
+            )
+          ),
+          Block_Item(
+            Variable_Declaration(
+              Data_Type(
+                BOOL
+              ),
+              Identifier(
+                IDENTIFIER: "a"
+              ),
+              COMMA,
+              Identifier(
+                IDENTIFIER: "b"
+              ),
+              COMMA,
+              Identifier(
+                IDENTIFIER: "c"
               ),
               SEMICOLON
             )

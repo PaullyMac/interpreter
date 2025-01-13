@@ -419,6 +419,11 @@ TokenType keywords() {
             if (lexeme[1] == 'r' && lexeme[2] == 'u' && lexeme[3] == 'e' && lexeme_length == 4) 
                 return TRUE;
             break;
+        // check for void
+        case 'v':
+            if (lexeme[1] == 'o' && lexeme[2] == 'i' && lexeme[3] == 'd' && lexeme_length == 4) 
+                return VOID;
+            break;
         // check if while
         case 'w':
             if (lexeme[1] == 'h' && lexeme[2] == 'i' && lexeme[3] == 'l' && lexeme[4] == 'e' && lexeme_length == 5) 

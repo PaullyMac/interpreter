@@ -8,9 +8,9 @@ int c;
 
 // Function prototypes
 int isValid(bool x, int y, char z);
-int isNotValid();
+int empty(void);
 
-int main() {
+int main(void) {
     // Test for loops
     for (int i = 0; 1; 1) {
         int result = 2;
