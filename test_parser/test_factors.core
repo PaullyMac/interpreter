@@ -1,0 +1,72 @@
+int main() {
+    // Test basic identifiers as factors
+    int a = 5;
+    int b = a; 
+
+    // Test function calls as factors
+    int c = foo();
+    int d = bar(1, 2, 3);
+    int e = baz(a, b, c);
+
+    // Test array element access as factors
+    int arr[3] = {10, 20, 30};
+    int f = arr[0];
+    int g = arr[1];
+    int h = arr[1]; 
+
+    // Test parentheses with constants
+    int i = (100);
+    int j = (200);
+
+    // Test parentheses with identifiers (already covered by variable assignment)
+
+    // Test parentheses with function calls
+    int k = (foo());
+    int l = (bar(1, 2, 3));
+
+    // Test parentheses with array element access
+    int m = (arr[0]);
+    int n = (arr[b]);
+
+    // Test combinations of factors
+    int o = a + foo();
+    int p = bar(1, 2, 3) * arr[0];
+    int q = (10 + 20) * foo();
+    int r = arr[a] + (bar(a, b, c)); 
+
+    // Test in statements
+    if (a) {
+        printf("a is true");
+    }
+
+    if (foo()) {
+        printf("foo is true");
+    }
+
+    if (arr[0]) {
+        printf("arr[0] is true");
+    }
+
+    while (a < 10) {
+        a = a + 1;
+    }
+
+    for (int i = 0; i < foo(); i = i + 1) {
+        printf("Looping");
+    }
+
+    return 0;
+}
+
+// Dummy function definitions for testing
+int foo() {
+    return 1;
+}
+
+int bar(int x, int y, int z) {
+    return x + y + z;
+}
+
+int baz(int x, int y, int z) {
+    return x * y * z;
+}

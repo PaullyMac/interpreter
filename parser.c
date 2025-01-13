@@ -88,7 +88,7 @@ ParseTreeNode *parse_input_statement();
 ParseTreeNode *parse_output_statement();
 ParseTreeNode *parse_if_statement();
 ParseTreeNode *parse_else_clause();
-ParseTreeNode *parse_exp();
+ParseTreeNode *parse_expression();
 ParseTreeNode *parse_factor();
 ParseTreeNode *parse_const();
 ParseTreeNode *parse_int_literal();
@@ -207,8 +207,8 @@ ParseTreeNode *parse_variable_declaration() {
 
     if (current_token < num_tokens && tokens[current_token].type == ASSIGN) {
         add_child(node, match_and_create_node(ASSIGN, "Assign"));
-        ParseTreeNode *const_node = parse_const();
-        add_child(node, const_node);
+        ParseTreeNode *factor = parse_factor();
+        add_child(node, factor);
 
         while (current_token < num_tokens && tokens[current_token].type == COMMA) {
             add_child(node, match_and_create_node(COMMA, "Comma"));
@@ -216,8 +216,8 @@ ParseTreeNode *parse_variable_declaration() {
             add_child(node, identifier);
             if (current_token < num_tokens && tokens[current_token].type == ASSIGN) {
                 add_child(node, match_and_create_node(ASSIGN, "Assign"));
-                ParseTreeNode *const_node = parse_const();
-                add_child(node, const_node);
+                ParseTreeNode *factor = parse_factor();
+                add_child(node, factor);
             } else {
                 fprintf(stderr, "Error: Expected assignment after comma in variable declaration at line %d\n", tokens[current_token].line_number);
                 synchronize();
@@ -547,26 +547,28 @@ Token *load_tokens(const char *filename, int *num_tokens) {
 
 ParseTreeNode *parse_argument_list() {
     ParseTreeNode *node = create_argument_list_node();
-    if (current_token < num_tokens && (tokens[current_token].type == INTEGER_LITERAL ||
+    if (current_token < num_tokens && (tokens[current_token].type == IDENTIFIER ||
+                                       tokens[current_token].type == INTEGER_LITERAL ||
                                        tokens[current_token].type == FLOAT_LITERAL ||
                                        tokens[current_token].type == CHARACTER_LITERAL ||
                                        tokens[current_token].type == TRUE ||
                                        tokens[current_token].type == FALSE)) {
-        ParseTreeNode *const_node = parse_const();
-        add_child(node, const_node);
+        ParseTreeNode *factor = parse_factor();
+        add_child(node, factor);
 
         while (current_token < num_tokens && tokens[current_token].type == COMMA) {
             add_child(node, match_and_create_node(COMMA, "Comma"));
 
-            if (current_token < num_tokens && (tokens[current_token].type == INTEGER_LITERAL ||
+            if (current_token < num_tokens && (tokens[current_token].type == IDENTIFIER ||
+                                               tokens[current_token].type == INTEGER_LITERAL ||
                                                tokens[current_token].type == FLOAT_LITERAL ||
                                                tokens[current_token].type == CHARACTER_LITERAL ||
                                                tokens[current_token].type == TRUE ||
                                                tokens[current_token].type == FALSE)) {
-                ParseTreeNode *const_node = parse_const();
-                add_child(node, const_node);
+                ParseTreeNode *factor = parse_factor();
+                add_child(node, factor);
             } else {
-                fprintf(stderr, "Error: Expected a constant after comma in argument list at line %d\n", tokens[current_token].line_number);
+                fprintf(stderr, "Error: Expected a factor after comma in argument list at line %d\n", tokens[current_token].line_number);
                 synchronize();
             }
         }
@@ -636,7 +638,7 @@ ParseTreeNode *parse_factor() {
                 break;
             case LEFT_PARENTHESIS:
                 add_child(node, match_and_create_node(LEFT_PARENTHESIS, "Left_Parenthesis"));
-                add_child(node, parse_const());
+                add_child(node, parse_factor());
                 add_child(node, match_and_create_node(RIGHT_PARENTHESIS, "Right_Parenthesis"));
                 break;
             default:
@@ -647,6 +649,11 @@ ParseTreeNode *parse_factor() {
     }
 
     return node;
+}
+
+ParseTreeNode *parse_expression()
+{
+    return parse_factor();
 }
 
 // Function to parse a return statement: "return" <const> ";"
@@ -663,12 +670,22 @@ ParseTreeNode *parse_return_statement() {
 
 ParseTreeNode *parse_expression_statement()
 {
-    return nullptr;
+    ParseTreeNode *node = create_expression_statement_node();
+    ParseTreeNode *expression_node = parse_expression();
+    add_child(node, expression_node);
+
+    add_child(node, match_and_create_node(SEMICOLON, "Semicolon"));
+    return node;
 }
 
 ParseTreeNode *parse_factor_statement()
 {
-    return nullptr;
+    ParseTreeNode *node = create_factor_statement_node();
+    ParseTreeNode *factor_node = parse_factor();
+    add_child(node, factor_node);
+
+    add_child(node, match_and_create_node(SEMICOLON, "Semicolon"));
+    return node;
 }
 
 // Function to parse a constant statement: <const> ";"
@@ -935,12 +952,12 @@ ParseTreeNode *create_return_statement_node() {
 
 ParseTreeNode *create_expression_statement_node()
 {
-    return nullptr;
+    return create_node("Expression_Statement");
 }
 
 ParseTreeNode *create_factor_statement_node()
 {
-    return nullptr;
+    return create_node("Factor_Statement");
 }
 
 ParseTreeNode *create_const_statement_node() {
