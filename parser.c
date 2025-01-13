@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include "token.h"
 
@@ -41,10 +42,16 @@ ParseTreeNode *create_node(const char *name);
 void print_parse_tree(ParseTreeNode *node, int indent_level);
 void print_indent(int indent_level);
 
+void free_parse_tree(ParseTreeNode *node);
+
+void report_error(const char *message, TokenType expected);
+void synchronize();
+
 // Global variables to store the token list and the current token index
 Token *tokens;
 int current_token = 0;
 int num_tokens;
+bool panic_mode = false;
 
 // Global file pointer for the output file
 FILE *output_file;
@@ -91,13 +98,19 @@ int main(void) {
         fprintf(stderr, "Error opening output file.\n");
         return 1;
     }
-
+    printf("\nPARSING!\n\n");
     ParseTreeNode *root = parse_program();
-    printf("Parsing successful!\n");
+
+    if (panic_mode) {
+        printf("Parsing failed!\n");
+    } else {
+        printf("Parsing successful!\n");
+    }
 
     // Print the parse tree
     print_parse_tree(root, 0);
     fclose(output_file);
+    free_parse_tree(root);
     free(tokens);
     return 0;
 }
@@ -108,7 +121,7 @@ void add_child(ParseTreeNode *parent, ParseTreeNode *child) {
     ParseTreeNode **new_children = realloc(parent->children, sizeof(ParseTreeNode *) * parent->num_children);
     if (!new_children) {
         fprintf(stderr, "Error: Memory allocation failed in add_child\n");
-        exit(1); 
+        synchronize(); 
     }
     parent->children = new_children;
     parent->children[parent->num_children - 1] = child;
@@ -116,21 +129,20 @@ void add_child(ParseTreeNode *parent, ParseTreeNode *child) {
 
 // Helper function to match the current token with the expected type and create a node for it
 ParseTreeNode *match_and_create_node(TokenType type, const char* node_name) {
+    printf("Parsing token: %-20s %-20s Line: %d, Column: %d\n", token_names[tokens[current_token].type], tokens[current_token].lexeme, tokens[current_token].line_number, tokens[current_token].column_number);
     ParseTreeNode *node = create_node(node_name);
     node->token = malloc(sizeof(Token));
     if (!node->token) {
         fprintf(stderr, "Error: Memory allocation failed in match_and_create_node\n");
-        exit(1);
+        synchronize();
     }
     *node->token = tokens[current_token];
 
     if (current_token < num_tokens && tokens[current_token].type == type) {
         current_token++;
     } else {
-        fprintf(stderr, "Error: Expected token type %s but found %s at line %d\n",
-               token_names[type], token_names[tokens[current_token].type],
-               tokens[current_token].line_number);
-        exit(1);
+        report_error("Unexpected token", type);
+        synchronize();
     }
     return node;
 }
@@ -163,8 +175,8 @@ ParseTreeNode *parse_declaration() {
             add_child(node, variable_declaration);
         }
     } else {
-        fprintf(stderr, "Error: Invalid declaration at line %d\n", tokens[current_token].line_number);
-        exit(1);
+        fprintf(stderr, "Error: Invalid declaration at Line: %d, Column: %d\n", tokens[current_token].line_number, tokens[current_token].column_number);
+        synchronize();
     }
     return node;
 }
@@ -194,8 +206,8 @@ ParseTreeNode *parse_variable_declaration() {
         }
         add_child(node, match_and_create_node(SEMICOLON, "Semicolon"));
     } else {
-        fprintf(stderr, "Error: Invalid variable declaration at line %d\n", tokens[current_token].line_number);
-        exit(1);
+        printf("Error: Invalid variable declaration at line %d\n", tokens[current_token].line_number);
+        synchronize();
     }
     return node;
 }
@@ -255,8 +267,10 @@ ParseTreeNode *parse_function_declaration() {
     if (current_token < num_tokens && tokens[current_token].type == LEFT_BRACE) {
         ParseTreeNode *block = parse_block();
         add_child(node, block);
-    } else {
+    } else if (current_token < num_tokens && tokens[current_token].type == SEMICOLON) {
         add_child(node, match_and_create_node(SEMICOLON, "Semicolon"));
+    } else {
+        report_error("Invalid function declaration, Expected: \"{\" or \";\", Current: %s", tokens[current_token].type);
     }
     return node;
 }
@@ -289,12 +303,12 @@ ParseTreeNode *parse_parameter_list() {
 
                 } else {
                     fprintf(stderr, "Error: Expected data type after comma in parameter list at line %d\n", tokens[current_token].line_number);
-                    exit(1);
+                    synchronize();
                 }
             }
         } else {
             fprintf(stderr, "Error: Expected data type or ')' at the start of parameter list at line %d\n", tokens[current_token].line_number);
-            exit(1);
+            synchronize();
         }
     }
     return node;
@@ -314,7 +328,7 @@ ParseTreeNode *parse_data_type() {
             add_child(node, match_and_create_node(BOOL, "BOOL"));
         } else {
             fprintf(stderr, "Error: Expected data type at line %d\n", tokens[current_token].line_number);
-            exit(1);
+            synchronize();
         }
     }
     return node;
@@ -327,7 +341,7 @@ ParseTreeNode *parse_identifier() {
         add_child(node, match_and_create_node(IDENTIFIER, "IDENTIFIERR"));
     } else {
         fprintf(stderr, "Error: Expected data type at line %d\n", tokens[current_token].line_number);
-        exit(1);
+        synchronize();
     }
 
     return node;
@@ -373,7 +387,7 @@ ParseTreeNode *parse_block_item() {
             }
         } else {
             fprintf(stderr, "Error: Expected identifier after data type in declaration at line %d\n", tokens[current_token].line_number);
-            exit(1);
+            synchronize();
         }
     } else {
         ParseTreeNode *statement = parse_statement();
@@ -408,7 +422,7 @@ ParseTreeNode *parse_statement() {
         add_child(node, block);
     } else {
         fprintf(stderr, "Error: Invalid statement at line %d\n", tokens[current_token].line_number);
-        exit(1);
+        synchronize();
     }
     return node;
 }
@@ -422,7 +436,7 @@ Token *load_tokens(const char *filename, int *num_tokens) {
     FILE *fp = fopen(filename, "r");
     if (!fp) {
         fprintf(stderr, "Error opening symbol table file: %s\n", filename);
-        exit(1);
+        synchronize();
     }
 
     Token *token_list = NULL;
@@ -432,7 +446,7 @@ Token *load_tokens(const char *filename, int *num_tokens) {
     if (!token_list) {
         fprintf(stderr, "Error: Memory allocation failed in load_tokens!\n");
         fclose(fp);
-        exit(1);
+        synchronize();
     }
 
     *num_tokens = 0;
@@ -446,7 +460,7 @@ Token *load_tokens(const char *filename, int *num_tokens) {
                 fprintf(stderr, "Error: Memory reallocation failed in load_tokens!\n");
                 free(token_list);
                 fclose(fp);
-                exit(1);
+                synchronize();
             }
             token_list = new_list;
         }
@@ -495,7 +509,7 @@ ParseTreeNode *parse_argument_list() {
                 add_child(node, const_node);
             } else {
                 fprintf(stderr, "Error: Expected a constant after comma in argument list at line %d\n", tokens[current_token].line_number);
-                exit(1);
+                synchronize();
             }
         }
     }
@@ -529,7 +543,7 @@ ParseTreeNode *parse_const() {
             
             default:
                 fprintf(stderr, "Error: Expected a constant (int, float, char, or bool) at line %d\n", tokens[current_token].line_number);
-                exit(1);
+                synchronize();
         }
     }
 
@@ -595,7 +609,7 @@ ParseTreeNode *parse_for_statement() {
         } else {
             // Error: Expected identifier after data type
             fprintf(stderr, "Error: Expected identifier after data type in for loop initialization at line %d\n", tokens[current_token].line_number);
-            exit(1);
+            synchronize();
         }
     } else {
         ParseTreeNode *const_statement = parse_const_statement();
@@ -655,12 +669,12 @@ ParseTreeNode *create_node(const char *name) {
     ParseTreeNode *node = malloc(sizeof(ParseTreeNode));
     if (!node) {
         fprintf(stderr, "Error: Memory allocation failed in create_node\n");
-        exit(1);
+        synchronize();
     }
     node->name = strdup(name);
     if (!node->name) {
         fprintf(stderr, "Error: Memory allocation failed in create_node\n");
-        exit(1);
+        synchronize();
     }
     node->token = NULL;
     node->children = NULL;
@@ -769,7 +783,7 @@ void match(TokenType type) {
         fprintf(stderr, "Error: Expected token type %s but found %s at line %d\n",
                token_names[type], token_names[tokens[current_token].type],
                tokens[current_token].line_number);
-        exit(1);
+        synchronize();
     }
 }
 
@@ -835,4 +849,36 @@ void free_parse_tree(ParseTreeNode *node) {
     free(node->name);
     free(node->children);
     free(node);
+}
+
+void report_error(const char *message, TokenType expected) {
+    printf("Error: %s, Expected: %s, Line: %d, Column: %d\n", message, token_names[expected], tokens[current_token].line_number, tokens[current_token].column_number);
+}
+
+void synchronize() {
+    //printf("Entering synchronization mode\n");
+    panic_mode = true;
+    current_token++; // Consume the erroneous token
+
+    while (current_token < num_tokens) {
+        // Synchronization tokens for declarations
+        if (tokens[current_token].type == INT || tokens[current_token].type == FLOAT ||
+            tokens[current_token].type == CHAR || tokens[current_token].type == BOOL ||
+            tokens[current_token].type == EOF) {
+            // printf("Synchronized on declaration token: %s\n", token_names[tokens[current_token].type]);
+            return;
+        }
+
+        // Synchronization tokens for statements
+        if (tokens[current_token].type == RETURN || tokens[current_token].type == SEMICOLON ||
+            tokens[current_token].type == WHILE || tokens[current_token].type == FOR ||
+            tokens[current_token].type == LEFT_BRACE || tokens[current_token].type == INTEGER_LITERAL ||
+            tokens[current_token].type == FLOAT_LITERAL || tokens[current_token].type == CHARACTER_LITERAL ||
+            tokens[current_token].type == TRUE || tokens[current_token].type == FALSE) {
+            //printf("Synchronized on statement token: %s\n", token_names[tokens[current_token].type]);
+            return;
+        }
+
+        current_token++;
+    }
 }
