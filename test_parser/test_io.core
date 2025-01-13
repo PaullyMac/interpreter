@@ -1,0 +1,12 @@
+int main(void){
+    scanf("%d");
+    scanf("dog");
+    scanf("%f", &value);
+    scanf("%f %f", &value1, &value2);
+    scanf(" ");
+
+    printf("Hello, Universe!"); 
+    printf(name)
+    printf("Hello, your grade is %d", grade);
+    printf("Hello, your grade is %d", grade, year);
+}

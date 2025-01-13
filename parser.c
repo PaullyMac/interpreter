@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <ctype.h>
 #include "token.h"
 
 // Data structure for the parse tree
@@ -31,6 +32,8 @@ ParseTreeNode *create_const_statement_node();
 ParseTreeNode *create_while_statement_node();
 ParseTreeNode *create_for_statement_node();
 ParseTreeNode *create_if_statement_node();
+ParseTreeNode *create_input_statement_node();
+ParseTreeNode *create_output_statement_node();
 ParseTreeNode *create_exp_node();
 ParseTreeNode *create_const_node();
 ParseTreeNode *create_int_literal_node();
@@ -76,6 +79,8 @@ ParseTreeNode *parse_return_statement();
 ParseTreeNode *parse_const_statement();
 ParseTreeNode *parse_while_statement();
 ParseTreeNode *parse_for_statement();
+ParseTreeNode *parse_input_statement();
+ParseTreeNode *parse_output_statement();
 ParseTreeNode *parse_if_statement();
 ParseTreeNode *parse_else_clause();
 ParseTreeNode *parse_exp();
@@ -443,6 +448,12 @@ ParseTreeNode *parse_statement() {
     } else if (current_token < num_tokens && tokens[current_token].type == FOR) {
         ParseTreeNode *for_statement = parse_for_statement();
         add_child(node, for_statement);
+    } else if (current_token < num_tokens && tokens[current_token].type == SCANF) {
+        ParseTreeNode *input_statement = parse_input_statement();
+        add_child(node, input_statement);
+    } else if (current_token < num_tokens && tokens[current_token].type == PRINTF) {
+        ParseTreeNode *output_statement = parse_output_statement();
+        add_child(node, output_statement);
     } else if (current_token < num_tokens && tokens[current_token].type == SEMICOLON) {
         add_child(node, match_and_create_node(SEMICOLON, "Semicolon"));
     } else if (current_token < num_tokens && tokens[current_token].type == LEFT_BRACE) {
@@ -498,19 +509,32 @@ Token *load_tokens(const char *filename, int *num_tokens) {
         char lexeme_val[MAX_LEXEME_LENGTH];
         int line_num, col_num;
 
-        if (sscanf(line, "%d | %s | %d | %d | %s", &token_code, token_name, &line_num, &col_num, lexeme_val) == 5) {
-            token_list[*num_tokens].type = token_code;
-            
-            strncpy(token_list[*num_tokens].lexeme, lexeme_val, MAX_LEXEME_LENGTH - 1);
-            token_list[*num_tokens].lexeme[MAX_LEXEME_LENGTH - 1] = '\0';
-            
-            token_list[*num_tokens].line_number = line_num;
-            token_list[*num_tokens].column_number = col_num;
+        if (sscanf(line, "%d | %[^|] | %d | %d | %[^\n]", &token_code, token_name, &line_num, &col_num, lexeme_val) == 5) {
+                    token_list[*num_tokens].type = token_code;
 
-            (*num_tokens)++;
+                    // Trim trailing spaces from token_name
+                    int len = strlen(token_name);
+                    while (len > 0 && isspace(token_name[len - 1])) {
+                        token_name[len - 1] = '\0';
+                        len--;
+                    }
+
+                    // Trim trailing spaces from lexeme_val
+                    len = strlen(lexeme_val);
+                    while (len > 0 && isspace(lexeme_val[len - 1])) {
+                        lexeme_val[len - 1] = '\0';
+                        len--;
+                    }
+                    
+                    strncpy(token_list[*num_tokens].lexeme, lexeme_val, MAX_LEXEME_LENGTH - 1);
+                    token_list[*num_tokens].lexeme[MAX_LEXEME_LENGTH - 1] = '\0';
+                    
+                    token_list[*num_tokens].line_number = line_num;
+                    token_list[*num_tokens].column_number = col_num;
+
+                    (*num_tokens)++;
         }
     }
-
     fclose(fp);
     return token_list;
 }
@@ -659,6 +683,56 @@ ParseTreeNode *parse_for_statement() {
     ParseTreeNode *block = parse_block();
     add_child(node, block);
 
+    return node;
+}
+
+ParseTreeNode *parse_input_statement() {
+    ParseTreeNode *node = create_node("Input_Statement");
+    add_child(node, match_and_create_node(SCANF, "Scanf"));
+    add_child(node, match_and_create_node(LEFT_PARENTHESIS, "Left_Parenthesis"));
+
+    add_child(node, match_and_create_node(STRING, "String"));
+
+    while (current_token < num_tokens && tokens[current_token].type == COMMA) {
+        add_child(node, match_and_create_node(COMMA, "Comma"));
+        add_child(node, match_and_create_node(AMPERSAND, "Ampersand"));
+        ParseTreeNode *identifier = parse_identifier();
+        add_child(node, identifier);
+    }
+
+    add_child(node, match_and_create_node(RIGHT_PARENTHESIS, "Right_Parenthesis"));
+    add_child(node, match_and_create_node(SEMICOLON, "Semicolon"));
+    return node;
+}
+
+ParseTreeNode *parse_output_statement() {
+    ParseTreeNode *node = create_node("Output_Statement");
+    add_child(node, match_and_create_node(PRINTF, "Printf"));
+    add_child(node, match_and_create_node(LEFT_PARENTHESIS, "Left_Parenthesis"));
+
+    if (current_token < num_tokens && tokens[current_token].type == STRING) {
+        add_child(node, match_and_create_node(STRING, "String"));
+
+        while (current_token < num_tokens && tokens[current_token].type == COMMA) {
+            add_child(node, match_and_create_node(COMMA, "Comma"));
+
+            if (current_token < num_tokens && tokens[current_token].type == IDENTIFIER) {
+                ParseTreeNode *identifier = parse_identifier();
+                add_child(node, identifier);
+            } else {
+                ParseTreeNode *const_node = parse_const();
+                add_child(node, const_node);
+            }
+        }
+    } else if (current_token < num_tokens && tokens[current_token].type == IDENTIFIER) {
+        ParseTreeNode *identifier = parse_identifier();
+        add_child(node, identifier);
+    } else {
+        fprintf(stderr, "Error: Expected string or identifier in printf at line %d\n", tokens[current_token].line_number);
+        synchronize();
+    }
+
+    add_child(node, match_and_create_node(RIGHT_PARENTHESIS, "Right_Parenthesis"));
     return node;
 }
 
@@ -819,6 +893,16 @@ ParseTreeNode *create_if_statement_node()
     return create_node("If_Statement");
 }
 
+ParseTreeNode *create_input_statement_node()
+{
+    return create_node("Input_Statement");
+}
+
+ParseTreeNode *create_output_statement_node()
+{
+    return create_node("Output_Statement");
+}
+
 ParseTreeNode *create_exp_node() {
     return create_node("Exp");
 }
@@ -869,9 +953,14 @@ void print_parse_tree(ParseTreeNode *node, int indent_level) {
         if (node->token->type == INTEGER_LITERAL ||
             node->token->type == FLOAT_LITERAL ||
             node->token->type == CHARACTER_LITERAL ||
-            node->token->type == STRING ||
-            node->token->type == IDENTIFIER) {
-            fprintf(output_file, "%s: \"%s\"", token_names[node->token->type], node->token->lexeme);
+            node->token->type == IDENTIFIER ||
+            node->token->type == STRING) {
+                // Only have a single set of quotations for String literals
+                if (node->token->type == STRING) {
+                    fprintf(output_file, "%s: %s", token_names[node->token->type], node->token->lexeme);
+                } else {
+                    fprintf(output_file, "%s: \"%s\"", token_names[node->token->type], node->token->lexeme);
+                }
         }
         // Otherwise, just print the token type
         else {

@@ -11,6 +11,19 @@ int isValid(bool x, int y, char z);
 int empty(void);
 
 int main(void) {
+    // Test input statements
+    scanf("%d");
+    scanf("dog");
+    scanf("%f", &value);
+    scanf("%f %f", &value1, &value2);
+    scanf(" ");
+
+    // Test output statements
+    printf("Hello, Universe!"); 
+    printf(name)
+    printf("Hello, your grade is %d %d", grade);
+    printf("Hello, your grade is %d %d", grade, year);
+
     // Test if statements
     if (true) {
         return 0;

@@ -2,7 +2,7 @@
 #define TOKEN_H
 
 // Just set some arbitrary limits
-#define MAX_LEXEME_LENGTH 100
+#define MAX_LEXEME_LENGTH 500
 #define MAX_TOKENS 500
 
 typedef enum

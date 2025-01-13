@@ -167,6 +167,145 @@ Program(
         Block_Item_List(
           Block_Item(
             Statement(
+              Input_Statement(
+                SCANF,
+                LEFT_PARENTHESIS,
+                STRING: "%d",
+                RIGHT_PARENTHESIS,
+                SEMICOLON
+              )
+            )
+          ),
+          Block_Item(
+            Statement(
+              Input_Statement(
+                SCANF,
+                LEFT_PARENTHESIS,
+                STRING: "dog",
+                RIGHT_PARENTHESIS,
+                SEMICOLON
+              )
+            )
+          ),
+          Block_Item(
+            Statement(
+              Input_Statement(
+                SCANF,
+                LEFT_PARENTHESIS,
+                STRING: "%f",
+                COMMA,
+                AMPERSAND,
+                Identifier(
+                  IDENTIFIER: "value"
+                ),
+                RIGHT_PARENTHESIS,
+                SEMICOLON
+              )
+            )
+          ),
+          Block_Item(
+            Statement(
+              Input_Statement(
+                SCANF,
+                LEFT_PARENTHESIS,
+                STRING: "%f %f",
+                COMMA,
+                AMPERSAND,
+                Identifier(
+                  IDENTIFIER: "value1"
+                ),
+                COMMA,
+                AMPERSAND,
+                Identifier(
+                  IDENTIFIER: "value2"
+                ),
+                RIGHT_PARENTHESIS,
+                SEMICOLON
+              )
+            )
+          ),
+          Block_Item(
+            Statement(
+              Input_Statement(
+                SCANF,
+                LEFT_PARENTHESIS,
+                STRING: " ",
+                RIGHT_PARENTHESIS,
+                SEMICOLON
+              )
+            )
+          ),
+          Block_Item(
+            Statement(
+              Output_Statement(
+                PRINTF,
+                LEFT_PARENTHESIS,
+                STRING: "Hello, Universe!",
+                RIGHT_PARENTHESIS
+              )
+            )
+          ),
+          Block_Item(
+            Statement(
+              SEMICOLON
+            )
+          ),
+          Block_Item(
+            Statement(
+              Output_Statement(
+                PRINTF,
+                LEFT_PARENTHESIS,
+                Identifier(
+                  IDENTIFIER: "name"
+                ),
+                RIGHT_PARENTHESIS
+              )
+            )
+          ),
+          Block_Item(
+            Statement(
+              Output_Statement(
+                PRINTF,
+                LEFT_PARENTHESIS,
+                STRING: "Hello, your grade is %d %d",
+                COMMA,
+                Identifier(
+                  IDENTIFIER: "grade"
+                ),
+                RIGHT_PARENTHESIS
+              )
+            )
+          ),
+          Block_Item(
+            Statement(
+              SEMICOLON
+            )
+          ),
+          Block_Item(
+            Statement(
+              Output_Statement(
+                PRINTF,
+                LEFT_PARENTHESIS,
+                STRING: "Hello, your grade is %d %d",
+                COMMA,
+                Identifier(
+                  IDENTIFIER: "grade"
+                ),
+                COMMA,
+                Identifier(
+                  IDENTIFIER: "year"
+                ),
+                RIGHT_PARENTHESIS
+              )
+            )
+          ),
+          Block_Item(
+            Statement(
+              SEMICOLON
+            )
+          ),
+          Block_Item(
+            Statement(
               If_Statement(
                 IF,
                 LEFT_PARENTHESIS,
