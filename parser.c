@@ -638,7 +638,9 @@ ParseTreeNode *parse_factor() {
                 break;
             case LEFT_PARENTHESIS:
                 add_child(node, match_and_create_node(LEFT_PARENTHESIS, "Left_Parenthesis"));
-                add_child(node, parse_factor());
+
+                ParseTreeNode *factor_node = parse_factor();
+                add_child(node, factor_node);
                 add_child(node, match_and_create_node(RIGHT_PARENTHESIS, "Right_Parenthesis"));
                 break;
             default:
