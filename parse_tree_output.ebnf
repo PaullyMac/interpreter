@@ -1,16 +1,33 @@
 Program(
   Declaration(
     Array_Declaration(
-      Data_Type(BOOL),
-      IDENTIFIER("array"),
+      Data_Type(
+        BOOL
+      ),
+      Identifier(
+        IDENTIFIER: "array"
+      ),
       LEFT_BRACKET,
-      Constant(5),
+      Const(
+        Int(
+          INTEGER_LITERAL: "5"
+        )
+      ),
       RIGHT_BRACKET,
       ASSIGN,
       LEFT_BRACE,
       Argument_List(
-        Constant(1),
-        Constant(2)
+        Const(
+          Int(
+            INTEGER_LITERAL: "1"
+          )
+        ),
+        COMMA,
+        Const(
+          Int(
+            INTEGER_LITERAL: "2"
+          )
+        )
       ),
       RIGHT_BRACE,
       SEMICOLON
@@ -18,53 +35,99 @@ Program(
   ),
   Declaration(
     Array_Declaration(
-      Data_Type(INT),
-      IDENTIFIER("array"),
+      Data_Type(
+        INT
+      ),
+      Identifier(
+        IDENTIFIER: "array"
+      ),
       LEFT_BRACKET,
-      Constant(10),
+      Const(
+        Int(
+          INTEGER_LITERAL: "10"
+        )
+      ),
       RIGHT_BRACKET,
       SEMICOLON
     )
   ),
   Declaration(
     Variable_Declaration(
-      Data_Type(INT),
-      IDENTIFIER("a"),
+      Data_Type(
+        INT
+      ),
+      Identifier(
+        IDENTIFIER: "a"
+      ),
       COMMA,
-      IDENTIFIER("b"),
+      Identifier(
+        IDENTIFIER: "b"
+      ),
       COMMA,
-      IDENTIFIER("c"),
+      Identifier(
+        IDENTIFIER: "c"
+      ),
       SEMICOLON
     )
   ),
   Declaration(
     Variable_Declaration(
-      Data_Type(INT),
-      IDENTIFIER("d"),
+      Data_Type(
+        INT
+      ),
+      Identifier(
+        IDENTIFIER: "d"
+      ),
       ASSIGN,
-      Constant(5),
+      Const(
+        Int(
+          INTEGER_LITERAL: "5"
+        )
+      ),
       SEMICOLON
     )
   ),
   Declaration(
     Variable_Declaration(
-      Data_Type(INT),
-      IDENTIFIER("c"),
+      Data_Type(
+        INT
+      ),
+      Identifier(
+        IDENTIFIER: "c"
+      ),
       SEMICOLON
     )
   ),
   Declaration(
     Function_Declaration(
-      Data_Type(INT),
-      IDENTIFIER("isValid"),
+      Data_Type(
+        INT
+      ),
+      Identifier(
+        IDENTIFIER: "isValid"
+      ),
       LEFT_PARENTHESIS,
       Parameter_List(
-        Data_Type(BOOL),
-        IDENTIFIER("x"),
-        Data_Type(INT),
-        IDENTIFIER("y"),
-        Data_Type(CHAR),
-        IDENTIFIER("z")
+        Data_Type(
+          BOOL
+        ),
+        Identifier(
+          IDENTIFIER: "x"
+        ),
+        COMMA,
+        Data_Type(
+          INT
+        ),
+        Identifier(
+          IDENTIFIER: "y"
+        ),
+        COMMA,
+        Data_Type(
+          CHAR
+        ),
+        Identifier(
+          IDENTIFIER: "z"
+        )
       ),
       RIGHT_PARENTHESIS,
       SEMICOLON
@@ -72,24 +135,28 @@ Program(
   ),
   Declaration(
     Function_Declaration(
-      Data_Type(INT),
-      IDENTIFIER("isNotValid"),
-      LEFT_PARENTHESIS,
-      Parameter_List(
-
+      Data_Type(
+        INT
       ),
+      Identifier(
+        IDENTIFIER: "isNotValid"
+      ),
+      LEFT_PARENTHESIS,
+      Parameter_List(),
       RIGHT_PARENTHESIS,
       SEMICOLON
     )
   ),
   Declaration(
     Function_Declaration(
-      Data_Type(INT),
-      IDENTIFIER("main"),
-      LEFT_PARENTHESIS,
-      Parameter_List(
-
+      Data_Type(
+        INT
       ),
+      Identifier(
+        IDENTIFIER: "main"
+      ),
+      LEFT_PARENTHESIS,
+      Parameter_List(),
       RIGHT_PARENTHESIS,
       Block(
         LEFT_BRACE,
@@ -97,60 +164,120 @@ Program(
           Block_Item(
             Statement(
               For_Statement(
+                FOR,
+                LEFT_PARENTHESIS,
                 Variable_Declaration(
-                  Data_Type(INT),
-                  IDENTIFIER("i"),
+                  Data_Type(
+                    INT
+                  ),
+                  Identifier(
+                    IDENTIFIER: "i"
+                  ),
                   ASSIGN,
-                  Constant(0),
+                  Const(
+                    Int(
+                      INTEGER_LITERAL: "0"
+                    )
+                  ),
                   SEMICOLON
                 ),
-                Constant(100),
-                Constant(1000),
+                Const(
+                  Int(
+                    INTEGER_LITERAL: "100"
+                  )
+                ),
+                SEMICOLON,
+                Const(
+                  Int(
+                    INTEGER_LITERAL: "1000"
+                  )
+                ),
+                RIGHT_PARENTHESIS,
                 Block(
                   LEFT_BRACE,
                   Block_Item_List(
                     Block_Item(
                       Variable_Declaration(
-                        Data_Type(INT),
-                        IDENTIFIER("a"),
+                        Data_Type(
+                          INT
+                        ),
+                        Identifier(
+                          IDENTIFIER: "a"
+                        ),
                         ASSIGN,
-                        Constant(0),
+                        Const(
+                          Int(
+                            INTEGER_LITERAL: "0"
+                          )
+                        ),
                         SEMICOLON
                       )
                     ),
                     Block_Item(
                       Statement(
                         For_Statement(
+                          FOR,
+                          LEFT_PARENTHESIS,
                           Array_Declaration(
-                            Data_Type(INT),
-                            IDENTIFIER("arr"),
+                            Data_Type(
+                              INT
+                            ),
+                            Identifier(
+                              IDENTIFIER: "arr"
+                            ),
                             LEFT_BRACKET,
-                            Constant(5),
+                            Const(
+                              Int(
+                                INTEGER_LITERAL: "5"
+                              )
+                            ),
                             RIGHT_BRACKET,
                             ASSIGN,
                             LEFT_BRACE,
                             Argument_List(
-                              Constant(1)
+                              Const(
+                                Int(
+                                  INTEGER_LITERAL: "1"
+                                )
+                              )
                             ),
                             RIGHT_BRACE,
                             SEMICOLON
                           ),
-                          Constant(100),
-                          Constant(100),
+                          Const(
+                            Int(
+                              INTEGER_LITERAL: "100"
+                            )
+                          ),
+                          SEMICOLON,
+                          Const(
+                            Int(
+                              INTEGER_LITERAL: "100"
+                            )
+                          ),
+                          RIGHT_PARENTHESIS,
                           Block(
                             LEFT_BRACE,
                             Block_Item_List(
                               Block_Item(
                                 Variable_Declaration(
-                                  Data_Type(INT),
-                                  IDENTIFIER("b"),
+                                  Data_Type(
+                                    INT
+                                  ),
+                                  Identifier(
+                                    IDENTIFIER: "b"
+                                  ),
                                   SEMICOLON
                                 )
                               ),
                               Block_Item(
                                 Statement(
                                   Const_Statement(
-                                    Constant(1000),
+                                    Const(
+                                      Int(
+                                        INTEGER_LITERAL: "1000"
+                                      )
+                                    ),
                                     SEMICOLON
                                   )
                                 )
@@ -165,7 +292,11 @@ Program(
                       Statement(
                         Return_Statement(
                           RETURN,
-                          Constant(0),
+                          Const(
+                            Int(
+                              INTEGER_LITERAL: "0"
+                            )
+                          ),
                           SEMICOLON
                         )
                       )
@@ -181,15 +312,23 @@ Program(
               While_Statement(
                 WHILE,
                 LEFT_PARENTHESIS,
-                Constant(true),
+                Const(
+                  Bool(
+                    TRUE
+                  )
+                ),
                 RIGHT_PARENTHESIS,
                 Block(
                   LEFT_BRACE,
                   Block_Item_List(
                     Block_Item(
                       Variable_Declaration(
-                        Data_Type(INT),
-                        IDENTIFIER("a"),
+                        Data_Type(
+                          INT
+                        ),
+                        Identifier(
+                          IDENTIFIER: "a"
+                        ),
                         SEMICOLON
                       )
                     ),
@@ -198,7 +337,11 @@ Program(
                         While_Statement(
                           WHILE,
                           LEFT_PARENTHESIS,
-                          Constant(5),
+                          Const(
+                            Int(
+                              INTEGER_LITERAL: "5"
+                            )
+                          ),
                           RIGHT_PARENTHESIS,
                           Block(
                             LEFT_BRACE,
@@ -206,7 +349,11 @@ Program(
                               Block_Item(
                                 Statement(
                                   Const_Statement(
-                                    Constant(5),
+                                    Const(
+                                      Int(
+                                        INTEGER_LITERAL: "5"
+                                      )
+                                    ),
                                     SEMICOLON
                                   )
                                 )
@@ -221,7 +368,11 @@ Program(
                       Statement(
                         Return_Statement(
                           RETURN,
-                          Constant(1),
+                          Const(
+                            Int(
+                              INTEGER_LITERAL: "1"
+                            )
+                          ),
                           SEMICOLON
                         )
                       )
@@ -236,7 +387,11 @@ Program(
             Statement(
               Return_Statement(
                 RETURN,
-                Constant(true),
+                Const(
+                  Bool(
+                    TRUE
+                  )
+                ),
                 SEMICOLON
               )
             )
@@ -245,7 +400,11 @@ Program(
             Statement(
               Return_Statement(
                 RETURN,
-                Constant('c'),
+                Const(
+                  Char(
+                    CHARACTER_LITERAL: "'c'"
+                  )
+                ),
                 SEMICOLON
               )
             )
@@ -254,7 +413,11 @@ Program(
             Statement(
               Return_Statement(
                 RETURN,
-                Constant(0),
+                Const(
+                  Int(
+                    INTEGER_LITERAL: "0"
+                  )
+                ),
                 SEMICOLON
               )
             )
@@ -262,7 +425,11 @@ Program(
           Block_Item(
             Statement(
               Const_Statement(
-                Constant(5),
+                Const(
+                  Int(
+                    INTEGER_LITERAL: "5"
+                  )
+                ),
                 SEMICOLON
               )
             )
@@ -270,7 +437,11 @@ Program(
           Block_Item(
             Statement(
               Const_Statement(
-                Constant(false),
+                Const(
+                  Bool(
+                    FALSE
+                  )
+                ),
                 SEMICOLON
               )
             )
@@ -282,26 +453,51 @@ Program(
           ),
           Block_Item(
             Array_Declaration(
-              Data_Type(INT),
-              IDENTIFIER("arr"),
+              Data_Type(
+                INT
+              ),
+              Identifier(
+                IDENTIFIER: "arr"
+              ),
               LEFT_BRACKET,
-              Constant(1),
+              Const(
+                Int(
+                  INTEGER_LITERAL: "1"
+                )
+              ),
               RIGHT_BRACKET,
               SEMICOLON
             )
           ),
           Block_Item(
             Array_Declaration(
-              Data_Type(BOOL),
-              IDENTIFIER("array"),
+              Data_Type(
+                BOOL
+              ),
+              Identifier(
+                IDENTIFIER: "array"
+              ),
               LEFT_BRACKET,
-              Constant(5),
+              Const(
+                Int(
+                  INTEGER_LITERAL: "5"
+                )
+              ),
               RIGHT_BRACKET,
               ASSIGN,
               LEFT_BRACE,
               Argument_List(
-                Constant(1),
-                Constant(2)
+                Const(
+                  Int(
+                    INTEGER_LITERAL: "1"
+                  )
+                ),
+                COMMA,
+                Const(
+                  Int(
+                    INTEGER_LITERAL: "2"
+                  )
+                )
               ),
               RIGHT_BRACE,
               SEMICOLON
@@ -309,18 +505,45 @@ Program(
           ),
           Block_Item(
             Array_Declaration(
-              Data_Type(INT),
-              IDENTIFIER("array"),
+              Data_Type(
+                INT
+              ),
+              Identifier(
+                IDENTIFIER: "array"
+              ),
               LEFT_BRACKET,
-              Constant(2),
+              Const(
+                Int(
+                  INTEGER_LITERAL: "2"
+                )
+              ),
               RIGHT_BRACKET,
               ASSIGN,
               LEFT_BRACE,
               Argument_List(
-                Constant('c'),
-                Constant(true),
-                Constant(0),
-                Constant(1.0)
+                Const(
+                  Char(
+                    CHARACTER_LITERAL: "'c'"
+                  )
+                ),
+                COMMA,
+                Const(
+                  Bool(
+                    TRUE
+                  )
+                ),
+                COMMA,
+                Const(
+                  Int(
+                    INTEGER_LITERAL: "0"
+                  )
+                ),
+                COMMA,
+                Const(
+                  Float(
+                    FLOAT_LITERAL: "1.0"
+                  )
+                )
               ),
               RIGHT_BRACE,
               SEMICOLON
@@ -328,19 +551,35 @@ Program(
           ),
           Block_Item(
             Variable_Declaration(
-              Data_Type(INT),
-              IDENTIFIER("e"),
+              Data_Type(
+                INT
+              ),
+              Identifier(
+                IDENTIFIER: "e"
+              ),
               ASSIGN,
-              Constant('c'),
+              Const(
+                Char(
+                  CHARACTER_LITERAL: "'c'"
+                )
+              ),
               SEMICOLON
             )
           ),
           Block_Item(
             Variable_Declaration(
-              Data_Type(BOOL),
-              IDENTIFIER("validity"),
+              Data_Type(
+                BOOL
+              ),
+              Identifier(
+                IDENTIFIER: "validity"
+              ),
               ASSIGN,
-              Constant(true),
+              Const(
+                Bool(
+                  TRUE
+                )
+              ),
               SEMICOLON
             )
           )
@@ -351,16 +590,34 @@ Program(
   ),
   Declaration(
     Function_Declaration(
-      Data_Type(BOOL),
-      IDENTIFIER("isValid"),
+      Data_Type(
+        BOOL
+      ),
+      Identifier(
+        IDENTIFIER: "isValid"
+      ),
       LEFT_PARENTHESIS,
       Parameter_List(
-        Data_Type(BOOL),
-        IDENTIFIER("x"),
-        Data_Type(INT),
-        IDENTIFIER("y"),
-        Data_Type(CHAR),
-        IDENTIFIER("z")
+        Data_Type(
+          BOOL
+        ),
+        Identifier(
+          IDENTIFIER: "x"
+        ),
+        COMMA,
+        Data_Type(
+          INT
+        ),
+        Identifier(
+          IDENTIFIER: "y"
+        ),
+        COMMA,
+        Data_Type(
+          CHAR
+        ),
+        Identifier(
+          IDENTIFIER: "z"
+        )
       ),
       RIGHT_PARENTHESIS,
       Block(
@@ -368,10 +625,16 @@ Program(
         Block_Item_List(
           Block_Item(
             Variable_Declaration(
-              Data_Type(INT),
-              IDENTIFIER("a"),
+              Data_Type(
+                INT
+              ),
+              Identifier(
+                IDENTIFIER: "a"
+              ),
               COMMA,
-              IDENTIFIER("b"),
+              Identifier(
+                IDENTIFIER: "b"
+              ),
               SEMICOLON
             )
           )

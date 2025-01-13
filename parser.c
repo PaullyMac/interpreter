@@ -31,6 +31,10 @@ ParseTreeNode *create_while_statement_node();
 ParseTreeNode *create_for_statement_node();
 ParseTreeNode *create_exp_node();
 ParseTreeNode *create_const_node();
+ParseTreeNode *create_int_literal_node();
+ParseTreeNode *create_float_literal_node();
+ParseTreeNode *create_char_literal_node();
+ParseTreeNode *create_bool_literal_node();
 ParseTreeNode *create_node(const char *name);
 
 // Function prototypes for printing the parse tree
@@ -66,6 +70,10 @@ ParseTreeNode *parse_while_statement();
 ParseTreeNode *parse_for_statement();
 ParseTreeNode *parse_exp();
 ParseTreeNode *parse_const();
+ParseTreeNode *parse_int_literal();
+ParseTreeNode *parse_float_literal();
+ParseTreeNode *parse_char_literal();
+ParseTreeNode *parse_bool_literal();
 
 void match(TokenType type);
 void add_child(ParseTreeNode *parent, ParseTreeNode *child);
@@ -295,32 +303,33 @@ ParseTreeNode *parse_parameter_list() {
 // <data_type> ::= “int” | “float” | “char” | “bool”
 ParseTreeNode *parse_data_type() {
     ParseTreeNode *node = create_data_type_node();
-    node->token = malloc(sizeof(Token));
-    if (!node->token) {
-        fprintf(stderr, "Error: Memory allocation failed in parse_data_type\n");
-        exit(1);
+    if (current_token < num_tokens) {
+        if (tokens[current_token].type == INT) {
+            add_child(node, match_and_create_node(INT, "INTT"));
+        } else if (tokens[current_token].type == FLOAT) {
+            add_child(node, match_and_create_node(FLOAT, "FLOATT"));
+        } else if (tokens[current_token].type == CHAR) {
+            add_child(node, match_and_create_node(CHAR, "CHARR"));
+        } else if (tokens[current_token].type == BOOL) {
+            add_child(node, match_and_create_node(BOOL, "BOOL"));
+        } else {
+            fprintf(stderr, "Error: Expected data type at line %d\n", tokens[current_token].line_number);
+            exit(1);
+        }
     }
-    *node->token = tokens[current_token];
-
-    if (!(current_token < num_tokens && (tokens[current_token].type == INT || tokens[current_token].type == FLOAT ||
-                                       tokens[current_token].type == CHAR || tokens[current_token].type == BOOL))) {
-        fprintf(stderr, "Error: Expected data type at line %d\n", tokens[current_token].line_number);
-        exit(1);
-    }
-    match(tokens[current_token].type);
     return node;
 }
 
 // <identifier> ::= identifier token
 ParseTreeNode *parse_identifier() {
     ParseTreeNode *node = create_identifier_node();
-    node->token = malloc(sizeof(Token));
-    if (!node->token) {
-        fprintf(stderr, "Error: Memory allocation failed in parse_const\n");
+    if (tokens[current_token].type == IDENTIFIER) {
+        add_child(node, match_and_create_node(IDENTIFIER, "IDENTIFIERR"));
+    } else {
+        fprintf(stderr, "Error: Expected data type at line %d\n", tokens[current_token].line_number);
         exit(1);
     }
-    *node->token = tokens[current_token];
-    match(tokens[current_token].type);
+
     return node;
 }
 
@@ -496,37 +505,46 @@ ParseTreeNode *parse_argument_list() {
 // Function to parse a constant: <const> ::= <int> | <float> | <char> | <bool>
 ParseTreeNode *parse_const() {
     ParseTreeNode *node = create_const_node();
-    node->token = malloc(sizeof(Token));
-    if (!node->token) {
-        fprintf(stderr, "Error: Memory allocation failed in parse_const\n");
-        exit(1);
+    
+    if (current_token < num_tokens) {
+        switch (tokens[current_token].type)
+        {
+            case INTEGER_LITERAL:
+                ParseTreeNode *int_node = parse_int_literal();
+                add_child(node, int_node);
+                break;
+            case FLOAT_LITERAL:
+                ParseTreeNode *float_node = parse_float_literal();
+                add_child(node, float_node);
+                break;
+            case CHARACTER_LITERAL:
+                ParseTreeNode *char_node = parse_char_literal();
+                add_child(node, char_node);
+                break;
+            case TRUE:
+            case FALSE:
+                ParseTreeNode *bool_node = parse_bool_literal();
+                add_child(node, bool_node);
+                break;
+            
+            default:
+                fprintf(stderr, "Error: Expected a constant (int, float, char, or bool) at line %d\n", tokens[current_token].line_number);
+                exit(1);
+        }
     }
-    *node->token = tokens[current_token];
 
-    if (current_token < num_tokens && tokens[current_token].type == INTEGER_LITERAL) {
-        match(INTEGER_LITERAL);
-    } else if (current_token < num_tokens && tokens[current_token].type == FLOAT_LITERAL) {
-        match(FLOAT_LITERAL);
-    } else if (current_token < num_tokens && tokens[current_token].type == CHARACTER_LITERAL) {
-        match(CHARACTER_LITERAL);
-    } else if (current_token < num_tokens && (tokens[current_token].type == TRUE || tokens[current_token].type == FALSE)) {
-        match(tokens[current_token].type);
-    } else {
-        fprintf(stderr, "Error: Expected a constant (int, float, char, or bool) at line %d\n", tokens[current_token].line_number);
-        exit(1);
-    }
-    return node;
+    return node; 
 }
 
 // Function to parse a return statement: "return" <const> ";"
 ParseTreeNode *parse_return_statement() {
     ParseTreeNode *node = create_return_statement_node();
-    add_child(node, match_and_create_node(RETURN, "Return"));
+    add_child(node, match_and_create_node(RETURN, "RETURNN"));
 
     ParseTreeNode *const_node = parse_const();
     add_child(node, const_node);
 
-    add_child(node, match_and_create_node(SEMICOLON, "Semicolon"));
+    add_child(node, match_and_create_node(SEMICOLON, "SEMICOLONN"));
     return node;
 }
 
@@ -599,6 +617,36 @@ ParseTreeNode *parse_for_statement() {
     ParseTreeNode *block = parse_block();
     add_child(node, block);
 
+    return node;
+}
+
+ParseTreeNode *parse_int_literal() {
+    ParseTreeNode *node = create_int_literal_node();
+    add_child(node, match_and_create_node(INTEGER_LITERAL, "INTEGER_LITERALL"));
+
+    return node;
+}
+ParseTreeNode *parse_float_literal() {
+    ParseTreeNode *node = create_float_literal_node();
+    add_child(node, match_and_create_node(FLOAT_LITERAL, "FLOAT_LITERALL"));
+    
+    return node;
+}
+ParseTreeNode *parse_char_literal() {
+    ParseTreeNode *node = create_char_literal_node();
+    add_child(node, match_and_create_node(CHARACTER_LITERAL, "CHARACTER_LITERALL"));
+    
+    return node;
+}
+ParseTreeNode *parse_bool_literal() {
+    ParseTreeNode *node = create_bool_literal_node();
+
+    if (tokens[current_token].type == TRUE) {
+        add_child(node, match_and_create_node(TRUE, "TRUEE"));
+    } else {
+        add_child(node, match_and_create_node(FALSE, "FALSEE"));
+    }
+    
     return node;
 }
 
@@ -694,7 +742,24 @@ ParseTreeNode *create_exp_node() {
 }
 
 ParseTreeNode *create_const_node() {
-    return create_node("Constant");
+    return create_node("Const");
+}
+
+ParseTreeNode *create_int_literal_node()
+{
+    return create_node("Int");
+}
+ParseTreeNode *create_float_literal_node()
+{
+    return create_node("Float");
+}
+ParseTreeNode *create_char_literal_node()
+{
+    return create_node("Char");
+}
+ParseTreeNode *create_bool_literal_node()
+{
+    return create_node("Bool");
 }
 
 void match(TokenType type) {
@@ -715,32 +780,42 @@ void print_parse_tree(ParseTreeNode *node, int indent_level) {
     }
 
     print_indent(indent_level);
-    fprintf(output_file, "%s", node->name);
 
+    // Check if the node is a terminal node (has a token)
     if (node->token != NULL) {
-        fprintf(output_file, "(%s", token_names[node->token->type]);
-        if (node->token->type == IDENTIFIER || node->token->type == INTEGER_LITERAL ||
-            node->token->type == FLOAT_LITERAL || node->token->type == CHARACTER_LITERAL ||
-            node->token->type == STRING) {
-            fprintf(output_file, ": \"%s\"", node->token->lexeme);
+        // If it's a literal, print the token type and lexeme
+        if (node->token->type == INTEGER_LITERAL ||
+            node->token->type == FLOAT_LITERAL ||
+            node->token->type == CHARACTER_LITERAL ||
+            node->token->type == STRING ||
+            node->token->type == IDENTIFIER) {
+            fprintf(output_file, "%s: \"%s\"", token_names[node->token->type], node->token->lexeme);
         }
-        fprintf(output_file, ")");
+        // Otherwise, just print the token type
+        else {
+            fprintf(output_file, "%s", token_names[node->token->type]);
+        }
     }
+    // If it's not a terminal node, print the node name and recurse
+    else {
+        fprintf(output_file, "%s(", node->name);
 
-    if (node->num_children > 0) {
-        fprintf(output_file, "(\n");
-        for (int i = 0; i < node->num_children; i++) {
-            print_parse_tree(node->children[i], indent_level + 1);
-            if (i < node->num_children - 1) {
-                fprintf(output_file, ",\n");
-            } else {
-                fprintf(output_file, "\n");
+        // Recursively print the children
+        if (node->num_children > 0) {
+            fprintf(output_file, "\n");
+            for (int i = 0; i < node->num_children; i++) {
+                print_parse_tree(node->children[i], indent_level + 1);
+                if (i < node->num_children - 1) {
+                    fprintf(output_file, ",\n");
+                }
             }
+            fprintf(output_file, "\n");
+            print_indent(indent_level);
         }
-        print_indent(indent_level);
         fprintf(output_file, ")");
     }
 }
+
 
 // Helper function to print indentation to a file
 void print_indent(int indent_level) {
