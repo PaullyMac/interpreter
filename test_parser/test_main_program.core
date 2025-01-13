@@ -4,7 +4,9 @@ int array[10];
 // Test variables
 int a, b, c;
 int d = 5;
-int c;
+int c = bar(1, 2, 3);
+int b = a; 
+int arr[3] = {((foo(5)), a[20], multiply(a)};
 
 // Function prototypes
 int isValid(bool x, int y, char z);

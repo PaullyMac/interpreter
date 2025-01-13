@@ -547,31 +547,14 @@ Token *load_tokens(const char *filename, int *num_tokens) {
 
 ParseTreeNode *parse_argument_list() {
     ParseTreeNode *node = create_argument_list_node();
-    if (current_token < num_tokens && (tokens[current_token].type == IDENTIFIER ||
-                                       tokens[current_token].type == INTEGER_LITERAL ||
-                                       tokens[current_token].type == FLOAT_LITERAL ||
-                                       tokens[current_token].type == CHARACTER_LITERAL ||
-                                       tokens[current_token].type == TRUE ||
-                                       tokens[current_token].type == FALSE)) {
         ParseTreeNode *factor = parse_factor();
         add_child(node, factor);
 
-        while (current_token < num_tokens && tokens[current_token].type == COMMA) {
-            add_child(node, match_and_create_node(COMMA, "Comma"));
+    while (current_token < num_tokens && tokens[current_token].type == COMMA) {
+        add_child(node, match_and_create_node(COMMA, "Comma"));
 
-            if (current_token < num_tokens && (tokens[current_token].type == IDENTIFIER ||
-                                               tokens[current_token].type == INTEGER_LITERAL ||
-                                               tokens[current_token].type == FLOAT_LITERAL ||
-                                               tokens[current_token].type == CHARACTER_LITERAL ||
-                                               tokens[current_token].type == TRUE ||
-                                               tokens[current_token].type == FALSE)) {
-                ParseTreeNode *factor = parse_factor();
-                add_child(node, factor);
-            } else {
-                fprintf(stderr, "Error: Expected a factor after comma in argument list at line %d\n", tokens[current_token].line_number);
-                synchronize();
-            }
-        }
+        ParseTreeNode *factor = parse_factor();
+        add_child(node, factor);
     }
     return node;
 }
@@ -663,8 +646,7 @@ ParseTreeNode *parse_return_statement() {
     ParseTreeNode *node = create_return_statement_node();
     add_child(node, match_and_create_node(RETURN, "RETURNN"));
 
-    ParseTreeNode *const_node = parse_const();
-    add_child(node, const_node);
+    add_child(node, parse_factor());
 
     add_child(node, match_and_create_node(SEMICOLON, "SEMICOLONN"));
     return node;
@@ -706,8 +688,8 @@ ParseTreeNode *parse_while_statement() {
     add_child(node, match_and_create_node(WHILE, "While"));
     add_child(node, match_and_create_node(LEFT_PARENTHESIS, "Left_Parenthesis"));
 
-    ParseTreeNode *const_node = parse_const();
-    add_child(node, const_node);
+    ParseTreeNode *factor_node = parse_factor();
+    add_child(node, factor_node);
 
     add_child(node, match_and_create_node(RIGHT_PARENTHESIS, "Right_Parenthesis"));
 
@@ -740,17 +722,17 @@ ParseTreeNode *parse_for_statement() {
             synchronize();
         }
     } else {
-        ParseTreeNode *const_statement = parse_const_statement();
-        add_child(node, const_statement);
+        ParseTreeNode *factor_statement = parse_factor_statement();
+        add_child(node, factor_statement);
     }
 
     // Parse the condition part
-    ParseTreeNode *condition = parse_const();
+    ParseTreeNode *condition = parse_factor();
     add_child(node, condition);
     add_child(node, match_and_create_node(SEMICOLON, "Semicolon"));
 
     // Parse the increment/decrement part
-    ParseTreeNode *increment = parse_const();
+    ParseTreeNode *increment = parse_factor();
     add_child(node, increment);
 
     add_child(node, match_and_create_node(RIGHT_PARENTHESIS, "Right_Parenthesis"));
@@ -796,8 +778,8 @@ ParseTreeNode *parse_output_statement() {
                 ParseTreeNode *identifier = parse_identifier();
                 add_child(node, identifier);
             } else {
-                ParseTreeNode *const_node = parse_const();
-                add_child(node, const_node);
+                ParseTreeNode *factor_node = parse_factor();
+                add_child(node, factor_node);
             }
         }
     } else if (current_token < num_tokens && tokens[current_token].type == IDENTIFIER) {
@@ -817,7 +799,7 @@ ParseTreeNode *parse_if_statement() {
     add_child(node, match_and_create_node(IF, "If"));
     add_child(node, match_and_create_node(LEFT_PARENTHESIS, "Left_Parenthesis"));
 
-    ParseTreeNode *condition = parse_const();
+    ParseTreeNode *condition = parse_factor();
     add_child(node, condition);
 
     add_child(node, match_and_create_node(RIGHT_PARENTHESIS, "Right_Parenthesis"));

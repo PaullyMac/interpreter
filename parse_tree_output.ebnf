@@ -17,15 +17,19 @@ Program(
       ASSIGN,
       LEFT_BRACE,
       Argument_List(
-        Const(
-          Int(
-            INTEGER_LITERAL: "1"
+        Factor(
+          Const(
+            Int(
+              INTEGER_LITERAL: "1"
+            )
           )
         ),
         COMMA,
-        Const(
-          Int(
-            INTEGER_LITERAL: "2"
+        Factor(
+          Const(
+            Int(
+              INTEGER_LITERAL: "2"
+            )
           )
         )
       ),
@@ -79,9 +83,11 @@ Program(
         IDENTIFIER: "d"
       ),
       ASSIGN,
-      Const(
-        Int(
-          INTEGER_LITERAL: "5"
+      Factor(
+        Const(
+          Int(
+            INTEGER_LITERAL: "5"
+          )
         )
       ),
       SEMICOLON
@@ -95,56 +101,35 @@ Program(
       Identifier(
         IDENTIFIER: "c"
       ),
+      ASSIGN,
+      Factor(),
       SEMICOLON
     )
   ),
+  Declaration(),
+  Declaration(
+    Variable_Declaration(
+      Data_Type(
+        BOOL
+      ),
+      Identifier(
+        IDENTIFIER: "x"
+      ),
+      COMMA,
+      Identifier()
+    )
+  ),
+  Declaration(),
   Declaration(
     Function_Declaration(
       Data_Type(
         INT
       ),
       Identifier(
-        IDENTIFIER: "isValid"
+        IDENTIFIER: "isNotValid"
       ),
       LEFT_PARENTHESIS,
-      Parameter_List(
-        Data_Type(
-          BOOL
-        ),
-        Identifier(
-          IDENTIFIER: "x"
-        ),
-        COMMA,
-        Data_Type(
-          INT
-        ),
-        Identifier(
-          IDENTIFIER: "y"
-        ),
-        COMMA,
-        Data_Type(
-          CHAR
-        ),
-        Identifier(
-          IDENTIFIER: "z"
-        )
-      ),
-      RIGHT_PARENTHESIS,
-      SEMICOLON
-    )
-  ),
-  Declaration(
-    Function_Declaration(
-      Data_Type(
-        INT
-      ),
-      Identifier(
-        IDENTIFIER: "empty"
-      ),
-      LEFT_PARENTHESIS,
-      Parameter_List(
-        VOID
-      ),
+      Parameter_List(),
       RIGHT_PARENTHESIS,
       SEMICOLON
     )
@@ -158,422 +143,13 @@ Program(
         IDENTIFIER: "main"
       ),
       LEFT_PARENTHESIS,
-      Parameter_List(
-        VOID
-      ),
+      Parameter_List(),
       RIGHT_PARENTHESIS,
       Block(
         LEFT_BRACE,
         Block_Item_List(
           Block_Item(
             Statement(
-              Input_Statement(
-                SCANF,
-                LEFT_PARENTHESIS,
-                STRING: "%d",
-                RIGHT_PARENTHESIS,
-                SEMICOLON
-              )
-            )
-          ),
-          Block_Item(
-            Statement(
-              Input_Statement(
-                SCANF,
-                LEFT_PARENTHESIS,
-                STRING: "dog",
-                RIGHT_PARENTHESIS,
-                SEMICOLON
-              )
-            )
-          ),
-          Block_Item(
-            Statement(
-              Input_Statement(
-                SCANF,
-                LEFT_PARENTHESIS,
-                STRING: "%f",
-                COMMA,
-                AMPERSAND,
-                Identifier(
-                  IDENTIFIER: "value"
-                ),
-                RIGHT_PARENTHESIS,
-                SEMICOLON
-              )
-            )
-          ),
-          Block_Item(
-            Statement(
-              Input_Statement(
-                SCANF,
-                LEFT_PARENTHESIS,
-                STRING: "%f %f",
-                COMMA,
-                AMPERSAND,
-                Identifier(
-                  IDENTIFIER: "value1"
-                ),
-                COMMA,
-                AMPERSAND,
-                Identifier(
-                  IDENTIFIER: "value2"
-                ),
-                RIGHT_PARENTHESIS,
-                SEMICOLON
-              )
-            )
-          ),
-          Block_Item(
-            Statement(
-              Input_Statement(
-                SCANF,
-                LEFT_PARENTHESIS,
-                STRING: " ",
-                RIGHT_PARENTHESIS,
-                SEMICOLON
-              )
-            )
-          ),
-          Block_Item(
-            Statement(
-              Output_Statement(
-                PRINTF,
-                LEFT_PARENTHESIS,
-                STRING: "Hello, Universe!",
-                RIGHT_PARENTHESIS
-              )
-            )
-          ),
-          Block_Item(
-            Statement(
-              SEMICOLON
-            )
-          ),
-          Block_Item(
-            Statement(
-              Output_Statement(
-                PRINTF,
-                LEFT_PARENTHESIS,
-                Identifier(
-                  IDENTIFIER: "name"
-                ),
-                RIGHT_PARENTHESIS
-              )
-            )
-          ),
-          Block_Item(
-            Statement(
-              Output_Statement(
-                PRINTF,
-                LEFT_PARENTHESIS,
-                STRING: "Hello, your grade is %d %d",
-                COMMA,
-                Identifier(
-                  IDENTIFIER: "grade"
-                ),
-                RIGHT_PARENTHESIS
-              )
-            )
-          ),
-          Block_Item(
-            Statement(
-              SEMICOLON
-            )
-          ),
-          Block_Item(
-            Statement(
-              Output_Statement(
-                PRINTF,
-                LEFT_PARENTHESIS,
-                STRING: "Hello, your grade is %d %d",
-                COMMA,
-                Identifier(
-                  IDENTIFIER: "grade"
-                ),
-                COMMA,
-                Identifier(
-                  IDENTIFIER: "year"
-                ),
-                RIGHT_PARENTHESIS
-              )
-            )
-          ),
-          Block_Item(
-            Statement(
-              SEMICOLON
-            )
-          ),
-          Block_Item(
-            Statement(
-              If_Statement(
-                IF,
-                LEFT_PARENTHESIS,
-                Const(
-                  Bool(
-                    TRUE
-                  )
-                ),
-                RIGHT_PARENTHESIS,
-                Block(
-                  LEFT_BRACE,
-                  Block_Item_List(
-                    Block_Item(
-                      Statement(
-                        Return_Statement(
-                          RETURN,
-                          Const(
-                            Int(
-                              INTEGER_LITERAL: "0"
-                            )
-                          ),
-                          SEMICOLON
-                        )
-                      )
-                    )
-                  ),
-                  RIGHT_BRACE
-                )
-              )
-            )
-          ),
-          Block_Item(
-            Statement(
-              If_Statement(
-                IF,
-                LEFT_PARENTHESIS,
-                Const(
-                  Bool(
-                    FALSE
-                  )
-                ),
-                RIGHT_PARENTHESIS,
-                Block(
-                  LEFT_BRACE,
-                  Block_Item_List(
-                    Block_Item(
-                      Variable_Declaration(
-                        Data_Type(
-                          BOOL
-                        ),
-                        Identifier(
-                          IDENTIFIER: "a"
-                        ),
-                        SEMICOLON
-                      )
-                    )
-                  ),
-                  RIGHT_BRACE
-                ),
-                Else_Clause(
-                  ELSE,
-                  Block(
-                    LEFT_BRACE,
-                    Block_Item_List(
-                      Block_Item(
-                        Variable_Declaration(
-                          Data_Type(
-                            BOOL
-                          ),
-                          Identifier(
-                            IDENTIFIER: "b"
-                          ),
-                          SEMICOLON
-                        )
-                      )
-                    ),
-                    RIGHT_BRACE
-                  )
-                )
-              )
-            )
-          ),
-          Block_Item(
-            Statement(
-              If_Statement(
-                IF,
-                LEFT_PARENTHESIS,
-                Const(
-                  Bool(
-                    FALSE
-                  )
-                ),
-                RIGHT_PARENTHESIS,
-                Block(
-                  LEFT_BRACE,
-                  Block_Item_List(
-                    Block_Item(
-                      Statement(
-                        Return_Statement(
-                          RETURN,
-                          Const(
-                            Int(
-                              INTEGER_LITERAL: "0"
-                            )
-                          ),
-                          SEMICOLON
-                        )
-                      )
-                    )
-                  ),
-                  RIGHT_BRACE
-                ),
-                Else_Clause(
-                  ELSE,
-                  If_Statement(
-                    IF,
-                    LEFT_PARENTHESIS,
-                    Const(
-                      Bool(
-                        TRUE
-                      )
-                    ),
-                    RIGHT_PARENTHESIS,
-                    Block(
-                      LEFT_BRACE,
-                      Block_Item_List(
-                        Block_Item(
-                          Variable_Declaration(
-                            Data_Type(
-                              INT
-                            ),
-                            Identifier(
-                              IDENTIFIER: "a"
-                            ),
-                            SEMICOLON
-                          )
-                        )
-                      ),
-                      RIGHT_BRACE
-                    ),
-                    Else_Clause(
-                      ELSE,
-                      If_Statement(
-                        IF,
-                        LEFT_PARENTHESIS,
-                        Const(
-                          Int(
-                            INTEGER_LITERAL: "1"
-                          )
-                        ),
-                        RIGHT_PARENTHESIS,
-                        Block(
-                          LEFT_BRACE,
-                          Block_Item_List(
-                            Block_Item(
-                              Variable_Declaration(
-                                Data_Type(
-                                  INT
-                                ),
-                                Identifier(
-                                  IDENTIFIER: "b"
-                                ),
-                                SEMICOLON
-                              )
-                            )
-                          ),
-                          RIGHT_BRACE
-                        ),
-                        Else_Clause(
-                          ELSE,
-                          Block(
-                            LEFT_BRACE,
-                            Block_Item_List(
-                              Block_Item(
-                                Variable_Declaration(
-                                  Data_Type(
-                                    INT
-                                  ),
-                                  Identifier(
-                                    IDENTIFIER: "c"
-                                  ),
-                                  SEMICOLON
-                                )
-                              )
-                            ),
-                            RIGHT_BRACE
-                          )
-                        )
-                      )
-                    )
-                  )
-                )
-              )
-            )
-          ),
-          Block_Item(
-            Statement(
-              If_Statement(
-                IF,
-                LEFT_PARENTHESIS,
-                Const(
-                  Bool(
-                    FALSE
-                  )
-                ),
-                RIGHT_PARENTHESIS,
-                Block(
-                  LEFT_BRACE,
-                  Block_Item_List(
-                    Block_Item(
-                      Statement(
-                        If_Statement(
-                          IF,
-                          LEFT_PARENTHESIS,
-                          Const(
-                            Bool(
-                              TRUE
-                            )
-                          ),
-                          RIGHT_PARENTHESIS,
-                          Block(
-                            LEFT_BRACE,
-                            Block_Item_List(
-                              Block_Item(
-                                Variable_Declaration(
-                                  Data_Type(
-                                    INT
-                                  ),
-                                  Identifier(
-                                    IDENTIFIER: "test"
-                                  ),
-                                  SEMICOLON
-                                )
-                              )
-                            ),
-                            RIGHT_BRACE
-                          )
-                        )
-                      )
-                    )
-                  ),
-                  RIGHT_BRACE
-                ),
-                Else_Clause(
-                  ELSE,
-                  Block(
-                    LEFT_BRACE,
-                    Block_Item_List(
-                      Block_Item(
-                        Variable_Declaration(
-                          Data_Type(
-                            BOOL
-                          ),
-                          Identifier(
-                            IDENTIFIER: "b"
-                          ),
-                          SEMICOLON
-                        )
-                      )
-                    ),
-                    RIGHT_BRACE
-                  )
-                )
-              )
-            )
-          ),
-          Block_Item(
-            Statement(
               For_Statement(
                 FOR,
                 LEFT_PARENTHESIS,
@@ -585,22 +161,28 @@ Program(
                     IDENTIFIER: "i"
                   ),
                   ASSIGN,
-                  Const(
-                    Int(
-                      INTEGER_LITERAL: "0"
+                  Factor(
+                    Const(
+                      Int(
+                        INTEGER_LITERAL: "0"
+                      )
                     )
                   ),
                   SEMICOLON
                 ),
-                Const(
-                  Int(
-                    INTEGER_LITERAL: "1"
+                Factor(
+                  Const(
+                    Int(
+                      INTEGER_LITERAL: "100"
+                    )
                   )
                 ),
                 SEMICOLON,
-                Const(
-                  Int(
-                    INTEGER_LITERAL: "1"
+                Factor(
+                  Const(
+                    Int(
+                      INTEGER_LITERAL: "1000"
+                    )
                   )
                 ),
                 RIGHT_PARENTHESIS,
@@ -613,87 +195,61 @@ Program(
                           INT
                         ),
                         Identifier(
-                          IDENTIFIER: "result"
-                        ),
-                        ASSIGN,
-                        Const(
-                          Int(
-                            INTEGER_LITERAL: "2"
-                          )
-                        ),
+                          IDENTIFIER: "a"
+                        )
+                      )
+                    ),
+                    Block_Item(
+                      Statement(
                         SEMICOLON
                       )
-                    )
-                  ),
-                  RIGHT_BRACE
-                )
-              )
-            )
-          ),
-          Block_Item(
-            Statement(
-              For_Statement(
-                FOR,
-                LEFT_PARENTHESIS,
-                Variable_Declaration(
-                  Data_Type(
-                    INT
-                  ),
-                  Identifier(
-                    IDENTIFIER: "i"
-                  ),
-                  ASSIGN,
-                  Const(
-                    Int(
-                      INTEGER_LITERAL: "0"
-                    )
-                  ),
-                  SEMICOLON
-                ),
-                Const(
-                  Int(
-                    INTEGER_LITERAL: "0"
-                  )
-                ),
-                SEMICOLON,
-                Const(
-                  Int(
-                    INTEGER_LITERAL: "0"
-                  )
-                ),
-                RIGHT_PARENTHESIS,
-                Block(
-                  LEFT_BRACE,
-                  Block_Item_List(
+                    ),
                     Block_Item(
                       Statement(
                         For_Statement(
                           FOR,
                           LEFT_PARENTHESIS,
-                          Variable_Declaration(
+                          Array_Declaration(
                             Data_Type(
                               INT
                             ),
                             Identifier(
-                              IDENTIFIER: "j"
+                              IDENTIFIER: "arr"
                             ),
-                            ASSIGN,
+                            LEFT_BRACKET,
                             Const(
                               Int(
-                                INTEGER_LITERAL: "0"
+                                INTEGER_LITERAL: "5"
                               )
                             ),
+                            RIGHT_BRACKET,
+                            ASSIGN,
+                            LEFT_BRACE,
+                            Argument_List(
+                              Factor(
+                                Const(
+                                  Int(
+                                    INTEGER_LITERAL: "1"
+                                  )
+                                )
+                              )
+                            ),
+                            RIGHT_BRACE,
                             SEMICOLON
                           ),
-                          Const(
-                            Int(
-                              INTEGER_LITERAL: "0"
+                          Factor(
+                            Const(
+                              Int(
+                                INTEGER_LITERAL: "100"
+                              )
                             )
                           ),
                           SEMICOLON,
-                          Const(
-                            Int(
-                              INTEGER_LITERAL: "0"
+                          Factor(
+                            Const(
+                              Int(
+                                INTEGER_LITERAL: "100"
+                              )
                             )
                           ),
                           RIGHT_PARENTHESIS,
@@ -706,107 +262,17 @@ Program(
                                     INT
                                   ),
                                   Identifier(
-                                    IDENTIFIER: "result"
-                                  ),
-                                  ASSIGN,
-                                  Const(
-                                    Int(
-                                      INTEGER_LITERAL: "5"
-                                    )
+                                    IDENTIFIER: "b"
                                   ),
                                   SEMICOLON
                                 )
-                              )
-                            ),
-                            RIGHT_BRACE
-                          )
-                        )
-                      )
-                    )
-                  ),
-                  RIGHT_BRACE
-                )
-              )
-            )
-          ),
-          Block_Item(
-            Statement(
-              While_Statement(
-                WHILE,
-                LEFT_PARENTHESIS,
-                Const(
-                  Bool(
-                    FALSE
-                  )
-                ),
-                RIGHT_PARENTHESIS,
-                Block(
-                  LEFT_BRACE,
-                  Block_Item_List(
-                    Block_Item(
-                      Statement(
-                        Return_Statement(
-                          RETURN,
-                          Const(
-                            Bool(
-                              FALSE
-                            )
-                          ),
-                          SEMICOLON
-                        )
-                      )
-                    )
-                  ),
-                  RIGHT_BRACE
-                )
-              )
-            )
-          ),
-          Block_Item(
-            Statement(
-              While_Statement(
-                WHILE,
-                LEFT_PARENTHESIS,
-                Const(
-                  Bool(
-                    TRUE
-                  )
-                ),
-                RIGHT_PARENTHESIS,
-                Block(
-                  LEFT_BRACE,
-                  Block_Item_List(
-                    Block_Item(
-                      Variable_Declaration(
-                        Data_Type(
-                          INT
-                        ),
-                        Identifier(
-                          IDENTIFIER: "a"
-                        ),
-                        SEMICOLON
-                      )
-                    ),
-                    Block_Item(
-                      Statement(
-                        While_Statement(
-                          WHILE,
-                          LEFT_PARENTHESIS,
-                          Const(
-                            Int(
-                              INTEGER_LITERAL: "5"
-                            )
-                          ),
-                          RIGHT_PARENTHESIS,
-                          Block(
-                            LEFT_BRACE,
-                            Block_Item_List(
+                              ),
                               Block_Item(
                                 Statement(
                                   Const_Statement(
                                     Const(
                                       Int(
-                                        INTEGER_LITERAL: "5"
+                                        INTEGER_LITERAL: "1000"
                                       )
                                     ),
                                     SEMICOLON
@@ -823,9 +289,11 @@ Program(
                       Statement(
                         Return_Statement(
                           RETURN,
-                          Const(
-                            Bool(
-                              TRUE
+                          Factor(
+                            Const(
+                              Int(
+                                INTEGER_LITERAL: "0"
+                              )
                             )
                           ),
                           SEMICOLON
@@ -836,243 +304,6 @@ Program(
                   RIGHT_BRACE
                 )
               )
-            )
-          ),
-          Block_Item(
-            Variable_Declaration(
-              Data_Type(
-                INT
-              ),
-              Identifier(
-                IDENTIFIER: "value"
-              ),
-              SEMICOLON
-            )
-          ),
-          Block_Item(
-            Variable_Declaration(
-              Data_Type(
-                CHAR
-              ),
-              Identifier(
-                IDENTIFIER: "grade"
-              ),
-              ASSIGN,
-              Const(
-                Char(
-                  CHARACTER_LITERAL: "'a'"
-                )
-              ),
-              SEMICOLON
-            )
-          ),
-          Block_Item(
-            Variable_Declaration(
-              Data_Type(
-                FLOAT
-              ),
-              Identifier(
-                IDENTIFIER: "a"
-              ),
-              ASSIGN,
-              Const(
-                Int(
-                  INTEGER_LITERAL: "1"
-                )
-              ),
-              COMMA,
-              Identifier(
-                IDENTIFIER: "b"
-              ),
-              ASSIGN,
-              Const(
-                Int(
-                  INTEGER_LITERAL: "2"
-                )
-              ),
-              COMMA,
-              Identifier(
-                IDENTIFIER: "c"
-              ),
-              ASSIGN,
-              Const(
-                Int(
-                  INTEGER_LITERAL: "3"
-                )
-              ),
-              SEMICOLON
-            )
-          ),
-          Block_Item(
-            Variable_Declaration(
-              Data_Type(
-                BOOL
-              ),
-              Identifier(
-                IDENTIFIER: "a"
-              ),
-              COMMA,
-              Identifier(
-                IDENTIFIER: "b"
-              ),
-              COMMA,
-              Identifier(
-                IDENTIFIER: "c"
-              ),
-              SEMICOLON
-            )
-          ),
-          Block_Item(
-            Array_Declaration(
-              Data_Type(
-                INT
-              ),
-              Identifier(
-                IDENTIFIER: "arr"
-              ),
-              LEFT_BRACKET,
-              Const(
-                Int(
-                  INTEGER_LITERAL: "1"
-                )
-              ),
-              RIGHT_BRACKET,
-              SEMICOLON
-            )
-          ),
-          Block_Item(
-            Array_Declaration(
-              Data_Type(
-                BOOL
-              ),
-              Identifier(
-                IDENTIFIER: "array"
-              ),
-              LEFT_BRACKET,
-              Const(
-                Int(
-                  INTEGER_LITERAL: "5"
-                )
-              ),
-              RIGHT_BRACKET,
-              ASSIGN,
-              LEFT_BRACE,
-              Argument_List(
-                Const(
-                  Int(
-                    INTEGER_LITERAL: "1"
-                  )
-                ),
-                COMMA,
-                Const(
-                  Int(
-                    INTEGER_LITERAL: "2"
-                  )
-                )
-              ),
-              RIGHT_BRACE,
-              SEMICOLON
-            )
-          ),
-          Block_Item(
-            Array_Declaration(
-              Data_Type(
-                INT
-              ),
-              Identifier(
-                IDENTIFIER: "array"
-              ),
-              LEFT_BRACKET,
-              Const(
-                Int(
-                  INTEGER_LITERAL: "2"
-                )
-              ),
-              RIGHT_BRACKET,
-              ASSIGN,
-              LEFT_BRACE,
-              Argument_List(
-                Const(
-                  Char(
-                    CHARACTER_LITERAL: "'c'"
-                  )
-                ),
-                COMMA,
-                Const(
-                  Bool(
-                    TRUE
-                  )
-                ),
-                COMMA,
-                Const(
-                  Int(
-                    INTEGER_LITERAL: "0"
-                  )
-                ),
-                COMMA,
-                Const(
-                  Float(
-                    FLOAT_LITERAL: "1.0"
-                  )
-                )
-              ),
-              RIGHT_BRACE,
-              SEMICOLON
-            )
-          )
-        ),
-        RIGHT_BRACE
-      )
-    )
-  ),
-  Declaration(
-    Function_Declaration(
-      Data_Type(
-        BOOL
-      ),
-      Identifier(
-        IDENTIFIER: "isValid"
-      ),
-      LEFT_PARENTHESIS,
-      Parameter_List(
-        Data_Type(
-          BOOL
-        ),
-        Identifier(
-          IDENTIFIER: "x"
-        ),
-        COMMA,
-        Data_Type(
-          INT
-        ),
-        Identifier(
-          IDENTIFIER: "y"
-        ),
-        COMMA,
-        Data_Type(
-          CHAR
-        ),
-        Identifier(
-          IDENTIFIER: "z"
-        )
-      ),
-      RIGHT_PARENTHESIS,
-      Block(
-        LEFT_BRACE,
-        Block_Item_List(
-          Block_Item(
-            Variable_Declaration(
-              Data_Type(
-                INT
-              ),
-              Identifier(
-                IDENTIFIER: "a"
-              ),
-              COMMA,
-              Identifier(
-                IDENTIFIER: "b"
-              ),
-              SEMICOLON
             )
           )
         ),
