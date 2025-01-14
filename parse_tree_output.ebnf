@@ -155,77 +155,6 @@ Program(
     )
   ),
   Declaration(
-    Array_Declaration(
-      Data_Type(
-        INT
-      ),
-      Identifier(
-        IDENTIFIER: "arr"
-      ),
-      LEFT_BRACKET,
-      Const(
-        Int(
-          INTEGER_LITERAL: "3"
-        )
-      ),
-      RIGHT_BRACKET,
-      ASSIGN,
-      LEFT_BRACE,
-      Argument_List(
-        Factor(
-          LEFT_PARENTHESIS,
-          Factor(
-            Identifier(
-              IDENTIFIER: "foo"
-            ),
-            LEFT_PARENTHESIS,
-            Argument_List(
-              Factor(
-                Const(
-                  Int(
-                    INTEGER_LITERAL: "5"
-                  )
-                )
-              )
-            ),
-            RIGHT_PARENTHESIS
-          ),
-          RIGHT_PARENTHESIS
-        ),
-        COMMA,
-        Factor(
-          Identifier(
-            IDENTIFIER: "a"
-          ),
-          LEFT_BRACKET,
-          Const(
-            Int(
-              INTEGER_LITERAL: "20"
-            )
-          ),
-          RIGHT_BRACKET
-        ),
-        COMMA,
-        Factor(
-          Identifier(
-            IDENTIFIER: "multiply"
-          ),
-          LEFT_PARENTHESIS,
-          Argument_List(
-            Factor(
-              Identifier(
-                IDENTIFIER: "a"
-              )
-            )
-          ),
-          RIGHT_PARENTHESIS
-        )
-      ),
-      RIGHT_BRACE,
-      SEMICOLON
-    )
-  ),
-  Declaration(
     Function_Declaration(
       Data_Type(
         INT
@@ -269,9 +198,7 @@ Program(
         IDENTIFIER: "empty"
       ),
       LEFT_PARENTHESIS,
-      Parameter_List(
-        VOID
-      ),
+      Parameter_List(),
       RIGHT_PARENTHESIS,
       SEMICOLON
     )
@@ -285,9 +212,7 @@ Program(
         IDENTIFIER: "main"
       ),
       LEFT_PARENTHESIS,
-      Parameter_List(
-        VOID
-      ),
+      Parameter_List(),
       RIGHT_PARENTHESIS,
       Block(
         LEFT_BRACE,
@@ -740,19 +665,33 @@ Program(
                   SEMICOLON
                 ),
                 Factor(
-                  Const(
-                    Int(
-                      INTEGER_LITERAL: "1"
+                  Identifier(
+                    IDENTIFIER: "less_than"
+                  ),
+                  LEFT_PARENTHESIS,
+                  Argument_List(
+                    Factor(
+                      Identifier(
+                        IDENTIFIER: "i"
+                      )
                     )
-                  )
+                  ),
+                  RIGHT_PARENTHESIS
                 ),
                 SEMICOLON,
                 Factor(
-                  Const(
-                    Int(
-                      INTEGER_LITERAL: "1"
+                  Identifier(
+                    IDENTIFIER: "increment"
+                  ),
+                  LEFT_PARENTHESIS,
+                  Argument_List(
+                    Factor(
+                      Identifier(
+                        IDENTIFIER: "i"
+                      )
                     )
-                  )
+                  ),
+                  RIGHT_PARENTHESIS
                 ),
                 RIGHT_PARENTHESIS,
                 Block(
@@ -799,25 +738,21 @@ Program(
                   Factor(
                     Const(
                       Int(
-                        INTEGER_LITERAL: "0"
+                        INTEGER_LITERAL: "1"
                       )
                     )
                   ),
                   SEMICOLON
                 ),
                 Factor(
-                  Const(
-                    Int(
-                      INTEGER_LITERAL: "0"
-                    )
+                  Identifier(
+                    IDENTIFIER: "i"
                   )
                 ),
                 SEMICOLON,
                 Factor(
-                  Const(
-                    Int(
-                      INTEGER_LITERAL: "0"
-                    )
+                  Identifier(
+                    IDENTIFIER: "i"
                   )
                 ),
                 RIGHT_PARENTHESIS,
@@ -847,18 +782,14 @@ Program(
                             SEMICOLON
                           ),
                           Factor(
-                            Const(
-                              Int(
-                                INTEGER_LITERAL: "0"
-                              )
+                            Identifier(
+                              IDENTIFIER: "j"
                             )
                           ),
                           SEMICOLON,
                           Factor(
-                            Const(
-                              Int(
-                                INTEGER_LITERAL: "0"
-                              )
+                            Identifier(
+                              IDENTIFIER: "j"
                             )
                           ),
                           RIGHT_PARENTHESIS,
@@ -1211,6 +1142,77 @@ Program(
                       FLOAT_LITERAL: "1.0"
                     )
                   )
+                )
+              ),
+              RIGHT_BRACE,
+              SEMICOLON
+            )
+          ),
+          Block_Item(
+            Array_Declaration(
+              Data_Type(
+                INT
+              ),
+              Identifier(
+                IDENTIFIER: "arr"
+              ),
+              LEFT_BRACKET,
+              Const(
+                Int(
+                  INTEGER_LITERAL: "3"
+                )
+              ),
+              RIGHT_BRACKET,
+              ASSIGN,
+              LEFT_BRACE,
+              Argument_List(
+                Factor(
+                  LEFT_PARENTHESIS,
+                  Factor(
+                    Identifier(
+                      IDENTIFIER: "foo"
+                    ),
+                    LEFT_PARENTHESIS,
+                    Argument_List(
+                      Factor(
+                        Const(
+                          Int(
+                            INTEGER_LITERAL: "5"
+                          )
+                        )
+                      )
+                    ),
+                    RIGHT_PARENTHESIS
+                  ),
+                  RIGHT_PARENTHESIS
+                ),
+                COMMA,
+                Factor(
+                  Identifier(
+                    IDENTIFIER: "a"
+                  ),
+                  LEFT_BRACKET,
+                  Const(
+                    Int(
+                      INTEGER_LITERAL: "20"
+                    )
+                  ),
+                  RIGHT_BRACKET
+                ),
+                COMMA,
+                Factor(
+                  Identifier(
+                    IDENTIFIER: "multiply"
+                  ),
+                  LEFT_PARENTHESIS,
+                  Argument_List(
+                    Factor(
+                      Identifier(
+                        IDENTIFIER: "a"
+                      )
+                    )
+                  ),
+                  RIGHT_PARENTHESIS
                 )
               ),
               RIGHT_BRACE,
