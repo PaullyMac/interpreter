@@ -4,7 +4,7 @@ int array[10];
 // Test variables
 int a, b, c;
 int d = 5;
-int c = bar(1000, 2, 3);
+int c = bar(1000, 2, 3) int;
 int b = a; 
 
 // Function prototypes

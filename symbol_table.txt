@@ -42,7 +42,8 @@ ________________________________________________________________________________
 6               | COMMA                    | 7               | 20              | ,
 28              | INTEGER_LITERAL          | 7               | 22              | 3
 1               | RIGHT_PARENTHESIS        | 7               | 23              | )
-7               | SEMICOLON                | 7               | 24              | ;
+32              | INT                      | 7               | 25              | int
+7               | SEMICOLON                | 7               | 28              | ;
 32              | INT                      | 8               | 1               | int
 26              | IDENTIFIER               | 8               | 5               | b
 16              | ASSIGN                   | 8               | 7               | =
