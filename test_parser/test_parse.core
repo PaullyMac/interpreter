@@ -62,7 +62,7 @@ int main() {
 
      for (int i = 1; i; i) {
         for (int j = 0; j; j) {
-            int result = 5;
+            int testing = 5;
         }
     }
 
@@ -86,10 +86,19 @@ int main() {
     float a = 1, b = 2, c = 3;
     bool a, b, c;
 
+    int a = b = c = d = e = 10;
+    int a = b = (c = 2);
+    int zest = b = c = 2, d = 10;
+
     int arr[1];
     bool array[5] = {1, 2};
     int array[2] = {'c', true, 0, 1.0};
     int arr[3] = {(foo(5)), a[20], multiply(a)};
+
+    // Assignment statements
+        a = 1;
+        a = b = c = d = e = 10;
+        a = b = (c = 2);
 
 }
 

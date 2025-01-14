@@ -83,10 +83,12 @@ Program(
         IDENTIFIER: "d"
       ),
       ASSIGN,
-      Factor(
-        Const(
-          Int(
-            INTEGER_LITERAL: "5"
+      Exp(
+        Factor(
+          Const(
+            Int(
+              INTEGER_LITERAL: "5"
+            )
           )
         )
       ),
@@ -102,37 +104,39 @@ Program(
         IDENTIFIER: "c"
       ),
       ASSIGN,
-      Factor(
-        Identifier(
-          IDENTIFIER: "bar"
-        ),
-        LEFT_PARENTHESIS,
-        Argument_List(
-          Factor(
-            Const(
-              Int(
-                INTEGER_LITERAL: "1000"
+      Exp(
+        Factor(
+          Identifier(
+            IDENTIFIER: "bar"
+          ),
+          LEFT_PARENTHESIS,
+          Argument_List(
+            Factor(
+              Const(
+                Int(
+                  INTEGER_LITERAL: "1000"
+                )
+              )
+            ),
+            COMMA,
+            Factor(
+              Const(
+                Int(
+                  INTEGER_LITERAL: "2"
+                )
+              )
+            ),
+            COMMA,
+            Factor(
+              Const(
+                Int(
+                  INTEGER_LITERAL: "3"
+                )
               )
             )
           ),
-          COMMA,
-          Factor(
-            Const(
-              Int(
-                INTEGER_LITERAL: "2"
-              )
-            )
-          ),
-          COMMA,
-          Factor(
-            Const(
-              Int(
-                INTEGER_LITERAL: "3"
-              )
-            )
-          )
-        ),
-        RIGHT_PARENTHESIS
+          RIGHT_PARENTHESIS
+        )
       ),
       SEMICOLON
     )
@@ -146,10 +150,8 @@ Program(
         IDENTIFIER: "b"
       ),
       ASSIGN,
-      Factor(
-        Identifier(
-          IDENTIFIER: "a"
-        )
+      Identifier(
+        IDENTIFIER: "a"
       ),
       SEMICOLON
     )
@@ -655,10 +657,12 @@ Program(
                     IDENTIFIER: "i"
                   ),
                   ASSIGN,
-                  Factor(
-                    Const(
-                      Int(
-                        INTEGER_LITERAL: "0"
+                  Exp(
+                    Factor(
+                      Const(
+                        Int(
+                          INTEGER_LITERAL: "0"
+                        )
                       )
                     )
                   ),
@@ -706,10 +710,12 @@ Program(
                           IDENTIFIER: "result"
                         ),
                         ASSIGN,
-                        Factor(
-                          Const(
-                            Int(
-                              INTEGER_LITERAL: "2"
+                        Exp(
+                          Factor(
+                            Const(
+                              Int(
+                                INTEGER_LITERAL: "2"
+                              )
                             )
                           )
                         ),
@@ -735,10 +741,12 @@ Program(
                     IDENTIFIER: "i"
                   ),
                   ASSIGN,
-                  Factor(
-                    Const(
-                      Int(
-                        INTEGER_LITERAL: "1"
+                  Exp(
+                    Factor(
+                      Const(
+                        Int(
+                          INTEGER_LITERAL: "1"
+                        )
                       )
                     )
                   ),
@@ -772,10 +780,12 @@ Program(
                               IDENTIFIER: "j"
                             ),
                             ASSIGN,
-                            Factor(
-                              Const(
-                                Int(
-                                  INTEGER_LITERAL: "0"
+                            Exp(
+                              Factor(
+                                Const(
+                                  Int(
+                                    INTEGER_LITERAL: "0"
+                                  )
                                 )
                               )
                             ),
@@ -802,13 +812,15 @@ Program(
                                     INT
                                   ),
                                   Identifier(
-                                    IDENTIFIER: "result"
+                                    IDENTIFIER: "testing"
                                   ),
                                   ASSIGN,
-                                  Factor(
-                                    Const(
-                                      Int(
-                                        INTEGER_LITERAL: "5"
+                                  Exp(
+                                    Factor(
+                                      Const(
+                                        Int(
+                                          INTEGER_LITERAL: "5"
+                                        )
                                       )
                                     )
                                   ),
@@ -909,10 +921,14 @@ Program(
                             Block_Item_List(
                               Block_Item(
                                 Statement(
-                                  Const_Statement(
-                                    Const(
-                                      Int(
-                                        INTEGER_LITERAL: "5"
+                                  Expression_Statement(
+                                    Exp(
+                                      Factor(
+                                        Const(
+                                          Int(
+                                            INTEGER_LITERAL: "5"
+                                          )
+                                        )
                                       )
                                     ),
                                     SEMICOLON
@@ -966,10 +982,12 @@ Program(
                 IDENTIFIER: "grade"
               ),
               ASSIGN,
-              Factor(
-                Const(
-                  Char(
-                    CHARACTER_LITERAL: "'a'"
+              Exp(
+                Factor(
+                  Const(
+                    Char(
+                      CHARACTER_LITERAL: "'a'"
+                    )
                   )
                 )
               ),
@@ -985,10 +1003,12 @@ Program(
                 IDENTIFIER: "a"
               ),
               ASSIGN,
-              Factor(
-                Const(
-                  Int(
-                    INTEGER_LITERAL: "1"
+              Exp(
+                Factor(
+                  Const(
+                    Int(
+                      INTEGER_LITERAL: "1"
+                    )
                   )
                 )
               ),
@@ -997,10 +1017,12 @@ Program(
                 IDENTIFIER: "b"
               ),
               ASSIGN,
-              Factor(
-                Const(
-                  Int(
-                    INTEGER_LITERAL: "2"
+              Exp(
+                Factor(
+                  Const(
+                    Int(
+                      INTEGER_LITERAL: "2"
+                    )
                   )
                 )
               ),
@@ -1009,10 +1031,12 @@ Program(
                 IDENTIFIER: "c"
               ),
               ASSIGN,
-              Factor(
-                Const(
-                  Int(
-                    INTEGER_LITERAL: "3"
+              Exp(
+                Factor(
+                  Const(
+                    Int(
+                      INTEGER_LITERAL: "3"
+                    )
                   )
                 )
               ),
@@ -1034,6 +1058,137 @@ Program(
               COMMA,
               Identifier(
                 IDENTIFIER: "c"
+              ),
+              SEMICOLON
+            )
+          ),
+          Block_Item(
+            Variable_Declaration(
+              Data_Type(
+                INT
+              ),
+              Identifier(
+                IDENTIFIER: "a"
+              ),
+              ASSIGN,
+              Exp(
+                Identifier(
+                  IDENTIFIER: "b"
+                ),
+                ASSIGN,
+                Exp(
+                  Identifier(
+                    IDENTIFIER: "c"
+                  ),
+                  ASSIGN,
+                  Exp(
+                    Identifier(
+                      IDENTIFIER: "d"
+                    ),
+                    ASSIGN,
+                    Exp(
+                      Identifier(
+                        IDENTIFIER: "e"
+                      ),
+                      ASSIGN,
+                      Exp(
+                        Factor(
+                          Const(
+                            Int(
+                              INTEGER_LITERAL: "10"
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              ),
+              SEMICOLON
+            )
+          ),
+          Block_Item(
+            Variable_Declaration(
+              Data_Type(
+                INT
+              ),
+              Identifier(
+                IDENTIFIER: "a"
+              ),
+              ASSIGN,
+              Exp(
+                Identifier(
+                  IDENTIFIER: "b"
+                ),
+                ASSIGN,
+                Exp(
+                  Factor(
+                    LEFT_PARENTHESIS,
+                    Exp(
+                      Identifier(
+                        IDENTIFIER: "c"
+                      ),
+                      ASSIGN,
+                      Exp(
+                        Factor(
+                          Const(
+                            Int(
+                              INTEGER_LITERAL: "2"
+                            )
+                          )
+                        )
+                      )
+                    ),
+                    RIGHT_PARENTHESIS
+                  )
+                )
+              ),
+              SEMICOLON
+            )
+          ),
+          Block_Item(
+            Variable_Declaration(
+              Data_Type(
+                INT
+              ),
+              Identifier(
+                IDENTIFIER: "zest"
+              ),
+              ASSIGN,
+              Exp(
+                Identifier(
+                  IDENTIFIER: "b"
+                ),
+                ASSIGN,
+                Exp(
+                  Identifier(
+                    IDENTIFIER: "c"
+                  ),
+                  ASSIGN,
+                  Exp(
+                    Factor(
+                      Const(
+                        Int(
+                          INTEGER_LITERAL: "2"
+                        )
+                      )
+                    )
+                  )
+                )
+              ),
+              COMMA,
+              Identifier(
+                IDENTIFIER: "d"
+              ),
+              ASSIGN,
+              Exp(
+                Factor(
+                  Const(
+                    Int(
+                      INTEGER_LITERAL: "10"
+                    )
+                  )
+                )
               ),
               SEMICOLON
             )
@@ -1168,21 +1323,23 @@ Program(
               Argument_List(
                 Factor(
                   LEFT_PARENTHESIS,
-                  Factor(
-                    Identifier(
-                      IDENTIFIER: "foo"
-                    ),
-                    LEFT_PARENTHESIS,
-                    Argument_List(
-                      Factor(
-                        Const(
-                          Int(
-                            INTEGER_LITERAL: "5"
+                  Exp(
+                    Factor(
+                      Identifier(
+                        IDENTIFIER: "foo"
+                      ),
+                      LEFT_PARENTHESIS,
+                      Argument_List(
+                        Factor(
+                          Const(
+                            Int(
+                              INTEGER_LITERAL: "5"
+                            )
                           )
                         )
-                      )
-                    ),
-                    RIGHT_PARENTHESIS
+                      ),
+                      RIGHT_PARENTHESIS
+                    )
                   ),
                   RIGHT_PARENTHESIS
                 ),
@@ -1217,6 +1374,114 @@ Program(
               ),
               RIGHT_BRACE,
               SEMICOLON
+            )
+          ),
+          Block_Item(
+            Statement(
+              Expression_Statement(
+                Exp(
+                  Identifier(
+                    IDENTIFIER: "a"
+                  ),
+                  ASSIGN,
+                  Exp(
+                    Factor(
+                      Const(
+                        Int(
+                          INTEGER_LITERAL: "1"
+                        )
+                      )
+                    )
+                  )
+                ),
+                SEMICOLON
+              )
+            )
+          ),
+          Block_Item(
+            Statement(
+              Expression_Statement(
+                Exp(
+                  Identifier(
+                    IDENTIFIER: "a"
+                  ),
+                  ASSIGN,
+                  Exp(
+                    Identifier(
+                      IDENTIFIER: "b"
+                    ),
+                    ASSIGN,
+                    Exp(
+                      Identifier(
+                        IDENTIFIER: "c"
+                      ),
+                      ASSIGN,
+                      Exp(
+                        Identifier(
+                          IDENTIFIER: "d"
+                        ),
+                        ASSIGN,
+                        Exp(
+                          Identifier(
+                            IDENTIFIER: "e"
+                          ),
+                          ASSIGN,
+                          Exp(
+                            Factor(
+                              Const(
+                                Int(
+                                  INTEGER_LITERAL: "10"
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                ),
+                SEMICOLON
+              )
+            )
+          ),
+          Block_Item(
+            Statement(
+              Expression_Statement(
+                Exp(
+                  Identifier(
+                    IDENTIFIER: "a"
+                  ),
+                  ASSIGN,
+                  Exp(
+                    Identifier(
+                      IDENTIFIER: "b"
+                    ),
+                    ASSIGN,
+                    Exp(
+                      Factor(
+                        LEFT_PARENTHESIS,
+                        Exp(
+                          Identifier(
+                            IDENTIFIER: "c"
+                          ),
+                          ASSIGN,
+                          Exp(
+                            Factor(
+                              Const(
+                                Int(
+                                  INTEGER_LITERAL: "2"
+                                )
+                              )
+                            )
+                          )
+                        ),
+                        RIGHT_PARENTHESIS
+                      )
+                    )
+                  )
+                ),
+                SEMICOLON
+              )
             )
           )
         ),
