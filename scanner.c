@@ -24,7 +24,6 @@ int token_end_column;
 FILE *in_fp;
 FILE *symbol_fp;
 
-
 /* Function declarations */
 void add_char();
 char get_char();
@@ -33,10 +32,9 @@ void lex();
 void add_token(TokenType token);
 void number();
 void identifier();
-bool match(char expected);
 void string();
 void add_eof();
-void character_literal(); 
+void character_literal();
 TokenType keywords();
 int peek();
 void unget_char(int ch);
@@ -51,8 +49,8 @@ int main(int argc, char* argv[argc + 1]) {
     }
 
     const char* fname = argv[1];
-    char *last_period = strrchr(fname, '.');
-    if (strcmp(last_period, ".core") != 0) {
+    char* last_period = strrchr(fname, '.');
+    if (!last_period || strcmp(last_period, ".core") != 0) {
         printf("Input file passed must have .core extension\n");
         return 1;
     }
@@ -71,49 +69,54 @@ int main(int argc, char* argv[argc + 1]) {
     }
 
     // Design for header
-    for(int i=0; i<128; i++) fprintf(symbol_fp, "_");
+    for (int i = 0; i < 128; i++) fprintf(symbol_fp, "_");
     fprintf(symbol_fp, "\n");
     fprintf(symbol_fp, "TOKEN CODE      | TOKEN                    | LINE #          | COLUMN #        | LEXEME\n");
-    for(int i=0; i<128; i++) fprintf(symbol_fp, "_");
+    for (int i = 0; i < 128; i++) fprintf(symbol_fp, "_");
     fprintf(symbol_fp, "\n");
+
+    current_char = get_char(); // Initialize curent_char before the loop
 
     do {
         lex();
 
-        // Print error messages based on the error type, also not write into symbol_table.txt
-        if (next_token == ERROR_INVALID_CHARACTER) {
-            printf("ERROR - invalid char %c\n", lexeme[0]);
-            continue;
-        } else if (next_token == ERROR_INVALID_IDENTIFIER) {
-            printf("ERROR - invalid identifier: %s\n", lexeme);
+        // Skip writing to symbol table if there's an error
+        if (next_token == -1 || next_token == ERROR_INVALID_CHARACTER) {
             continue;
         }
 
+        // Handle TOKEN_EOF separately
+        if (next_token == TOKEN_EOF) {
+            printf("Next token is: %-30s Next lexeme: is %s\n", token_names[next_token], "EOF");
+            fprintf(symbol_fp, "47              | TOKEN_EOF                | %d               | -1              | EOF\n", line_number);
+            break;
+        }
+
         // Print to console
-        if (next_token >= 0 && next_token < sizeof(token_names)/sizeof(token_names[0])) {
+        if (next_token >= 0 && next_token < sizeof(token_names) / sizeof(token_names[0])) {
             printf("Next token is: %-30s Next lexeme: is %s\n", token_names[next_token], lexeme);
-        } else {
+        }
+        else {
             printf("Next token is: Unknown, Next lexeme is %s\n", lexeme);
             continue;
         }
 
-        // Try not writing comment tokens into the symbol table
+        // Skip comments from symbol table
         if (next_token == COMMENT) {
             continue;
         }
 
-        // Write to symbol_table.txt
-        if (next_token >= 0 && next_token < sizeof(token_names)/sizeof(token_names[0])) {
-        fprintf(symbol_fp, "%-15d | %-24s | %-15d | %-15d | %s\n",
-                next_token, token_names[next_token], token_start_line, token_start_column, lexeme);
-        } else {
-            fprintf(symbol_fp, "Unknown            | %-15d | %-15d | %s\n",
-                    token_start_column, token_start_line, lexeme);
+        // Write to symbol_table.txt only valid tokens
+        if (next_token >= 0 && next_token < sizeof(token_names) / sizeof(token_names[0])) {
+            int token_code = next_token; // Example mapping
+
+            fprintf(symbol_fp, "%-15d | %-24s | %-15d | %-15d | %s\n",
+                token_code, token_names[next_token], token_start_line, token_start_column, lexeme);
         }
     } while (next_token != TOKEN_EOF);
 
     // Design for footer
-    for(int i=0; i<128; i++) fprintf(symbol_fp, "_");
+    for (int i = 0; i < 128; i++) fprintf(symbol_fp, "_");
     fprintf(symbol_fp, "\n");
     fclose(symbol_fp);
     fclose(in_fp);
@@ -122,32 +125,35 @@ int main(int argc, char* argv[argc + 1]) {
 }
 
 /******************************************************/
-/* add_char - a function to add next_char to lexeme */
+/* add_char - a function to add current_char to lexeme */
 void add_char() {
     if (lexeme_length <= MAX_LEXEME_LENGTH - 2) {
         lexeme[lexeme_length++] = current_char;
         lexeme[lexeme_length] = '\0';
-    } else {
+    }
+    else {
         printf("Error - lexeme is too long \n");
     }
 }
 
 /******************************************************/
-/* getChar - a function to get the next character of input */
+/* get_char - a function to get the next character of input */
 char get_char() {
     int ch = fgetc(in_fp);
 
     if (ch == '\n') {
         line_number++;
         column_number = 0; // Reset column number at the start of a new line
-    } else if (ch != EOF) {
+    }
+    else if (ch != EOF) {
         column_number++;
     }
 
     return ch;
 }
+
 /******************************************************/
-/* getNonBlank - a function to call getChar until it returns a non-whitespace character */
+/* get_non_blank - a function to call get_char until it returns a non-whitespace character */
 char get_non_blank() {
     while (isspace(current_char)) {
         current_char = get_char();
@@ -158,67 +164,147 @@ char get_non_blank() {
 /******************************************************/
 /* lex - a simple lexical analyzer for arithmetic expressions */
 void lex() {
-    current_char = get_char();
-    current_char = get_non_blank();
     lexeme_length = 0;
+
+    current_char = get_non_blank();
     token_start_line = line_number;
-    // this is for the global tokens to retain their column number
     token_start_column = column_number;
-    
-    // End if end of file
-    if (current_char == EOF) return add_eof();
+
+    // Check for EOF before proceeding
+    if (current_char == EOF) {
+        add_eof();
+        return;
+    }
 
     // Parse strings
-    if (current_char == '"') return string();
+    if (current_char == '"') {
+        string();
+        return;
+    }
 
     // Parse number literals
     if (isdigit(current_char) || (current_char == '.' && isdigit(peek()))) {
-            return number();
-        }
+        number();
+        return; // After handling a number, return to avoid redundant checks
+    }
+
     // Parse identifiers
-    if (isalpha(current_char)) return identifier();
+    if (isalpha(current_char) || current_char == '_') {
+        identifier();
+        return;
+    }
 
     // Parse character literals
-    if (current_char == '\'') return character_literal();
+    if (current_char == '\'') {
+        character_literal();
+        return;
+    }
 
     // Parse one- or two-character tokens
     switch (current_char) {
         // Single-character operators
-        case '(': return add_token(LEFT_PARENTHESIS);
-        case ')': return add_token(RIGHT_PARENTHESIS);
-        case '[': return add_token(LEFT_BRACKET);
-        case ']': return add_token(RIGHT_BRACKET);
-        case '{': return add_token(LEFT_BRACE);
-        case '}': return add_token(RIGHT_BRACE);
-        case ',': return add_token(COMMA);
-        case ';': return add_token(SEMICOLON);
-        case '+': return add_token(PLUS);
-        case '-': return add_token(MINUS);
-        case '*': return add_token(MULTIPLY);
-        case '^': return add_token(EXPONENT);
-        case '%': return add_token(MODULO);
+        case '(': add_token(LEFT_PARENTHESIS); break;
+        case ')': add_token(RIGHT_PARENTHESIS); break;
+        case '[': add_token(LEFT_BRACKET); break;
+        case ']': add_token(RIGHT_BRACKET); break;
+        case '{': add_token(LEFT_BRACE); break;
+        case '}': add_token(RIGHT_BRACE); break;
+        case ',': add_token(COMMA); break;
+        case ';': add_token(SEMICOLON); break;
+        case '+': add_token(PLUS); break;
+        case '-': add_token(MINUS); break;
+        case '*': add_token(MULTIPLY); break;
+        case '^': add_token(EXPONENT); break;
+        case '%': add_token(MODULO); break;
 
-        // Multi-character operators
-        case '=': return add_token(match('=') ? EQUAL : ASSIGN);
-        case '>': return add_token(match('=') ? GREATER_EQUAL : GREATER);
-        case '<': return add_token(match('=') ? LESS_EQUAL : LESS);
-        case '!': return add_token(match('=') ? NOT_EQUAL : NOT);
-        case '&': return add_token(match('&') ? AND : AMPERSAND);
-        case '|': return add_token(match('|') ? OR : OR);
+        // Multi-character operators handled directly
+        case '=':
+            add_char(); // Add first '='
+            current_char = get_char(); // Advance to next character
+            if (current_char == '=') {
+                add_char(); // Add second '='
+                next_token = EQUAL;
+                set_token_end_column();
+                current_char = get_char();
+            } else {
+                next_token = ASSIGN;
+                set_token_end_column();
+            }
+            break;
+        case '>':
+            add_char();
+            current_char = get_char();
+            if (current_char == '=') {
+                add_char();
+                next_token = GREATER_EQUAL;
+                set_token_end_column();
+                current_char = get_char();
+            } else {
+                next_token = GREATER;
+                set_token_end_column();
+            }
+            break;
+        case '<':
+            add_char();
+            current_char = get_char();
+            if (current_char == '=') {
+                add_char();
+                next_token = LESS_EQUAL;
+                set_token_end_column();
+                current_char = get_char();
+            } else {
+                next_token = LESS;
+                set_token_end_column();
+            }
+            break;
+        case '!':
+            add_char();
+            current_char = get_char();
+            if (current_char == '=') {
+                add_char();
+                next_token = NOT_EQUAL;
+                set_token_end_column();
+                current_char = get_char();
+            } else {
+                next_token = NOT;
+                set_token_end_column();
+            }
+            break;
+        case '&':
+            add_char();
+            current_char = get_char();
+            if (current_char == '&') {
+                add_char();
+                next_token = AND;
+                set_token_end_column();
+                current_char = get_char();
+            } else {
+                next_token = AMPERSAND;
+                set_token_end_column();
+            }
+            break;
+        case '|':
+            add_char();
+            current_char = get_char();
+            if (current_char == '|') {
+                add_char();
+                next_token = OR;
+                set_token_end_column();
+                current_char = get_char();
+            } else {
+                next_token = OR;
+                set_token_end_column();
+            }
+            break;
         case '/':
-            if (peek() == '/') {
+            current_char = get_char();
+            if (current_char == '/') {
                 // It's a comment
                 next_token = COMMENT;
-
-                // Set token_start_column before consuming any characters
                 token_start_column = column_number;
-
-                // Add the first '/'
-                add_char();
-
-                // Consume and add the second '/'
-                current_char = get_char(); // Get the second '/'
-                add_char();
+                lexeme[lexeme_length++] = '/';
+                lexeme[lexeme_length++] = '/';
+                lexeme[lexeme_length] = '\0';
 
                 // Proceed to read the rest of the comment
                 current_char = get_char();
@@ -227,16 +313,22 @@ void lex() {
                     current_char = get_char();
                 }
                 set_token_end_column();
-                break;
-            } else {
-                return add_token(DIVIDE);
+                break; // Return after handling the comment
             }
-        // If reached this, then must be invalid character
+            else {
+                // It's a divide operator
+                unget_char(current_char);
+                current_char = '/';
+                add_token(DIVIDE);
+                break;
+            }
+            // If reached this, then must be invalid character
         default:
-            add_char();
+            printf("ERROR - invalid char %c\n", current_char);
             next_token = ERROR_INVALID_CHARACTER;
             set_token_end_column();
-            break;
+            current_char = get_char();
+            return;
     }
 }
 
@@ -246,131 +338,192 @@ void add_token(TokenType token) {
     add_char();
     next_token = token;
     set_token_end_column();
-}
-
-/******************************************************/
-/* match - helper function for multi-character operators */
-bool match(char expected) {
-    if (peek() != expected) {
-        return false;
-    }
-
-    // Two-character token and we get second character
-    add_char(); // Adds the first character of the token, the next add_char is handled by the addToken call
-    current_char = get_char();
-    return true;
-}
-
-/******************************************************/
-/* peek - a function to peek at the next character without consuming it */
-int peek() {
-    int ch = fgetc(in_fp);
-    ungetc(ch, in_fp);
-    return ch;
+    current_char = get_char(); // Advance to the next character
 }
 
 /******************************************************/
 /* number - reads the rest of the number literal */
 void number() {
+    bool has_decimal = false;
+    bool error_occurred = false;
+
+    // Reset lexeme
+    lexeme_length = 0;
+
     // Handle leading decimal point
-    if (current_char == '.' && isdigit(peek())) { 
-        lexeme[0] = '0'; // Adds 0 
-        lexeme[1] = '.';
-        lexeme_length = 2;
-
-        // Read subsequent digits
-        while (isdigit(peek()) || peek() == '\'') {
-            current_char = get_char();
-            lexeme[lexeme_length++] = current_char;
-        }
-    } else {
-        //Handle regular numbers
+    if (current_char == '.') {
         add_char();
+        has_decimal = true;
+        current_char = get_char();
+    }
 
-        while (isdigit(peek()) || peek() == '\'') {
-            current_char = get_char();
-            add_char();
-        }
-
-        //Handle fractional parts
-        if (peek() == '.') {
-            current_char = get_char();
-            add_char();
-
-            while (isdigit(peek()) || peek() == '\'') {
-                current_char = get_char();
-                add_char();
+    // Read all digits and valid separators
+    while (isdigit(current_char) || current_char == '\'' || current_char == '`' || current_char == '.') {
+        if (current_char == '.') {
+            if (has_decimal) {
+                // Second decimal point encountered
+                break;
             }
+            has_decimal = true;
+            add_char();
+            current_char = get_char();
+        }
+        else if (current_char == '\'' || current_char == '`') {
+            // Validate separator: must be followed by exactly three digits
+            char separator = current_char;
+            add_char(); // Add the separator
+            current_char = get_char();
+            int digits = 0;
+            while (digits < 3 && isdigit(current_char)) {
+               add_char();
+                digits++;
+                current_char = get_char();
+            }
+            if (digits != 3) {
+                // Invalid separator usage
+                fprintf(stderr, "ERROR: Invalid noise separators at line %d, col %d\n",
+                    line_number, column_number);
+                error_occurred = true;
+                break;
+            }
+            // Continue to check if another separator follows
+        }
+        else {
+            add_char();
+            current_char = get_char();
         }
     }
 
-    // Remove noise characters before checking for trailing decimal points
-    int new_length = 0;
-    for (int i = 0; i < lexeme_length; i++) {
-        if (lexeme[i] != '\'') {
-            lexeme[new_length++] = lexeme[i];
+    // If an error occurred, consume the rest of the invalid number literal
+    if (error_occurred) {
+        while (isdigit(current_char) || current_char == '\'' || current_char == '`' || current_char == '.') {
+            current_char = get_char();
+        }
+        next_token = -1;
+        lexeme_length = 0; // Reset lexeme to ignore invalid number
+        return; // Exit the function after handling the error
+    }
+
+    // Proceed with validation if no errors occurred
+    if (!error_occurred) {
+        int new_length = 0;
+        {
+            char temp[MAX_LEXEME_LENGTH];
+            int temp_len = 0;
+            int digit_count = 0;
+            bool strict_noise_valid = true;
+
+            // Scan from the end to the beginning
+            for (int i = lexeme_length - 1; i >= 0; i--) {
+                if (isdigit(lexeme[i])) {
+                    temp[temp_len++] = lexeme[i];
+                    digit_count++;
+                }
+                else if (lexeme[i] == '\'' || lexeme[i] == '`') {
+                    if (digit_count != 3) {
+                        strict_noise_valid = false;
+                        break;
+                    }
+                    digit_count = 0;
+                }
+                else if (lexeme[i] == '.') {
+                    temp[temp_len++] = lexeme[i];
+                    digit_count = 0;
+                }
+                else if (i == 0 && (lexeme[i] == '-' || lexeme[i] == '+')) {
+                    temp[temp_len++] = lexeme[i];
+                }
+                else {
+                    strict_noise_valid = false;
+                    break;
+                }
+            }
+
+            // Handle misaligned separators
+            if (!strict_noise_valid) {
+                fprintf(stderr, "ERROR: Invalid noise separators at line %d, col %d\n",
+                    line_number, column_number);
+                next_token = -1;
+                lexeme_length = 0;
+                return; // Exit the function after handling the error
+            }
+
+            // Reverse temp into lexeme
+            new_length = 0;
+            for (int i = temp_len - 1; i >= 0; i--) {
+                lexeme[new_length++] = temp[i];
+            }
+
+            // Add 0 to leading decimal if necessary
+            if (lexeme[0] == '.') {
+                // Shift right by 1
+                for (int i = new_length; i >= 0; i--) {
+                    lexeme[i + 1] = lexeme[i];
+                }
+                lexeme[0] = '0';
+                new_length++;
+            }
+
+            // Add 0 to trailing decimal if necessary
+            if (lexeme[new_length - 1] == '.') {
+                lexeme[new_length] = '0';
+                new_length++;
+                lexeme[new_length] = '\0';
+            }
+            else {
+                lexeme[new_length] = '\0';
+            }
+
+            lexeme_length = new_length;
         }
     }
-    lexeme_length = new_length;
 
-    // Handle trailing decimal points
-    if (lexeme[lexeme_length - 1] == '.') { 
-        lexeme[lexeme_length++] = '0';
-        lexeme[lexeme_length] = '\0';
-    } else {
-        lexeme[lexeme_length] = '\0';
-    }
-
-    bool isFloat = false;
-    for (int i = 0; i < lexeme_length; i++) {
-        if (lexeme[i] == '.') {
-            isFloat = true;
-            break;
-        }
-    }
-
-    next_token = isFloat ? FLOAT_LITERAL : INTEGER_LITERAL;
+    next_token = has_decimal ? FLOAT_LITERAL : INTEGER_LITERAL;
     set_token_end_column();
+    // current_char is already at the next character after the number
 }
 
 /******************************************************/
-/* identifier - reads the rest of the identifier */
+/* identifier - reads the rest of the identifier and checks length <= 31 */
 void identifier() {
-    // Add the first character we found
-    add_char();
+    char local_buffer[256];
+    int local_length = 0;
 
-    char next_char = get_char();
-    bool too_long = false;
+    // First character is already known to be valid for an identifier
+    local_buffer[local_length++] = current_char;
+    local_buffer[local_length] = '\0';
 
-    while (isalnum(next_char) || next_char == '_') {  // check if alphanumeric or underscore
-        current_char = next_char;
+    current_char = get_char();
 
-        // Always add the character to preserve the full lexeme
-        add_char();
-
-        // Check if the length exceeds the limit
-        if (lexeme_length > 31) {
-            too_long = true;
+    // Read additional valid identifier characters
+    while (isalnum(current_char) || current_char == '_') {
+        // Append to local_buffer, avoiding overflow
+        if (local_length < (int)(sizeof(local_buffer) - 1)) {
+            local_buffer[local_length++] = current_char;
+            local_buffer[local_length] = '\0';
         }
-
-        next_char = get_char();
+        current_char = get_char();
     }
 
-    // Put back the last non-alphanumeric character we found
-    unget_char(next_char);
-
-    // If the identifier is too long, set the token type but delay error reporting
-    if (too_long) {
-        next_token = ERROR_INVALID_IDENTIFIER;
+    // Now decide if valid or invalid based on length <= 31
+    if (local_length > 31) {
+        // Report the entire invalid identifier
+        printf("ERROR - invalid identifier: %s\n", local_buffer);
+        // Set next_token to -1 so it won't appear as a separate token
+        next_token = -1; 
+        lexeme_length = 0;
+        lexeme[0] = '\0';
+        return; 
     } else {
+        // Copy to lexeme (safe because local_length <= 31)
+        strncpy(lexeme, local_buffer, local_length);
+        lexeme[local_length] = '\0';
+        lexeme_length = local_length;
+        // Check if it's a keyword or just an identifier
         next_token = keywords();
     }
-    set_token_end_column(); // Moved outside the if-else block
 
-    // Now report errors if needed
-    if (too_long) {
-        next_token = ERROR_INVALID_IDENTIFIER;
-    }
+    set_token_end_column();
 }
 
 /******************************************************/
@@ -443,6 +596,8 @@ TokenType keywords() {
     return IDENTIFIER;
 }
 
+/******************************************************/
+/* character_literal - reads the character literal */
 void character_literal()
 {
     add_char(); // Add the opening single quote
@@ -451,20 +606,23 @@ void character_literal()
     current_char = get_char();
 
     if (current_char == '\\') { // Handle escape sequences like '\n' or '\t'
-        add_char();
-        current_char = get_char(); // Add the actual escaped character
+        add_char(); // Add the backslash
+        current_char = get_char(); // Get the actual escaped character
         if (current_char != '\'' && current_char != EOF) {
-            add_char();
-        } else {
+            add_char(); // Add the escaped character
+        }
+        else {
             next_token = ERROR_INVALID_CHARACTER;
             printf("Error - unterminated character literal\n");
             return;
         }
-    } else if (current_char == '\'' || current_char == EOF) { // Handle empty or malformed character literals
+    }
+    else if (current_char == '\'' || current_char == EOF) { // Handle empty or malformed character literals
         next_token = ERROR_INVALID_CHARACTER;
         printf("Error - invalid or unterminated character literal\n");
         return;
-    } else {
+    }
+    else {
         add_char(); // Add the character
     }
 
@@ -474,12 +632,16 @@ void character_literal()
         add_char();
         next_token = CHARACTER_LITERAL;
         set_token_end_column();
-    } else { // Handle missing closing single quote
+        current_char = get_char();
+    }
+    else { // Handle missing closing single quote
         next_token = ERROR_INVALID_CHARACTER;
         printf("Error - unterminated character literal\n");
     }
 }
 
+/******************************************************/
+/* add_eof - adds the EOF token */
 void add_eof() {
     lexeme[0] = 'E';
     lexeme[1] = 'O';
@@ -496,36 +658,44 @@ void add_eof() {
 void string()
 {
     add_char();  // Add the opening quote to lexeme
-    char nextChar = get_char();
+    current_char = get_char();
 
-    while (nextChar != '"' && nextChar != EOF) {
-        if (nextChar == '\\') {  // Handle escape sequences
-            current_char = nextChar;
+    while (current_char != '"' && current_char != EOF) {
+        if (current_char == '\\') {  // Handle escape sequences
             add_char(); // Add backslash to lexeme
-            nextChar = get_char();
-            // Increment column_number inside get_char()
+            current_char = get_char();
             // Handle escape character
-            current_char = nextChar;
-            add_char();
-        } else {
-            current_char = nextChar;
             add_char();
         }
-        nextChar = get_char();
+        else {
+            add_char();
+        }
+        current_char = get_char();
     }
 
-    if (nextChar == '"') {
-        current_char = nextChar;
+    if (current_char == '"') {
         add_char();  // Add the closing quote to lexeme
         next_token = STRING;
-        set_token_end_column();  // Successfully parsed a string literal
-    } else {
+        set_token_end_column();
+        current_char = get_char();  // Advance to the next character
+    }
+    else {
         // Handle error for unterminated string
         printf("Error - unterminated string literal\n");
         next_token = ERROR_INVALID_CHARACTER;
     }
 }
 
+/******************************************************/
+/* peek - a function to peek at the next character without consuming it */
+int peek() {
+    int ch = fgetc(in_fp);
+    ungetc(ch, in_fp);
+    return ch;
+}
+
+/******************************************************/
+/* unget_char - ungets a character */
 void unget_char(int ch) {
     if (ch == EOF) return; // Do nothing for EOF
 
@@ -535,13 +705,14 @@ void unget_char(int ch) {
         line_number--;
         // Column number cannot be accurately adjusted here unless you track line lengths
         // You may need to handle this if your lexer allows for multi-line ungets
-    } else {
+    }
+    else {
         column_number--;
     }
 }
 
 /******************************************************/
-/* helper function to set token_end_column */
+/* set_token_end_column - sets the end column of the token */
 void set_token_end_column() {
     token_end_column = token_start_column + lexeme_length;
 }

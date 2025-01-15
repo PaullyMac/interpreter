@@ -1,7 +1,5 @@
 Program(
   Declaration(
-<<<<<<< HEAD
-=======
     Array_Declaration(
       Data_Type(
         BOOL
@@ -208,7 +206,6 @@ Program(
     )
   ),
   Declaration(
->>>>>>> 7ca3b67230cfdab5bf7c55c7d007cdda699575e0
     Function_Declaration(
       Data_Type(
         INT
@@ -223,20 +220,18 @@ Program(
         LEFT_BRACE,
         Block_Item_List(
           Block_Item(
-            Statement()
+            Statement(
+              Input_Statement(
+                SCANF,
+                LEFT_PARENTHESIS,
+                STRING: "%d",
+                RIGHT_PARENTHESIS,
+                SEMICOLON
+              )
+            )
           ),
           Block_Item(
             Statement(
-<<<<<<< HEAD
-              Const_Statement(
-                Const(
-                  Int(
-                    INTEGER_LITERAL: "123123"
-                  )
-                ),
-                SEMICOLON
-              )
-=======
               Input_Statement(
                 SCANF,
                 LEFT_PARENTHESIS,
@@ -1542,7 +1537,6 @@ Program(
                 IDENTIFIER: "b"
               ),
               SEMICOLON
->>>>>>> 7ca3b67230cfdab5bf7c55c7d007cdda699575e0
             )
           )
         ),

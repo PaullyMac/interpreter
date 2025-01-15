@@ -3,7 +3,7 @@
                 | <array_declaration> 
                 | <function_declaration> 
 
-<variable_declaration> ::= <data_type> <identifier> "=" <factor>  { "," <identifier> "=" <factor> } ";" 
+<variable_declaration> ::= <data_type> <identifier> "=" <exp>  { "," <identifier> "=" <exp> } ";" 
                         | <data_type> <identifier> { "," <identifier> } ";" 
 <array_declaration> ::= <data_type> <identifier> "[" [ <const> ] "]" [ "=" "{" [ <argument_list> ] "}" ] ";"
 <function_declaration> ::= <data_type> <identifier> "(" <parameter_list> ")" ( <block> | ";" )
@@ -18,7 +18,7 @@
 <block_item> ::= <statement> | <variable_declaration> | <array_declaration>
 
 <statement> ::= "return" <factor> ";"
-              | <factor> ";"
+              | <exp> ";"
               | ";"
               | <block>
               | <for_statement>
@@ -37,9 +37,10 @@
 <else-clause> ::= "else" <block>
                 | "else" <if_statement>
 
+<exp> ::= <factor> | (<identifier> | <identifier> "[" <const> "]" ) "=" <exp>  
 <factor> ::= <const>
             | <identifier>
-            | "(" <factor> ")"
+            | "(" <exp> ")"
             | <identifier> "(" [ <argument_list> ] ")"
             | <identifier> "[" <const> "]" 
 <const> ::= <int> | <float> | <char> | <bool>
