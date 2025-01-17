@@ -1,0 +1,9 @@
+<block> ::= <block_item_list>
+<block_item_list> ::= <block_item> 
+<block_item> ::= <statement> 
+<statement> ::= <input_statement>
+<input_statement> ::= "scanf" "(" <string> { "," "&" <identifier> } ")" ";"
+       ::= "scanf" "(" "%f %f" { "," "&" <identifier> } ")" ";"
+       ::= "scanf" "(" "%f %f" "," "&" <identifier> { "," "&" <identifier> } ")" ";"
+       ::= "scanf" "(" "%f %f" "," "&" value1 "," "&" <identifier> ")" ";"
+       ::= "scanf" "(" "%f %f" "," "&" value1 "," "&" value2 ")" ";"
