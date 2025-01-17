@@ -1,57 +1,6 @@
 ________________________________________________________________________________________________________________________________
 TOKEN CODE      | TOKEN                    | LINE #          | COLUMN #        | LEXEME
 ________________________________________________________________________________________________________________________________
-<<<<<<< HEAD
-28              | INTEGER_LITERAL          | 2               | 1               | 123
-28              | INTEGER_LITERAL          | 3               | 1               | 0
-28              | INTEGER_LITERAL          | 4               | 1               | 456
-28              | INTEGER_LITERAL          | 5               | 1               | 789
-28              | INTEGER_LITERAL          | 6               | 1               | 10000000
-28              | INTEGER_LITERAL          | 9               | 1               | 123
-28              | INTEGER_LITERAL          | 10              | 1               | 10000
-28              | INTEGER_LITERAL          | 11              | 1               | 123123
-29              | FLOAT_LITERAL            | 12              | 1               | 0.1232322
-29              | FLOAT_LITERAL            | 13              | 1               | 0.123
-28              | INTEGER_LITERAL          | 13              | 6               | 232
-28              | INTEGER_LITERAL          | 13              | 10              | 200
-29              | FLOAT_LITERAL            | 14              | 1               | 0.123
-28              | INTEGER_LITERAL          | 14              | 6               | 232
-29              | FLOAT_LITERAL            | 15              | 1               | 0.123
-28              | INTEGER_LITERAL          | 15              | 6               | 232
-28              | INTEGER_LITERAL          | 15              | 10              | 1
-28              | INTEGER_LITERAL          | 16              | 1               | 1
-28              | INTEGER_LITERAL          | 16              | 3               | 000
-28              | INTEGER_LITERAL          | 16              | 7               | 000
-28              | INTEGER_LITERAL          | 17              | 1               | 1
-28              | INTEGER_LITERAL          | 17              | 3               | 000
-28              | INTEGER_LITERAL          | 17              | 7               | 000
-29              | FLOAT_LITERAL            | 17              | 11              | 000.0
-11              | PLUS                     | 20              | 1               | +
-28              | INTEGER_LITERAL          | 20              | 2               | 7
-12              | MINUS                    | 21              | 1               | -
-29              | FLOAT_LITERAL            | 21              | 2               | 14.2
-29              | FLOAT_LITERAL            | 24              | 1               | 3.14
-29              | FLOAT_LITERAL            | 25              | 1               | 2.718
-29              | FLOAT_LITERAL            | 26              | 1               | 123.00
-29              | FLOAT_LITERAL            | 27              | 1               | 0.5
-29              | FLOAT_LITERAL            | 31              | 1               | 0.1
-29              | FLOAT_LITERAL            | 32              | 1               | 0.2
-29              | FLOAT_LITERAL            | 33              | 1               | 0.3
-29              | FLOAT_LITERAL            | 34              | 1               | 0.0001
-29              | FLOAT_LITERAL            | 35              | 1               | 0.99999
-29              | FLOAT_LITERAL            | 38              | 1               | 1.0
-29              | FLOAT_LITERAL            | 39              | 1               | 2.0
-29              | FLOAT_LITERAL            | 40              | 1               | 12345.0
-29              | FLOAT_LITERAL            | 45              | 1               | 12.34
-29              | FLOAT_LITERAL            | 45              | 6               | 0.56
-29              | FLOAT_LITERAL            | 47              | 1               | 123.0
-29              | FLOAT_LITERAL            | 47              | 5               | 0.45
-29              | FLOAT_LITERAL            | 49              | 1               | 0.12
-29              | FLOAT_LITERAL            | 49              | 4               | 0.3
-28              | INTEGER_LITERAL          | 53              | 1               | 10
-28              | INTEGER_LITERAL          | 53              | 6               | 5
-47              | TOKEN_EOF                | 53              | -1              | EOF
-=======
 34              | BOOL                     | 1               | 1               | bool
 26              | IDENTIFIER               | 1               | 6               | array
 2               | LEFT_BRACKET             | 1               | 11              | [
@@ -93,8 +42,7 @@ ________________________________________________________________________________
 6               | COMMA                    | 7               | 20              | ,
 28              | INTEGER_LITERAL          | 7               | 22              | 3
 1               | RIGHT_PARENTHESIS        | 7               | 23              | )
-32              | INT                      | 7               | 25              | int
-7               | SEMICOLON                | 7               | 28              | ;
+7               | SEMICOLON                | 7               | 24              | ;
 32              | INT                      | 8               | 1               | int
 26              | IDENTIFIER               | 8               | 5               | b
 16              | ASSIGN                   | 8               | 7               | =
@@ -516,6 +464,5 @@ ________________________________________________________________________________
 26              | IDENTIFIER               | 107             | 12              | b
 7               | SEMICOLON                | 107             | 13              | ;
 5               | RIGHT_BRACE              | 108             | 1               | }
-47              | TOKEN_EOF                | 108             | -1              | EOF
->>>>>>> 7ca3b67230cfdab5bf7c55c7d007cdda699575e0
+47              | TOKEN_EOF                | 108               | -1              | EOF
 ________________________________________________________________________________________________________________________________

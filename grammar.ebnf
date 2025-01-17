@@ -32,7 +32,7 @@
 <input_statement> ::= "scanf" "(" <string> { "," "&" <identifier> } ")" ";"
 <output_statement> ::= "printf" "(" <string> ")"  
                                     | "printf" "(" <string> "," <exp> ")" 
-                                    | "printf" "(" <string> { "," <exp> } ")" 
+                                    | "printf" "(" <string> { "," <exp> } ")"
                                     | "printf" "(" <identifier> ")"
 <if_statement> ::= "if" "(" <exp> ")" <block> [<else-clause>]
 <else-clause> ::= "else" <block>
