@@ -95,11 +95,19 @@ ParseTreeNode *parse_int_literal();
 ParseTreeNode *parse_float_literal();
 ParseTreeNode *parse_char_literal();
 ParseTreeNode *parse_bool_literal();
+ParseTreeNode *parse_assignment();
+ParseTreeNode *parse_logical_or_exp();
+ParseTreeNode *parse_logical_and_exp();
+ParseTreeNode *parse_equality_exp();
+ParseTreeNode *parse_relational_exp();
+ParseTreeNode *parse_additive_exp();
+ParseTreeNode *parse_multiplicative_exp();
+ParseTreeNode *parse_power_exp();
+ParseTreeNode *parse_unary_exp();
 
 void match(TokenType type);
 void add_child(ParseTreeNode *parent, ParseTreeNode *child);
 ParseTreeNode *match_and_create_node(TokenType type, const char* node_name);
-
 
 int main(void) {
     tokens = load_tokens("symbol_table.txt", &num_tokens);
@@ -112,18 +120,19 @@ int main(void) {
         fprintf(stderr, "Error opening output file.\n");
         return 1;
     }
+
     printf("\nPARSING!\n\n");
     ParseTreeNode *root = parse_program();
 
     if (panic_mode) {
         printf("Parsing failed!\n");
+        fclose(output_file);
+        remove("parse_tree_output.ebnf");
     } else {
         printf("Parsing successful!\n");
+        print_parse_tree(root, 0);
+        fclose(output_file);
     }
-
-    // Print the parse tree
-    print_parse_tree(root, 0);
-    fclose(output_file);
     free_parse_tree(root);
     free(tokens);
     return 0;
@@ -164,8 +173,16 @@ ParseTreeNode *match_and_create_node(TokenType type, const char* node_name) {
 // <program> ::= { <declaration> }
 ParseTreeNode *parse_program() {
     ParseTreeNode *node = create_program_node();
+    
     while (current_token < num_tokens && tokens[current_token].type != TOKEN_EOF) {
         ParseTreeNode *declaration = parse_declaration();
+        if (declaration == NULL) {
+            // If not a valid declaration, synchronize and continue
+            fprintf(stderr, "Error: Invalid declaration at Line: %d\n", 
+                    tokens[current_token].line_number);
+            synchronize();
+            continue;
+        }
         add_child(node, declaration);
     }
     return node;
@@ -175,24 +192,37 @@ ParseTreeNode *parse_program() {
 ParseTreeNode *parse_declaration() {
     ParseTreeNode *node = create_declaration_node();
 
+    // Return NULL if not a valid declaration start
+    if (current_token >= num_tokens || 
+        (tokens[current_token].type != INT && 
+         tokens[current_token].type != FLOAT &&
+         tokens[current_token].type != CHAR && 
+         tokens[current_token].type != BOOL)) {
+        return NULL;
+    }
+
     // Find valid category of declaration
-    if (current_token < num_tokens && (tokens[current_token].type == INT || tokens[current_token].type == FLOAT ||
-                                       tokens[current_token].type == CHAR || tokens[current_token].type == BOOL)) {
-        if (current_token + 1 < num_tokens && tokens[current_token+1].type == IDENTIFIER && current_token + 2 < num_tokens && tokens[current_token+2].type == LEFT_PARENTHESIS) {
+    if (current_token + 1 < num_tokens && 
+        tokens[current_token+1].type == IDENTIFIER) {
+        
+        if (current_token + 2 < num_tokens && 
+            tokens[current_token+2].type == LEFT_PARENTHESIS) {
             ParseTreeNode *function_declaration = parse_function_declaration();
             add_child(node, function_declaration);
-        } else if(current_token + 1 < num_tokens && tokens[current_token+1].type == IDENTIFIER && current_token + 2 < num_tokens && tokens[current_token+2].type == LEFT_BRACKET) {
+        } 
+        else if(current_token + 2 < num_tokens && 
+                tokens[current_token+2].type == LEFT_BRACKET) {
             ParseTreeNode *array_declaration = parse_array_declaration();
             add_child(node, array_declaration);
-        } else {
+        } 
+        else {
             ParseTreeNode *variable_declaration = parse_variable_declaration();
             add_child(node, variable_declaration);
         }
-    } else {
-        fprintf(stderr, "Error: Invalid declaration at Line: %d, Column: %d\n", tokens[current_token].line_number, tokens[current_token].column_number);
-        synchronize();
+        return node;
     }
-    return node;
+
+    return NULL; // Not a valid declaration
 }
 
 // <variable_declaration> ::= <data_type> <identifier> [ “=” <exp> ] “;”
@@ -202,47 +232,46 @@ ParseTreeNode *parse_variable_declaration() {
     ParseTreeNode *data_type = parse_data_type();
     add_child(node, data_type);
 
+    // Parse first identifier
     ParseTreeNode *identifier_node = parse_identifier();
     add_child(node, identifier_node);
 
+    // Handle assignment if present
     if (current_token < num_tokens && tokens[current_token].type == ASSIGN) {
         add_child(node, match_and_create_node(ASSIGN, "Assign"));
-        ParseTreeNode *exp = parse_exp();
-        add_child(node, exp);
-
-        while (current_token < num_tokens && tokens[current_token].type == COMMA) {
-            add_child(node, match_and_create_node(COMMA, "Comma"));
-            ParseTreeNode *identifier = parse_identifier();
-            add_child(node, identifier);
-            if (current_token < num_tokens && tokens[current_token].type == ASSIGN) {
-                add_child(node, match_and_create_node(ASSIGN, "Assign"));
-                ParseTreeNode *exp = parse_exp();
-                add_child(node, exp);
-            } else {
-                fprintf(stderr, "Error: Expected assignment after comma in variable declaration at line %d\n", tokens[current_token].line_number);
-                synchronize();
-                break; 
-            }
+        
+        // Parse the assignment expression
+        ParseTreeNode *exp_node = parse_exp();
+        add_child(node, exp_node);
+    }
+    
+    // Handle multiple declarations
+    while (current_token < num_tokens && tokens[current_token].type == COMMA) {
+        add_child(node, match_and_create_node(COMMA, "Comma"));
+        
+        // Parse next identifier
+        identifier_node = parse_identifier();
+        add_child(node, identifier_node);
+        
+        // Handle assignment for this identifier if present
+        if (current_token < num_tokens && tokens[current_token].type == ASSIGN) {
+            add_child(node, match_and_create_node(ASSIGN, "Assign"));
             
-        }
-    } else {
-        while (current_token < num_tokens && tokens[current_token].type == COMMA) {
-            add_child(node, match_and_create_node(COMMA, "Comma"));
-            ParseTreeNode *identifier = parse_identifier();
-            add_child(node, identifier);
-             if (current_token >= num_tokens || tokens[current_token].type == SEMICOLON) {
-                break;
-            }
+            // Parse the assignment expression
+            ParseTreeNode *exp_node = parse_exp();
+            add_child(node, exp_node);
         }
     }
 
+    // Expect semicolon at end
     if (current_token < num_tokens && tokens[current_token].type == SEMICOLON) {
         add_child(node, match_and_create_node(SEMICOLON, "Semicolon"));
     } else {
-        fprintf(stderr, "Error: Expected semicolon at end of variable declaration at line %d\n", tokens[current_token].line_number);
+        fprintf(stderr, "Error: Expected semicolon at end of variable declaration at line %d\n", 
+                tokens[current_token].line_number);
         synchronize();
     }
-    
+
     return node;
 }
 
@@ -271,9 +300,12 @@ ParseTreeNode *parse_array_declaration() {
     if (current_token < num_tokens && tokens[current_token].type == ASSIGN) {
         add_child(node, match_and_create_node(ASSIGN, "Assign"));
         add_child(node, match_and_create_node(LEFT_BRACE, "Left_Brace"));
-        
-        ParseTreeNode *argument_list = parse_argument_list();
-        add_child(node, argument_list);
+
+        // Parse argument list
+        if (current_token < num_tokens && tokens[current_token].type != RIGHT_BRACE) {
+            ParseTreeNode *argument_list = parse_argument_list();
+            add_child(node, argument_list);
+        }
 
         add_child(node, match_and_create_node(RIGHT_BRACE, "Right_Brace"));
     }
@@ -388,21 +420,42 @@ ParseTreeNode *parse_block() {
     ParseTreeNode *node = create_block_node();
     add_child(node, match_and_create_node(LEFT_BRACE, "Left_Brace"));
 
-    ParseTreeNode *block_item_list = parse_block_item_list();
-    add_child(node, block_item_list);
-    
-    add_child(node, match_and_create_node(RIGHT_BRACE, "Right_Brace"));
+    while (current_token < num_tokens && tokens[current_token].type != RIGHT_BRACE) {
+        ParseTreeNode *block_item = parse_block_item();
+        if (block_item != NULL) {
+            add_child(node, block_item);
+        } else {
+            synchronize();
+            if (current_token >= num_tokens || 
+                tokens[current_token].type == RIGHT_BRACE) {
+                break;
+            }
+        }
+    }
+
+    if (current_token < num_tokens && tokens[current_token].type == RIGHT_BRACE) {
+        add_child(node, match_and_create_node(RIGHT_BRACE, "Right_Brace"));
+    } else {
+        fprintf(stderr, "Error: Missing closing brace at line %d\n", 
+                tokens[current_token-1].line_number);
+        synchronize();
+    }
+
     return node;
 }
 
 // <block_item_list> ::= (<block_item_list> <block_item>) | <block_item>
 ParseTreeNode *parse_block_item_list() {
     ParseTreeNode *node = create_block_item_list_node();
-    while (current_token < num_tokens && tokens[current_token].type != RIGHT_BRACE) {
+    while (current_token < num_tokens) {
+        if (tokens[current_token].type == RIGHT_BRACE) {
+            break; // Exit the loop if we encounter a RIGHT_BRACE
+        }
         ParseTreeNode *block_item = parse_block_item();
-        add_child(node, block_item);
-        if (current_token < num_tokens && tokens[current_token].type == RIGHT_BRACE) {
-            break;
+        if (block_item != NULL) {
+            add_child(node, block_item);
+        } else {
+            return node;
         }
     }
     return node;
@@ -411,62 +464,69 @@ ParseTreeNode *parse_block_item_list() {
 // <block_item> ::= <statement> | <variable_declaration> | <array_declaration>
 ParseTreeNode *parse_block_item() {
     ParseTreeNode *node = create_block_item_node();
-    if (current_token < num_tokens && (tokens[current_token].type == INT || tokens[current_token].type == FLOAT ||
-                                       tokens[current_token].type == CHAR || tokens[current_token].type == BOOL)) {
-        if (current_token + 1 < num_tokens && tokens[current_token + 1].type == IDENTIFIER) {
-            if (current_token + 2 < num_tokens && tokens[current_token + 2].type == LEFT_BRACKET) {
-                ParseTreeNode *array_declaration = parse_array_declaration();
-                add_child(node, array_declaration);
-            } else {
-                ParseTreeNode *variable_declaration = parse_variable_declaration();
-                add_child(node, variable_declaration);
-            }
+    
+    // Check for variable/array declarations first
+    if (current_token < num_tokens && 
+        (tokens[current_token].type == INT || 
+         tokens[current_token].type == FLOAT ||
+         tokens[current_token].type == CHAR || 
+         tokens[current_token].type == BOOL)) {
+        
+        // Look ahead to distinguish between array and variable declaration
+        if (current_token + 2 < num_tokens && 
+            tokens[current_token + 2].type == LEFT_BRACKET) {
+            add_child(node, parse_array_declaration());
         } else {
-            fprintf(stderr, "Error: Expected identifier after data type in declaration at line %d\n", tokens[current_token].line_number);
-            synchronize();
+            add_child(node, parse_variable_declaration());
         }
     } else {
-        ParseTreeNode *statement = parse_statement();
-        add_child(node, statement);
+        // If not a declaration, must be a statement
+        add_child(node, parse_statement());
     }
+    
     return node;
 }
 
 // <statement> ::= "return" <const> ;" | <const> ";" | ";" 
 ParseTreeNode *parse_statement() {
     ParseTreeNode *node = create_statement_node();
-    if (current_token < num_tokens && tokens[current_token].type == RETURN) {
-        ParseTreeNode *return_statement = parse_return_statement();
-        add_child(node, return_statement);
-    } else if (current_token < num_tokens && tokens[current_token].type == IF) {
-        ParseTreeNode *if_statement = parse_if_statement();
-        add_child(node, if_statement);
-    } else if (current_token < num_tokens && tokens[current_token].type == WHILE) {
-        ParseTreeNode *while_statement = parse_while_statement();
-        add_child(node, while_statement);
-    } else if (current_token < num_tokens && tokens[current_token].type == FOR) {
-        ParseTreeNode *for_statement = parse_for_statement();
-        add_child(node, for_statement);
-    } else if (current_token < num_tokens && tokens[current_token].type == SCANF) {
-        ParseTreeNode *input_statement = parse_input_statement();
-        add_child(node, input_statement);
-    } else if (current_token < num_tokens && tokens[current_token].type == PRINTF) {
-        ParseTreeNode *output_statement = parse_output_statement();
-        add_child(node, output_statement);
-    } else if (current_token < num_tokens && tokens[current_token].type == SEMICOLON) {
-        add_child(node, match_and_create_node(SEMICOLON, "Semicolon"));
-    } else if (current_token < num_tokens && tokens[current_token].type == LEFT_BRACE) {
-        ParseTreeNode *block = parse_block();
-        add_child(node, block);
-    } else {
-        ParseTreeNode *expr_statement = parse_expression_statement();
-        if (expr_statement != NULL) {
-            add_child(node, expr_statement);
-        } else {
-            fprintf(stderr, "Error: Invalid statement at line %d\n", tokens[current_token].line_number);
-            synchronize();
-        }
+    
+    switch (tokens[current_token].type) {
+        case RETURN:
+            add_child(node, parse_return_statement());
+            break;
+        case IDENTIFIER:
+            // Handle function calls and assignments
+            ParseTreeNode *exp = parse_exp();
+            add_child(node, exp);
+            add_child(node, match_and_create_node(SEMICOLON, "Semicolon")); 
+            break;
+        case IF:
+            add_child(node, parse_if_statement());
+            break;
+        case WHILE:
+            add_child(node, parse_while_statement());
+            break;
+        case FOR:
+            add_child(node, parse_for_statement());
+            break;
+        case SCANF:
+            add_child(node, parse_input_statement());
+            break;
+        case PRINTF:
+            add_child(node, parse_output_statement());
+            break;
+        case SEMICOLON:
+            add_child(node, match_and_create_node(SEMICOLON, "Semicolon"));
+            break;
+        case LEFT_BRACE:
+            add_child(node, parse_block());
+            break;
+        default:
+            add_child(node, parse_expression_statement());
+            break;
     }
+
     return node;
 }
 
@@ -540,14 +600,17 @@ Token *load_tokens(const char *filename, int *num_tokens) {
 
 ParseTreeNode *parse_argument_list() {
     ParseTreeNode *node = create_argument_list_node();
-        ParseTreeNode *factor = parse_factor();
-        add_child(node, factor);
+    // The first argument should be parsed as a full expression
+    ParseTreeNode *exp = create_exp_node(); // Create an Exp node
+    add_child(exp, parse_exp());
+    add_child(node, exp); // Add the Exp node to the argument list
 
     while (current_token < num_tokens && tokens[current_token].type == COMMA) {
         add_child(node, match_and_create_node(COMMA, "Comma"));
-
-        ParseTreeNode *factor = parse_factor();
-        add_child(node, factor);
+        // Subsequent arguments are also full expressions
+        ParseTreeNode *exp = create_exp_node(); // Create an Exp node
+        add_child(exp, parse_exp());
+        add_child(node, exp); // Add the Exp node to the argument list
     }
     return node;
 }
@@ -629,36 +692,237 @@ ParseTreeNode *parse_factor() {
     return node;
 }
 
+// Add forward declarations so that parse_expression can call parse_unary without warnings
+ParseTreeNode *parse_unary();
+ParseTreeNode *parse_expression(int min_prec);
+
+static int get_precedence(TokenType t) {
+    switch (t) {
+        case EXPONENT: return 5;    // '^'
+        case MULTIPLY:
+        case DIVIDE:
+        case MODULO:    return 4;   // '*','/','%'
+        case PLUS:
+        case MINUS:     return 3;   // '+','-'
+        case LESS:
+        case LESS_EQUAL:
+        case GREATER:
+        case GREATER_EQUAL: return 2;
+        case EQUAL:
+        case NOT_EQUAL: return 1;
+        default: return 0;
+    }
+}
+
+// Parses expressions with operator precedence
+ParseTreeNode *parse_expression(int min_prec) {
+    ParseTreeNode *lhs = parse_unary(); // parse first piece
+
+    while (current_token < num_tokens) {
+        int prec = get_precedence(tokens[current_token].type);
+        if (prec < min_prec) break;
+
+        TokenType op_type = tokens[current_token].type;
+        match(op_type); // consume operator
+
+        ParseTreeNode *new_node = create_node("OpExpr");
+        add_child(new_node, lhs);
+        add_child(new_node, match_and_create_node(op_type, "Operator"));
+        ParseTreeNode *rhs = parse_expression(prec + (op_type == EXPONENT ? 0 : 1));
+        add_child(new_node, rhs);
+        lhs = new_node;
+    }
+    return lhs;
+}
+
+ParseTreeNode *parse_unary() {
+    if (tokens[current_token].type == PLUS ||
+        tokens[current_token].type == MINUS ||
+        tokens[current_token].type == NOT_EQUAL /* '!' if desired */) {
+        TokenType op_type = tokens[current_token].type;
+        match(op_type);
+        ParseTreeNode *node = create_node("UnaryOp");
+        add_child(node, match_and_create_node(op_type, "Unary_Operator"));
+        add_child(node, parse_unary());
+        return node;
+    }
+    return parse_factor();  
+}
+
+// Integrate with existing parse_exp
 ParseTreeNode *parse_exp() {
-    ParseTreeNode *node = create_exp_node();
+    // Handle assignment expressions
+    if (current_token < num_tokens && tokens[current_token].type == IDENTIFIER) {
+        int lookahead = current_token + 1;
+        
+        // Look for assignment operator
+        while (lookahead < num_tokens && 
+               (tokens[lookahead].type == LEFT_BRACKET || 
+                tokens[lookahead].type == RIGHT_BRACKET ||
+                tokens[lookahead].type == IDENTIFIER)) {
+            lookahead++;
+        }
+        
+        if (lookahead < num_tokens && tokens[lookahead].type == ASSIGN) {
+            return parse_assignment();
+        }
+    }
     
-    if (current_token < num_tokens && (tokens[current_token].type == IDENTIFIER) &&
-     ((tokens[current_token + 1].type != LEFT_PARENTHESIS))) {
-        ParseTreeNode *identifier = parse_identifier();
-        add_child(node, identifier);
+    return parse_logical_or_exp();
+}
 
-        if (current_token < num_tokens && tokens[current_token].type == LEFT_BRACKET) {
-            add_child(node, match_and_create_node(LEFT_BRACKET, "Left_Bracket"));
-            ParseTreeNode *const_node = parse_const();
-            add_child(node, const_node);
-            add_child(node, match_and_create_node(RIGHT_BRACKET, "Right_Bracket"));
-        }
+// Parse assignment <identifier> ["[" <const> "]"] "=" <exp>
+ParseTreeNode *parse_assignment() {
+    ParseTreeNode *node = create_node("Assignment");
 
-        if (current_token < num_tokens && tokens[current_token].type == ASSIGN) {
-            add_child(node, match_and_create_node(ASSIGN, "Assign"));
-            ParseTreeNode *exp = parse_exp();
-            add_child(node, exp);
-        } else {
-            // No assignment, revert to factor parsing
-            node = identifier; 
-        }
+    // Parse left-hand side
+    add_child(node, parse_identifier());
+    
+    // Handle array access if present
+    if (current_token < num_tokens && tokens[current_token].type == LEFT_BRACKET) {
+        add_child(node, match_and_create_node(LEFT_BRACKET, "Left_Bracket"));
+        add_child(node, parse_const());
+        add_child(node, match_and_create_node(RIGHT_BRACKET, "Right_Bracket"));
+    }
+
+    // Match assignment operator
+    add_child(node, match_and_create_node(ASSIGN, "Assign"));
+
+    // Parse right-hand side (which could be another assignment)
+    if (current_token < num_tokens && tokens[current_token].type == IDENTIFIER &&
+        current_token + 1 < num_tokens && tokens[current_token + 1].type == ASSIGN) {
+        add_child(node, parse_assignment());
     } else {
-        // Not an assignment, parse as factor
-        ParseTreeNode *factor = parse_factor();
-        add_child(node, factor);
+        add_child(node, parse_exp());
     }
 
     return node;
+}
+
+// Now implement the precedence-based expressions according to the grammar
+ParseTreeNode *parse_logical_or_exp() {
+    ParseTreeNode *node = parse_logical_and_exp();
+
+    while (current_token < num_tokens && tokens[current_token].type == OR) {
+        TokenType op_type = tokens[current_token].type;
+        match(op_type);
+        ParseTreeNode *new_node = create_node("LogicalOr");
+        add_child(new_node, node);
+        add_child(new_node, match_and_create_node(op_type, "Operator"));
+        add_child(new_node, parse_logical_and_exp());
+        node = new_node;
+    }
+    return node;
+}
+
+ParseTreeNode *parse_logical_and_exp() {
+    ParseTreeNode *node = parse_equality_exp();
+
+    while (current_token < num_tokens && tokens[current_token].type == AND) {
+        TokenType op_type = tokens[current_token].type;
+        match(op_type);
+        ParseTreeNode *new_node = create_node("LogicalAnd");
+        add_child(new_node, node);
+        add_child(new_node, match_and_create_node(op_type, "Operator"));
+        add_child(new_node, parse_equality_exp());
+        node = new_node;
+    }
+    return node;
+}
+
+ParseTreeNode *parse_equality_exp() {
+    ParseTreeNode *node = parse_relational_exp();
+
+    while (current_token < num_tokens &&
+          (tokens[current_token].type == EQUAL || tokens[current_token].type == NOT_EQUAL)) {
+        TokenType op_type = tokens[current_token].type;
+        match(op_type);
+        ParseTreeNode *new_node = create_node("Equality");
+        add_child(new_node, node);
+        add_child(new_node, match_and_create_node(op_type, "Operator"));
+        add_child(new_node, parse_relational_exp());
+        node = new_node;
+    }
+    return node;
+}
+
+ParseTreeNode *parse_relational_exp() {
+    ParseTreeNode *node = parse_additive_exp();
+
+    while (current_token < num_tokens &&
+          (tokens[current_token].type == LESS || tokens[current_token].type == GREATER ||
+           tokens[current_token].type == LESS_EQUAL || tokens[current_token].type == GREATER_EQUAL)) {
+        TokenType op_type = tokens[current_token].type;
+        match(op_type);
+        ParseTreeNode *new_node = create_node("Relational");
+        add_child(new_node, node);
+        add_child(new_node, match_and_create_node(op_type, "Operator"));
+        add_child(new_node, parse_additive_exp());
+        node = new_node;
+    }
+    return node;
+}
+
+ParseTreeNode *parse_additive_exp() {
+    ParseTreeNode *node = parse_multiplicative_exp();
+    while (current_token < num_tokens &&
+          (tokens[current_token].type == PLUS || tokens[current_token].type == MINUS)) {
+        TokenType op_type = tokens[current_token].type;
+        match(op_type);
+        ParseTreeNode *new_node = create_node("AddSub");
+        add_child(new_node, node);
+        add_child(new_node, match_and_create_node(op_type, "Operator"));
+        add_child(new_node, parse_multiplicative_exp());
+        node = new_node;
+    }
+    return node;
+}
+
+ParseTreeNode *parse_multiplicative_exp() {
+    ParseTreeNode *node = parse_power_exp();
+
+    while (current_token < num_tokens &&
+          (tokens[current_token].type == MULTIPLY || tokens[current_token].type == DIVIDE || tokens[current_token].type == MODULO)) {
+        TokenType op_type = tokens[current_token].type;
+        match(op_type);
+        ParseTreeNode *new_node = create_node("MulDivMod");
+        add_child(new_node, node);
+        add_child(new_node, match_and_create_node(op_type, "Operator"));
+        add_child(new_node, parse_power_exp());
+        node = new_node;
+    }
+    return node;
+}
+
+ParseTreeNode *parse_power_exp() {
+    ParseTreeNode *node = parse_unary_exp();
+
+    // Right-associative exponent
+    while (current_token < num_tokens && tokens[current_token].type == EXPONENT) {
+        TokenType op_type = tokens[current_token].type;
+        match(op_type);
+        ParseTreeNode *new_node = create_node("Power");
+        add_child(new_node, node);
+        add_child(new_node, match_and_create_node(op_type, "Operator"));
+        add_child(new_node, parse_power_exp()); 
+        node = new_node;
+    }
+    return node;
+}
+
+ParseTreeNode *parse_unary_exp() {
+    // <unary_exp> ::= <factor> | <unop> <unary_exp>
+    if (tokens[current_token].type == PLUS ||
+        tokens[current_token].type == MINUS ||
+        tokens[current_token].type == NOT_EQUAL) {
+        ParseTreeNode *node = create_node("UnaryOp");
+        TokenType op = tokens[current_token].type;
+        match(op);
+        add_child(node, match_and_create_node(op, "Unary_Operator"));
+        add_child(node, parse_unary_exp());
+        return node;
+    }
+    return parse_factor();
 }
 
 // Function to parse a return statement: "return" <const> ";"
@@ -672,13 +936,21 @@ ParseTreeNode *parse_return_statement() {
     return node;
 }
 
-ParseTreeNode *parse_expression_statement()
-{
+ParseTreeNode *parse_expression_statement() {
     ParseTreeNode *node = create_expression_statement_node();
-    ParseTreeNode *expression_node = parse_exp();
-    add_child(node, expression_node);
+    // Create an Exp node to wrap the expression
+    ParseTreeNode *exp_node = create_exp_node();
+    add_child(exp_node, parse_exp());
+    add_child(node, exp_node);
 
-    add_child(node, match_and_create_node(SEMICOLON, "Semicolon"));
+    // Match semicolon at the end of the expression statement
+    if (current_token < num_tokens && tokens[current_token].type == SEMICOLON) {
+        add_child(node, match_and_create_node(SEMICOLON, "Semicolon"));
+    } else {
+        fprintf(stderr, "Error: Expected semicolon at end of expression statement at line %d\n", tokens[current_token].line_number);
+        synchronize();
+    }
+
     return node;
 }
 
@@ -708,64 +980,63 @@ ParseTreeNode *parse_while_statement() {
     add_child(node, match_and_create_node(WHILE, "While"));
     add_child(node, match_and_create_node(LEFT_PARENTHESIS, "Left_Parenthesis"));
 
-    ParseTreeNode *factor_node = parse_factor();
-    add_child(node, factor_node);
+    ParseTreeNode *exp = parse_exp();
+    add_child(node, exp);
 
     add_child(node, match_and_create_node(RIGHT_PARENTHESIS, "Right_Parenthesis"));
 
     ParseTreeNode *block = parse_block();
     add_child(node, block);
+
     return node;
 }
 
 // Function to parse a for loop statement
 ParseTreeNode *parse_for_statement() {
     ParseTreeNode *node = create_for_statement_node();
+    
+    // Match "for" and "("
     add_child(node, match_and_create_node(FOR, "For"));
     add_child(node, match_and_create_node(LEFT_PARENTHESIS, "Left_Parenthesis"));
 
-    // Parse the initialization part
-    if (current_token < num_tokens && (tokens[current_token].type == INT || tokens[current_token].type == FLOAT ||
-                                       tokens[current_token].type == CHAR || tokens[current_token].type == BOOL)) {
-        // Check if it's a variable or array declaration
-        if (current_token + 1 < num_tokens && tokens[current_token + 1].type == IDENTIFIER) {
-            if (current_token + 2 < num_tokens && tokens[current_token + 2].type == LEFT_BRACKET) {
-                ParseTreeNode *array_declaration = parse_array_declaration();
-                add_child(node, array_declaration);
-            } else {
-                ParseTreeNode *variable_declaration = parse_variable_declaration();
-                add_child(node, variable_declaration);
-            }
+    // Parse initialization
+    if (tokens[current_token].type == INT || 
+        tokens[current_token].type == FLOAT ||
+        tokens[current_token].type == CHAR || 
+        tokens[current_token].type == BOOL) {
+        
+        // Handle declarations
+        if (current_token + 2 < num_tokens && 
+            tokens[current_token + 2].type == LEFT_BRACKET) {
+            add_child(node, parse_array_declaration());
         } else {
-            // Error: Expected identifier after data type
-            fprintf(stderr, "Error: Expected identifier after data type in for loop initialization at line %d\n", tokens[current_token].line_number);
-            synchronize();
+            add_child(node, parse_variable_declaration());
         }
     } else {
-        ParseTreeNode *factor_statement = parse_factor_statement();
-        add_child(node, factor_statement);
+        // Handle expression case
+        ParseTreeNode *init_exp = parse_exp();
+        add_child(node, init_exp);
+        add_child(node, match_and_create_node(SEMICOLON, "Semicolon"));
     }
 
-    // Parse the condition part
-    ParseTreeNode *condition = parse_factor();
+    // Parse condition
+    ParseTreeNode *condition = parse_exp();
     add_child(node, condition);
     add_child(node, match_and_create_node(SEMICOLON, "Semicolon"));
 
-    // Parse the increment/decrement part
-    ParseTreeNode *increment = parse_factor();
+    // Parse increment
+    ParseTreeNode *increment = parse_exp();
     add_child(node, increment);
 
+    // Match closing ")" and parse block
     add_child(node, match_and_create_node(RIGHT_PARENTHESIS, "Right_Parenthesis"));
-
-    // Parse the block
-    ParseTreeNode *block = parse_block();
-    add_child(node, block);
+    add_child(node, parse_block());
 
     return node;
 }
 
 ParseTreeNode *parse_input_statement() {
-    ParseTreeNode *node = create_node("Input_Statement");
+    ParseTreeNode *node = create_input_statement_node();
     add_child(node, match_and_create_node(SCANF, "Scanf"));
     add_child(node, match_and_create_node(LEFT_PARENTHESIS, "Left_Parenthesis"));
 
@@ -784,42 +1055,47 @@ ParseTreeNode *parse_input_statement() {
 }
 
 ParseTreeNode *parse_output_statement() {
-    ParseTreeNode *node = create_node("Output_Statement");
+    ParseTreeNode *node = create_output_statement_node();
+    
+    // Match printf and left parenthesis
     add_child(node, match_and_create_node(PRINTF, "Printf"));
     add_child(node, match_and_create_node(LEFT_PARENTHESIS, "Left_Parenthesis"));
 
-    if (current_token < num_tokens && tokens[current_token].type == STRING) {
-        add_child(node, match_and_create_node(STRING, "String"));
+    // Handle printf arguments
+    if (current_token < num_tokens) {
+        if (tokens[current_token].type == STRING) {
+            add_child(node, match_and_create_node(STRING, "String"));
 
-        while (current_token < num_tokens && tokens[current_token].type == COMMA) {
-            add_child(node, match_and_create_node(COMMA, "Comma"));
-
-            if (current_token < num_tokens && tokens[current_token].type == IDENTIFIER) {
-                ParseTreeNode *identifier = parse_identifier();
-                add_child(node, identifier);
-            } else {
-                ParseTreeNode *factor_node = parse_factor();
-                add_child(node, factor_node);
+            // Handle variable arguments after format string
+            while (current_token < num_tokens && tokens[current_token].type == COMMA) {
+                add_child(node, match_and_create_node(COMMA, "Comma"));
+                ParseTreeNode *exp = parse_exp();
+                add_child(node, exp);
             }
+        } else if (tokens[current_token].type == IDENTIFIER) {
+            ParseTreeNode *identifier = parse_identifier();
+            add_child(node, identifier);
+        } else {
+            fprintf(stderr, "Error: Expected string or identifier in printf at line %d\n", 
+                    tokens[current_token].line_number);
+            synchronize();
+            return node;
         }
-    } else if (current_token < num_tokens && tokens[current_token].type == IDENTIFIER) {
-        ParseTreeNode *identifier = parse_identifier();
-        add_child(node, identifier);
-    } else {
-        fprintf(stderr, "Error: Expected string or identifier in printf at line %d\n", tokens[current_token].line_number);
-        synchronize();
     }
 
-    add_child(node, match_and_create_node(RIGHT_PARENTHESIS, "Right_Parenthesis"));
+    // Match closing parenthesis and semicolon
+    add_child(node, match_and_create_node(RIGHT_PARENTHESIS, "Right_Parenthesis")); 
+    add_child(node, match_and_create_node(SEMICOLON, "Semicolon"));
+
     return node;
 }
 
 ParseTreeNode *parse_if_statement() {
-    ParseTreeNode *node = create_node("If_Statement");
+    ParseTreeNode *node = create_if_statement_node();
     add_child(node, match_and_create_node(IF, "If"));
     add_child(node, match_and_create_node(LEFT_PARENTHESIS, "Left_Parenthesis"));
 
-    ParseTreeNode *condition = parse_factor();
+    ParseTreeNode *condition = parse_exp();
     add_child(node, condition);
 
     add_child(node, match_and_create_node(RIGHT_PARENTHESIS, "Right_Parenthesis"));
@@ -827,7 +1103,7 @@ ParseTreeNode *parse_if_statement() {
     ParseTreeNode *if_block = parse_block();
     add_child(node, if_block);
 
-    if (current_token < num_tokens && tokens[current_token].type == ELSE) {
+    while (current_token < num_tokens && tokens[current_token].type == ELSE) {
         ParseTreeNode *else_clause = parse_else_clause();
         add_child(node, else_clause);
     }
@@ -1102,33 +1378,29 @@ void free_parse_tree(ParseTreeNode *node) {
 }
 
 void report_error(const char *message, TokenType expected) {
-    printf("Error: %s, Expected: %s, Line: %d, Column: %d\n", message, token_names[expected], tokens[current_token].line_number, tokens[current_token].column_number);
+    fprintf(stderr, "Error: %s, Expected: %s, Line: %d, Column: %d\n",
+            message,
+            token_names[expected],
+            tokens[current_token].line_number,
+            tokens[current_token].column_number);
+    panic_mode = true;
 }
 
 void synchronize() {
-    //printf("Entering synchronization mode\n");
     panic_mode = true;
-    current_token++; // Consume the erroneous token
-
     while (current_token < num_tokens) {
-        // Synchronization tokens for declarations
-        if (tokens[current_token].type == INT || tokens[current_token].type == FLOAT ||
-            tokens[current_token].type == CHAR || tokens[current_token].type == BOOL ||
-            tokens[current_token].type == EOF) {
-            // printf("Synchronized on declaration token: %s\n", token_names[tokens[current_token].type]);
+        // Synchronize on statement/declaration boundaries
+        if (tokens[current_token].type == SEMICOLON ||
+            tokens[current_token].type == RIGHT_BRACE ||
+            tokens[current_token].type == INT ||
+            tokens[current_token].type == FLOAT ||
+            tokens[current_token].type == CHAR ||
+            tokens[current_token].type == BOOL ||
+            tokens[current_token].type == FOR ||
+            tokens[current_token].type == WHILE ||
+            tokens[current_token].type == IF) {
             return;
         }
-
-        // Synchronization tokens for statements
-        if (tokens[current_token].type == RETURN || tokens[current_token].type == SEMICOLON ||
-            tokens[current_token].type == WHILE || tokens[current_token].type == FOR ||
-            tokens[current_token].type == LEFT_BRACE || tokens[current_token].type == INTEGER_LITERAL ||
-            tokens[current_token].type == FLOAT_LITERAL || tokens[current_token].type == CHARACTER_LITERAL ||
-            tokens[current_token].type == TRUE || tokens[current_token].type == FALSE) {
-            //printf("Synchronized on statement token: %s\n", token_names[tokens[current_token].type]);
-            return;
-        }
-
         current_token++;
     }
 }
