@@ -30,8 +30,8 @@
 <for_statement> ::= "for" "(" (<variable_declaration> | <array_declaration> | <exp> ";") <exp> ";" <exp> ")" <block>    
 <while_statement> ::= "while" "(" <exp> ")" <block>
 <input_statement> ::= "scanf" "(" <string> { "," "&" <identifier> } ")" ";"
-<output_statement> ::= "printf" "(" <string> ")" ";"
-                                    | "printf" "(" <string> "," <exp> ")" ";" 
+<output_statement> ::= "printf" "(" <string> ")" ";" 
+                                    | "printf" "(" <string> "," <exp> ")" ";"
                                     | "printf" "(" <string> { "," <exp> } ")" ";"
                                     | "printf" "(" <identifier> ")" ";"
 <if_statement> ::= "if" "(" <exp> ")" <block> [<else-clause>]
