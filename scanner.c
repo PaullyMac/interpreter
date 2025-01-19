@@ -35,7 +35,7 @@ void identifier();
 void string();
 void add_eof();
 void character_literal();
-TokenType keywords();
+TokenType keywords(char *lexeme);
 int peek();
 void unget_char(int ch);
 void set_token_end_column();
@@ -323,12 +323,19 @@ void lex() {
                 break;
             }
             // If reached this, then must be invalid character
-        default:
-            printf("ERROR - invalid char %c\n", current_char);
-            next_token = ERROR_INVALID_CHARACTER;
-            set_token_end_column();
-            current_char = get_char();
-            return;
+            default:
+                if (isalpha(current_char)) {
+                    identifier();
+                    next_token = keywords(lexeme);
+                } else if (isdigit(current_char)) {
+                    number();
+                } else {
+                    printf("ERROR - invalid char %c\n", current_char);
+                    next_token = ERROR_INVALID_CHARACTER;
+                    set_token_end_column();
+                    current_char = get_char();
+                }
+                break;
     }
 }
 
@@ -520,80 +527,251 @@ void identifier() {
         lexeme[local_length] = '\0';
         lexeme_length = local_length;
         // Check if it's a keyword or just an identifier
-        next_token = keywords();
+        next_token = keywords(lexeme);
     }
 
     set_token_end_column();
 }
 
 /******************************************************/
-/* keywords - determine if the identifier is a keyword */
-TokenType keywords() {
-    switch (lexeme[0]) {
-        // check if bool
-        case 'b':
-            if (lexeme[1] == 'o' && lexeme[2] == 'o' && lexeme[3] == 'l' && lexeme_length == 4) 
-                return BOOL;
-            break;
-        // check if char
-        case 'c':
-            if (lexeme[1] == 'h' && lexeme[2] == 'a' && lexeme[3] == 'r' && lexeme_length == 4) 
-                return CHAR;
-            break;
-        // check if else
-        case 'e':
-            if (lexeme[1] == 'l' && lexeme[2] == 's' && lexeme[3] == 'e' && lexeme_length == 4) 
-                return ELSE;
-            break;
-        // check if false, float, or for
-        case 'f':
-            if (lexeme[1] == 'a' && lexeme[2] == 'l' && lexeme[3] == 's' && lexeme[4] == 'e' && lexeme_length == 5)
-                return FALSE;
-            if (lexeme[1] == 'l' && lexeme[2] == 'o' && lexeme[3] == 'a' && lexeme[4] == 't' && lexeme_length == 5)
-                return FLOAT;
-            if (lexeme[1] == 'o' && lexeme[2] == 'r' && lexeme_length == 3) 
-                return FOR;
-            break;
-        // check if if or int
-        case 'i':
-            if (lexeme[1] == 'f' && lexeme_length == 2)
-                return IF;
-            if (lexeme[1] == 'n' && lexeme[2] == 't' && lexeme_length == 3)
-                return INT;
-            break;
-        // check if printf
-        case 'p':
-            if (lexeme[1] == 'r' && lexeme[2] == 'i' && lexeme[3] == 'n' && lexeme[4] == 't' && lexeme[5] == 'f' && lexeme_length == 6) 
-                return PRINTF;
-            break;
-        // check if return
-        case 'r':
-            if (lexeme[1] == 'e' && lexeme[2] == 't' && lexeme[3] == 'u' && lexeme[4] == 'r' && lexeme[5] == 'n' && lexeme_length == 6)
-                return RETURN;
-            break;
-        // check if scanf
-        case 's':
-            if (lexeme[1] == 'c' && lexeme[2] == 'a' && lexeme[3] == 'n' && lexeme[4] == 'f' && lexeme_length == 5) 
-                return SCANF;
-            break;
-        // check if true
-        case 't':
-            if (lexeme[1] == 'r' && lexeme[2] == 'u' && lexeme[3] == 'e' && lexeme_length == 4) 
-                return TRUE;
-            break;
-        // check for void
-        case 'v':
-            if (lexeme[1] == 'o' && lexeme[2] == 'i' && lexeme[3] == 'd' && lexeme_length == 4) 
-                return VOID;
-            break;
-        // check if while
-        case 'w':
-            if (lexeme[1] == 'h' && lexeme[2] == 'i' && lexeme[3] == 'l' && lexeme[4] == 'e' && lexeme_length == 5) 
-                return WHILE;
-            break;
+/* keywords - a function to check if the lexeme is a keyword */
+TokenType keywords(char *lexeme) {
+    char *current = lexeme;
+    KeywordState state = S;
+
+    while (*current != '\0') {
+        switch (state) {
+            case S:
+                switch (*current) {
+                    case 'b': state = B; break; // Possible 'bool'
+                    case 'c': state = C; break; // Possible 'char'
+                    case 'e': state = E; break; // Possible 'else'
+                    case 'f': state = F; break; // Possible 'false', 'float', 'for'
+                    case 'i': state = I; break; // Possible 'if', 'int'
+                    case 'p': state = P; break; // Possible 'printf'
+                    case 'r': state = R; break; // Possible 'return'
+                    case 's': state = S1; break; // Possible 'scanf'
+                    case 't': state = T; break; // Possible 'true'
+                    case 'w': state = W; break; // Possible 'while'
+                    case 'v': state = V; break; // Possible 'void'
+                    default: return IDENTIFIER; // Not a keyword
+                }
+                break;
+
+            // States for 'bool'
+            case B:
+                if (*current == 'o') state = BO; else return IDENTIFIER;
+                break;
+            case BO:
+                if (*current == 'o') state = BOO; else return IDENTIFIER;
+                break;
+            case BOO:
+                if (*current == 'l') state = FINAL_BOOL; else return IDENTIFIER;
+                break;
+            case FINAL_BOOL:
+                return (*current == '\0') ? BOOL : IDENTIFIER;
+
+            // States for 'char'
+            case C:
+                if (*current == 'h') state = CH; else return IDENTIFIER;
+                break;
+            case CH:
+                if (*current == 'a') state = CHA; else return IDENTIFIER;
+                break;
+            case CHA:
+                if (*current == 'r') state = FINAL_CHAR; else return IDENTIFIER;
+                break;
+            case FINAL_CHAR:
+                return (*current == '\0') ? CHAR : IDENTIFIER;
+
+            // States for 'else'
+            case E:
+                if (*current == 'l') state = EL; else return IDENTIFIER;
+                break;
+            case EL:
+                if (*current == 's') state = ELS; else return IDENTIFIER;
+                break;
+            case ELS:
+                if (*current == 'e') state = FINAL_ELSE; else return IDENTIFIER;
+                break;
+            case FINAL_ELSE:
+                return (*current == '\0') ? ELSE : IDENTIFIER;
+
+            // States for 'false', 'float', 'for'
+            case F:
+                if (*current == 'a') state = FA;  // Possible 'false'
+                else if (*current == 'l') state = FL; // Possible 'float'
+                else if (*current == 'o') state = FO; // Possible 'for'
+                else return IDENTIFIER;
+                break;
+            case FA:
+                if (*current == 'l') state = FAL; else return IDENTIFIER;
+                break;
+            case FAL:
+                if (*current == 's') state = FALS; else return IDENTIFIER;
+                break;
+            case FALS:
+                if (*current == 'e') state = FINAL_FALSE; else return IDENTIFIER;
+                break;
+            case FINAL_FALSE:
+                return (*current == '\0') ? FALSE : IDENTIFIER;
+
+            case FL:
+                if (*current == 'o') state = FLO; else return IDENTIFIER;
+                break;
+            case FLO:
+                if (*current == 'a') state = FLOA; else return IDENTIFIER;
+                break;
+            case FLOA:
+                if (*current == 't') state = FINAL_FLOAT; else return IDENTIFIER;
+                break;
+            case FINAL_FLOAT:
+                return (*current == '\0') ? FLOAT : IDENTIFIER;
+
+            case FO:
+                if (*current == 'r') state = FINAL_FOR; else return IDENTIFIER;
+                break;
+            case FINAL_FOR:
+                return (*current == '\0') ? FOR : IDENTIFIER;
+
+            // States for 'if', 'int'
+            case I:
+                if (*current == 'f') state = FINAL_IF;
+                else if (*current == 'n') state = IN;
+                else return IDENTIFIER;
+                break;
+            case FINAL_IF:
+                return (*current == '\0') ? IF : IDENTIFIER;
+
+            case IN:
+                if (*current == 't') state = FINAL_INT; else return IDENTIFIER;
+                break;
+            case FINAL_INT:
+                return (*current == '\0') ? INT : IDENTIFIER;
+
+            // States for 'printf'
+            case P:
+                if (*current == 'r') state = PR; else return IDENTIFIER;
+                break;
+            case PR:
+                if (*current == 'i') state = PRI; else return IDENTIFIER;
+                break;
+            case PRI:
+                if (*current == 'n') state = PRIN; else return IDENTIFIER;
+                break;
+            case PRIN:
+                if (*current == 't') state = PRINT; else return IDENTIFIER;
+                break;
+            case PRINT:
+                if (*current == 'f') state = FINAL_PRINTF; else return IDENTIFIER;
+                break;
+            case FINAL_PRINTF:
+                return (*current == '\0') ? PRINTF : IDENTIFIER;
+
+            // States for 'return'
+            case R:
+                if (*current == 'e') state = RE; else return IDENTIFIER;
+                break;
+            case RE:
+                if (*current == 't') state = RET; else return IDENTIFIER;
+                break;
+            case RET:
+                if (*current == 'u') state = RETU; else return IDENTIFIER;
+                break;
+            case RETU:
+                if (*current == 'r') state = RETUR; else return IDENTIFIER;
+                break;
+            case RETUR:
+                if (*current == 'n') state = FINAL_RETURN; else return IDENTIFIER;
+                break;
+            case FINAL_RETURN:
+                return (*current == '\0') ? RETURN : IDENTIFIER;
+
+            // States for 'scanf'
+            case S1:
+                if (*current == 'c') state = SC; else return IDENTIFIER;
+                break;
+            case SC:
+                if (*current == 'a') state = SCA; else return IDENTIFIER;
+                break;
+            case SCA:
+                if (*current == 'n') state = SCAN; else return IDENTIFIER;
+                break;
+            case SCAN:
+                if (*current == 'f') state = FINAL_SCANF; else return IDENTIFIER;
+                break;
+            case FINAL_SCANF:
+                return (*current == '\0') ? SCANF : IDENTIFIER;
+
+            // States for 'true'
+            case T:
+                if (*current == 'r') state = TR; else return IDENTIFIER;
+                break;
+            case TR:
+                if (*current == 'u') state = TRU; else return IDENTIFIER;
+                break;
+            case TRU:
+                if (*current == 'e') state = FINAL_TRUE; else return IDENTIFIER;
+                break;
+            case FINAL_TRUE:
+                return (*current == '\0') ? TRUE : IDENTIFIER;
+
+            // States for 'while'
+            case W:
+                if (*current == 'h') state = WH; else return IDENTIFIER;
+                break;
+            case WH:
+                if (*current == 'i') state = WHI; else return IDENTIFIER;
+                break;
+            case WHI:
+                if (*current == 'l') state = WHIL; else return IDENTIFIER;
+                break;
+            case WHIL:
+                if (*current == 'e') state = FINAL_WHILE; else return IDENTIFIER;
+                break;
+            case FINAL_WHILE:
+                return (*current == '\0') ? WHILE : IDENTIFIER;
+
+            // States for 'void'
+            case V:
+                if (*current == 'o') state = VO; 
+                else return IDENTIFIER;
+                break;
+            case VO:
+                if (*current == 'i') state = VOI; 
+                else return IDENTIFIER;
+                break;
+            case VOI:
+                if (*current == 'd') state = FINAL_VOID; 
+                else return IDENTIFIER;
+                break;
+            case FINAL_VOID:
+                return (*current == '\0') ? VOID : IDENTIFIER;
+
+            default:
+                return IDENTIFIER;
+        }
+        current++;
     }
 
-    return IDENTIFIER;
+    // Handle end of string for each final state
+    switch (state) {
+        case FINAL_BOOL: return BOOL;
+        case FINAL_CHAR: return CHAR;
+        case FINAL_ELSE: return ELSE;
+        case FINAL_FALSE: return FALSE;
+        case FINAL_FLOAT: return FLOAT;
+        case FINAL_FOR: return FOR;
+        case FINAL_IF: return IF;
+        case FINAL_INT: return INT;
+        case FINAL_PRINTF: return PRINTF;
+        case FINAL_RETURN: return RETURN;
+        case FINAL_SCANF: return SCANF;
+        case FINAL_TRUE: return TRUE;
+        case FINAL_WHILE: return WHILE;
+        case FINAL_VOID: return VOID;
+        default: return IDENTIFIER;
+    }
 }
 
 /******************************************************/
