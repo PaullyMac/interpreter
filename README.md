@@ -50,10 +50,10 @@ Will serve to show our progress on parser.c, and will eventually match our gramm
               | <outout_statement>
 
 <input_statement> ::= "scanf" "(" <string> { "," "&" <identifier> } ")" ";"
-<output_statement> ::= "printf" "(" <string> ")"  
-                                    | "printf" "(" <string> "," <factor> ")" 
-                                    | "printf" "(" <string> { "," <factor> } ")" 
-                                    | "printf" "(" <identifier> ")"
+<output_statement> ::= "printf" "(" <string> ")" ";"
+                                    | "printf" "(" <string> "," <factor> ")" ";"
+                                    | "printf" "(" <string> { "," <factor> } ")" ";"
+                                    | "printf" "(" <identifier> ")" ";"
 <if_statement> ::= "if" "(" <factor> ")" <block> [<else-clause>]
 <else-clause> ::= "else" <block>
                 | "else" <if_statement>
