@@ -2,6 +2,16 @@
 
 Scanner, Parser, Compiler for a subset of the C language written in C
 
+**Running the scanner and parser together**
+
+For now just call `scanner.c` on the `test_main_program.core` files and then call `parser.c`.
+
+```
+.\scanner {filename}.core; .\parser;
+```
+
+The scanner writes the tokens into the `symbol_table.txt`, then the parser loads the tokens from it and writes the parse tree to `parse_tree_output.ebnf`.
+
 ## Progress tracker of parser
 
 **Grammar rule the parser.c can parse**
@@ -10,29 +20,56 @@ Will serve to show our progress on parser.c, and will eventually match our gramm
 
 ```ebnf
 <program> ::= { <declaration> }
-<declaration> ::= <variable_declaration> | <array_declaration> | <function_declaration>
-<variable_declaration> ::= <data_type> <identifier> [ "=" <const> ] ";"
-                        | <data_type> <identifier> { "," <identifier> } ";"
+<declaration> ::= <variable_declaration> 
+                | <array_declaration> 
+                | <function_declaration> 
+
+<variable_declaration> ::= <data_type> <identifier> "=" <factor>  { "," <identifier> "=" <factor> } ";" 
+                        | <data_type> <identifier> { "," <identifier> } ";" 
 <array_declaration> ::= <data_type> <identifier> "[" [ <const> ] "]" [ "=" "{" [ <argument_list> ] "}" ] ";"
 <function_declaration> ::= <data_type> <identifier> "(" <parameter_list> ")" ( <block> | ";" )
-<parameter_list> ::= <data_type> <identifier> { "," <data_type> <identifier> }
-<argument_list> ::= <const> { "," <const> }
+
+<parameter_list> ::= ["void"] |  <data_type> <identifier> { "," <data_type> <identifier> }
+<argument_list> ::= <factor> { "," <factor> }
+
 <data_type> ::= "int" | "float" | "char" | "bool"
+
 <block> ::= "{" <block_item_list> "}"
 <block_item_list> ::= { <block_item> }
 <block_item> ::= <statement> | <variable_declaration> | <array_declaration>
-<statement> ::= return <const> ";"
-            ::= <const> ";"
-            ::= ";"
-            ::= <block>
-            ::= "while" "(" <const> ")" <block>
-            ::= "for" "(" (<variable_declaration> | <array_declaration> | <const> ";") <const> ";" <const> ")" <block>
+
+<statement> ::= "return" <factor> ";"
+              | <factor> ";"
+              | ";"
+              | <block>
+              | <for_statement>
+              | "while" "(" <factor> ")" <block>
+              | "for" "(" (<variable_declaration> | <array_declaration> | <factor> ";") <factor> ";" <factor> ")" <block>
+              | <if_statement>
+              | <input_statement>
+              | <outout_statement>
+
+<input_statement> ::= "scanf" "(" <string> { "," "&" <identifier> } ")" ";"
+<output_statement> ::= "printf" "(" <string> ")"  
+                                    | "printf" "(" <string> "," <factor> ")" 
+                                    | "printf" "(" <string> { "," <factor> } ")" 
+                                    | "printf" "(" <identifier> ")"
+<if_statement> ::= "if" "(" <factor> ")" <block> [<else-clause>]
+<else-clause> ::= "else" <block>
+                | "else" <if_statement>
+
+<factor> ::= <const>
+            | <identifier>
+            | "(" <factor> ")"
+            | <identifier> "(" [ <argument_list> ] ")"
+            | <identifier> "[" <const> "]" 
 <const> ::= <int> | <float> | <char> | <bool>
+<string> ::= STRING
 <identifier> ::= IDENTIFIER
-<int> ::= constant token
-<float> ::= float token
-<char> ::= char token
-<bool> ::= bool token
+<int> ::= INTEGER_LITERAL
+<float> ::= FLOAT_LITERAL
+<char> ::= CHARACTER_LITERAL
+<bool> ::= "true" | "false"
 ```
 
 **Test `test_main_program.core`**
@@ -43,25 +80,42 @@ The following test code
 bool array[5] = {1, 2};
 int array[10];
 
+// Test variables
 int a, b, c;
-int d;
+int d = 5;
+int c = bar(1000, 2, 3);
+int b = a; 
+int arr[3] = {(foo(5)), a[20], multiply(a)};
 
+// Function prototypes
 int isValid(bool x, int y, char z);
-int isNotValid();
+int empty(void);
 
-int main() {
-    bool array[5] = {};
-    int array[1];
-    ;
-    int e;
-    ;
-    int f;
-    int g;
-}
+int main(void) {
+    // Test input statements
+    scanf("%d");
+    scanf("dog");
+    scanf("%f", &value);
+    scanf("%f %f", &value1, &value2);
+    scanf(" ");
 
-bool isValid(bool x, int y, char z) {
-    int a, b;
-}
+    // Test output statements
+    printf("Hello, Universe!"); 
+    printf(name)
+    printf("Hello, your grade is %d %d", grade);
+    printf("Hello, your grade is %d %d", grade, year);
+
+    // Test if statements
+    if (true) {
+        return 0;
+    }
+
+    if (false) {
+        bool a;
+    } else {
+        bool b;
+    }
+...
 ```
 
 produces the following parse tree using my gawa-gawang notation ala *Writing a C Compiler*. The output of the parser is also stored at `parse_tree_output.ebnf`
@@ -70,16 +124,37 @@ produces the following parse tree using my gawa-gawang notation ala *Writing a C
 Program(
   Declaration(
     Array_Declaration(
-      Data_Type(BOOL),
-      IDENTIFIER("array"),
+      Data_Type(
+        BOOL
+      ),
+      Identifier(
+        IDENTIFIER: "array"
+      ),
       LEFT_BRACKET,
-      Constant(5),
+      Const(
+        Int(
+          INTEGER_LITERAL: "5"
+        )
+      ),
       RIGHT_BRACKET,
       ASSIGN,
       LEFT_BRACE,
       Argument_List(
-        Constant(1),
-        Constant(2)
+        Factor(
+          Const(
+            Int(
+              INTEGER_LITERAL: "1"
+            )
+          )
+        ),
+        COMMA,
+        Factor(
+          Const(
+            Int(
+              INTEGER_LITERAL: "2"
+            )
+          )
+        )
       ),
       RIGHT_BRACE,
       SEMICOLON
@@ -87,167 +162,178 @@ Program(
   ),
   Declaration(
     Array_Declaration(
-      Data_Type(INT),
-      IDENTIFIER("array"),
+      Data_Type(
+        INT
+      ),
+      Identifier(
+        IDENTIFIER: "array"
+      ),
       LEFT_BRACKET,
-      Constant(10),
+      Const(
+        Int(
+          INTEGER_LITERAL: "10"
+        )
+      ),
       RIGHT_BRACKET,
       SEMICOLON
     )
   ),
   Declaration(
     Variable_Declaration(
-      Data_Type(INT),
-      IDENTIFIER("a"),
+      Data_Type(
+        INT
+      ),
+      Identifier(
+        IDENTIFIER: "a"
+      ),
       COMMA,
-      IDENTIFIER("b"),
+      Identifier(
+        IDENTIFIER: "b"
+      ),
       COMMA,
-      IDENTIFIER("c"),
+      Identifier(
+        IDENTIFIER: "c"
+      ),
       SEMICOLON
     )
   ),
   Declaration(
     Variable_Declaration(
-      Data_Type(INT),
-      IDENTIFIER("d"),
+      Data_Type(
+        INT
+      ),
+      Identifier(
+        IDENTIFIER: "d"
+      ),
+      ASSIGN,
+      Factor(
+        Const(
+          Int(
+            INTEGER_LITERAL: "5"
+          )
+        )
+      ),
       SEMICOLON
     )
   ),
   Declaration(
-    Function_Declaration(
-      Data_Type(INT),
-      IDENTIFIER("isValid"),
-      LEFT_PARENTHESIS,
-      Parameter_List(
-        Data_Type(BOOL),
-        IDENTIFIER("x"),
-        Data_Type(INT),
-        IDENTIFIER("y"),
-        Data_Type(CHAR),
-        IDENTIFIER("z")
+    Variable_Declaration(
+      Data_Type(
+        INT
       ),
-      RIGHT_PARENTHESIS,
-      SEMICOLON
-    )
-  ),
-  Declaration(
-    Function_Declaration(
-      Data_Type(INT),
-      IDENTIFIER("isNotValid"),
-      LEFT_PARENTHESIS,
-      Parameter_List(
-
+      Identifier(
+        IDENTIFIER: "c"
       ),
-      RIGHT_PARENTHESIS,
-      SEMICOLON
-    )
-  ),
-  Declaration(
-    Function_Declaration(
-      Data_Type(INT),
-      IDENTIFIER("main"),
-      LEFT_PARENTHESIS,
-      Parameter_List(
-
-      ),
-      RIGHT_PARENTHESIS,
-      Block(
-        LEFT_BRACE,
-        Block_Item_List(
-          Block_Item(
-            Array_Declaration(
-              Data_Type(BOOL),
-              IDENTIFIER("array"),
-              LEFT_BRACKET,
-              Constant(5),
-              RIGHT_BRACKET,
-              ASSIGN,
-              LEFT_BRACE,
-              Argument_List(
-
-              ),
-              RIGHT_BRACE,
-              SEMICOLON
+      ASSIGN,
+      Factor(
+        Identifier(
+          IDENTIFIER: "bar"
+        ),
+        LEFT_PARENTHESIS,
+        Argument_List(
+          Factor(
+            Const(
+              Int(
+                INTEGER_LITERAL: "1000"
+              )
             )
           ),
-          Block_Item(
-            Array_Declaration(
-              Data_Type(INT),
-              IDENTIFIER("array"),
-              LEFT_BRACKET,
-              Constant(1),
-              RIGHT_BRACKET,
-              SEMICOLON
+          COMMA,
+          Factor(
+            Const(
+              Int(
+                INTEGER_LITERAL: "2"
+              )
             )
           ),
-          Block_Item(
-            Statement(
-              SEMICOLON
-            )
-          ),
-          Block_Item(
-            Variable_Declaration(
-              Data_Type(INT),
-              IDENTIFIER("e"),
-              SEMICOLON
-            )
-          ),
-          Block_Item(
-            Statement(
-              SEMICOLON
-            )
-          ),
-          Block_Item(
-            Variable_Declaration(
-              Data_Type(INT),
-              IDENTIFIER("f"),
-              SEMICOLON
-            )
-          ),
-          Block_Item(
-            Variable_Declaration(
-              Data_Type(INT),
-              IDENTIFIER("g"),
-              SEMICOLON
+          COMMA,
+          Factor(
+            Const(
+              Int(
+                INTEGER_LITERAL: "3"
+              )
             )
           )
         ),
-        RIGHT_BRACE
-      )
+        RIGHT_PARENTHESIS
+      ),
+      SEMICOLON
     )
   ),
   Declaration(
-    Function_Declaration(
-      Data_Type(BOOL),
-      IDENTIFIER("isValid"),
-      LEFT_PARENTHESIS,
-      Parameter_List(
-        Data_Type(BOOL),
-        IDENTIFIER("x"),
-        Data_Type(INT),
-        IDENTIFIER("y"),
-        Data_Type(CHAR),
-        IDENTIFIER("z")
+    Variable_Declaration(
+      Data_Type(
+        INT
       ),
-      RIGHT_PARENTHESIS,
-      Block(
-        LEFT_BRACE,
-        Block_Item_List(
-          Block_Item(
-            Variable_Declaration(
-              Data_Type(INT),
-              IDENTIFIER("a"),
-              COMMA,
-              IDENTIFIER("b"),
-              SEMICOLON
-            )
-          )
-        ),
-        RIGHT_BRACE
-      )
+      Identifier(
+        IDENTIFIER: "b"
+      ),
+      ASSIGN,
+      Factor(
+        Identifier(
+          IDENTIFIER: "a"
+        )
+      ),
+      SEMICOLON
     )
-  )
-)
+  ),
+  Declaration(
+    Array_Declaration(
+      Data_Type(
+        INT
+      ),
+      Identifier(
+        IDENTIFIER: "arr"
+      ),
+      LEFT_BRACKET,
+      Const(
+        Int(
+          INTEGER_LITERAL: "3"
+        )
+      ),
+      RIGHT_BRACKET,
+      ASSIGN,
+      LEFT_BRACE,
+      Argument_List(
+        Factor(
+          LEFT_PARENTHESIS,
+          Factor(
+            Identifier(
+              IDENTIFIER: "foo"
+            ),
+            LEFT_PARENTHESIS,
+            Argument_List(
+              Factor(
+                Const(
+                  Int(
+                    INTEGER_LITERAL: "5"
+                  )
+                )
+              )
+            ),
+            RIGHT_PARENTHESIS
+          ),
+          RIGHT_PARENTHESIS
+        ),
+        COMMA,
+        Factor(
+          Identifier(
+            IDENTIFIER: "a"
+          ),
+          LEFT_BRACKET,
+          Const(
+            Int(
+              INTEGER_LITERAL: "20"
+            )
+          ),
+          RIGHT_BRACKET
+        ),
+        COMMA,
+        Factor(
+          Identifier(
+            IDENTIFIER: "multiply"
+          ),
+...
 ```
 
 ## Scanner
@@ -286,14 +372,6 @@ But it feels icky to read one-at-a-time directly from the symbol table file. Wil
 10. Declaration Statement
 11. Error Recovery Method used:
 12. Error Messages
-
-**Testing the parser**
-
-For now just call `scanner.c` on the `test_parse.core` files and then call `parser.c`.
-
-```
-.\scanner {filename}.core; .\parser;
-```
 
 **Recursive Descent parser and Pratt parsing**
 

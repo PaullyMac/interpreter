@@ -1,0 +1,52 @@
+<program> ::= { <declaration> }
+<declaration> ::= <variable_declaration> 
+                | <array_declaration> 
+                | <function_declaration> 
+
+<variable_declaration> ::= <data_type> <identifier> "=" <exp>  { "," <identifier> "=" <exp> } ";" 
+                        | <data_type> <identifier> { "," <identifier> } ";" 
+<array_declaration> ::= <data_type> <identifier> "[" [ <const> ] "]" [ "=" "{" [ <argument_list> ] "}" ] ";"
+<function_declaration> ::= <data_type> <identifier> "(" <parameter_list> ")" ( <block> | ";" )
+
+<parameter_list> ::= ["void"] |  <data_type> <identifier> { "," <data_type> <identifier> }
+<argument_list> ::= <factor> { "," <factor> }
+
+<data_type> ::= "int" | "float" | "char" | "bool"
+
+<block> ::= "{" <block_item_list> "}"
+<block_item_list> ::= { <block_item> }
+<block_item> ::= <statement> | <variable_declaration> | <array_declaration>
+
+<statement> ::= "return" <factor> ";"
+              | <exp> ";"
+              | ";"
+              | <block>
+              | <for_statement>
+              | "while" "(" <factor> ")" <block>
+              | "for" "(" (<variable_declaration> | <array_declaration> | <factor> ";") <factor> ";" <factor> ")" <block>
+              | <if_statement>
+              | <input_statement>
+              | <outout_statement>
+
+<input_statement> ::= "scanf" "(" <string> { "," "&" <identifier> } ")" ";"
+<output_statement> ::= "printf" "(" <string> ")" ";"
+                                    | "printf" "(" <string> "," <factor> ")" ";"
+                                    | "printf" "(" <string> { "," <factor> } ")" ";"
+                                    | "printf" "(" <identifier> ")" ";"
+<if_statement> ::= "if" "(" <factor> ")" <block> [<else-clause>]
+<else-clause> ::= "else" <block>
+                | "else" <if_statement>
+
+<exp> ::= <factor> | (<identifier> | <identifier> "[" <const> "]" ) "=" <exp>  
+<factor> ::= <const>
+            | <identifier>
+            | "(" <exp> ")"
+            | <identifier> "(" [ <argument_list> ] ")"
+            | <identifier> "[" <const> "]" 
+<const> ::= <int> | <float> | <char> | <bool>
+<string> ::= STRING
+<identifier> ::= IDENTIFIER
+<int> ::= INTEGER_LITERAL
+<float> ::= FLOAT_LITERAL
+<char> ::= CHARACTER_LITERAL
+<bool> ::= "true" | "false"

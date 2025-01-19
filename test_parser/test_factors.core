@@ -1,0 +1,26 @@
+int main() {
+    // Test basic identifiers as factors
+    int a = 5;
+    int b = a; 
+
+    // Test function calls as factors
+    int c = foo();
+    int d = bar(1, 2, 3);
+    int e = baz(a, b, c);
+
+    // Test array element access as factors
+    int arr[3] = {10, 20, multiply()};
+    int f = arr[0];
+    int g = arr[1];
+    int h = arr[1]; 
+
+    // Test parentheses with constants
+    int i = (100);
+    int j = (200);
+    
+    // Parenthesized factors
+    int k = (foo());
+    int l = (bar(1, 2, 3));
+    int m = (arr[0]);
+    int n = (arr[true]);
+}

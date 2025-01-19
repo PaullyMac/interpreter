@@ -137,10 +137,10 @@ Program(
           ),
           RIGHT_PARENTHESIS
         )
-      ),
-      SEMICOLON
+      )
     )
   ),
+  Declaration(),
   Declaration(
     Variable_Declaration(
       Data_Type(
