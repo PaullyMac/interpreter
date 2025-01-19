@@ -21,7 +21,7 @@ int main() {
 
     // Test output
     printf("Hello, Universe!"); 
-    printf(name)
+    printf(name);
     printf("Hello, your grade is %d %d", grade);
     printf("Hello, your grade is %d %d", grade, year);
 
