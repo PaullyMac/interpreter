@@ -1,0 +1,21 @@
+[##\<block\>
+  [##\<block\_item\_list\>
+    [##\<block\_item\>
+      [##\<statement\>
+        [##\<input\_statement\>
+          [##<>scanf<>]
+          [##<>(<>]
+          [##\<string\>
+            [##<>"%f"<>]
+          ]
+          [##<>,<>]
+          [##\<identifier\>
+            [##<>&value<>]
+          ]
+          [##<>)<>]
+          [##<>;<>]
+        ]
+      ]
+    ]
+  ]
+]
