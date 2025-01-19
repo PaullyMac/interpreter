@@ -5,6 +5,22 @@
 #define MAX_LEXEME_LENGTH 500
 #define MAX_TOKENS 500
 
+// Moved from keywords_fsm.h
+typedef enum {
+    S,        // Start
+    B, BO, BOO, FINAL_BOOL, // States for 'bool'
+    C, CH, CHA, FINAL_CHAR, // States for 'char'
+    E, EL, ELS, FINAL_ELSE, // States for 'else'
+    F, FA, FAL, FALS, FINAL_FALSE, FL, FLO, FLOA, FINAL_FLOAT, FO, FINAL_FOR, // States for 'false', 'float', 'for'
+    I, IN, FINAL_IF, FINAL_INT, // States for 'if', 'int'
+    P, PR, PRI, PRIN, PRINT, FINAL_PRINTF, // States for 'printf'
+    R, RE, RET, RETU, RETUR, FINAL_RETURN, // States for 'return'
+    S1, SC, SCA, SCAN, FINAL_SCANF, // States for 'scanf'
+    T, TR, TRU, FINAL_TRUE, // States for 'true'
+    W, WH, WHI, WHIL, FINAL_WHILE, // States for 'while'
+    V, VO, VOI, FINAL_VOID // States for 'void'
+} KeywordState;
+
 typedef enum
 {
     // Tokens composed of characters exclusively part of single-character tokens
