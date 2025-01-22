@@ -755,7 +755,7 @@ ParseTreeNode *parse_exp() {
     if (current_token < num_tokens && tokens[current_token].type == IDENTIFIER) {
         int lookahead = current_token + 1;
         
-        // Look for assignment operator
+        // Check for the possible case of array lvalue
         while (lookahead < num_tokens && 
                (tokens[lookahead].type == LEFT_BRACKET || 
                 tokens[lookahead].type == RIGHT_BRACKET ||
@@ -799,20 +799,39 @@ ParseTreeNode *parse_assignment() {
     return node;
 }
 
-// Now implement the precedence-based expressions according to the grammar
+// <logical_or_exp> ::= <factor> | <logical_or_exp>  "||" <factor> 
 ParseTreeNode *parse_logical_or_exp() {
-    ParseTreeNode *node = parse_logical_and_exp();
+    ParseTreeNode *left = parse_factor();
 
-    while (current_token < num_tokens && tokens[current_token].type == OR) {
-        TokenType op_type = tokens[current_token].type;
-        match(op_type);
-        ParseTreeNode *new_node = create_node("LogicalOr");
-        add_child(new_node, node);
-        add_child(new_node, match_and_create_node(op_type, "Operator"));
-        add_child(new_node, parse_logical_and_exp());
-        node = new_node;
+    // Only go through the parsing of OR's if it's not a lone factor 
+    if (current_token < num_tokens && tokens[current_token].type == OR) {
+        ParseTreeNode *node = create_node("LogicalOr");
+
+        // Add the factor (left operand) to the logical or node
+        add_child(node, left);
+
+        // Build the logical OR nodes bottom-up
+        while (current_token < num_tokens && tokens[current_token].type == OR) {
+            add_child(node, match_and_create_node(OR, "Operator"));
+
+            // Add the factor (right operand) to the logical or node
+            ParseTreeNode *right = parse_factor();
+            add_child(node, right);
+
+            // Assure left-associativity, create a new node above the previous if there are more ORs
+            if (current_token < num_tokens && tokens[current_token].type == OR) {
+              ParseTreeNode *new_node = create_node("LogicalOr");
+
+              // The previous OR node we built is added as a child to a new OR node
+              add_child(new_node, node);
+              node = new_node;
+            }
+        }
+        return node;
     }
-    return node;
+
+    // Return the factor directly if there's no OR
+    return left; 
 }
 
 ParseTreeNode *parse_logical_and_exp() {
