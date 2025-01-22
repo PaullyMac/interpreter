@@ -38,6 +38,8 @@
                 | "else" <if_statement>
 
 <exp> ::= <factor> | (<identifier> | <identifier> "[" <const> "]" ) "=" <exp>  
+<logical_or_exp> ::= <logical_and_exp> | <logical_or_exp>  "||" <logical_and_exp> 
+<logical_and_exp> ::= <factor> | <logical_and_exp>  "&&" <factor> 
 <factor> ::= <const>
             | <identifier>
             | "(" <exp> ")"

@@ -37,6 +37,8 @@ ParseTreeNode *create_if_statement_node();
 ParseTreeNode *create_input_statement_node();
 ParseTreeNode *create_output_statement_node();
 ParseTreeNode *create_exp_node();
+ParseTreeNode *create_logical_or_exp_node();
+ParseTreeNode *create_logical_and_exp_node();
 ParseTreeNode *create_factor_node();
 ParseTreeNode *create_const_node();
 ParseTreeNode *create_int_literal_node();
@@ -749,25 +751,49 @@ ParseTreeNode *parse_unary() {
     return parse_factor();  
 }
 
-// Integrate with existing parse_exp
+// <exp> ::= <logical_or_exp> | (<identifier> | <identifier> "[" <const> "]") "=" <exp>
 ParseTreeNode *parse_exp() {
-    // Handle assignment expressions
     if (current_token < num_tokens && tokens[current_token].type == IDENTIFIER) {
         int lookahead = current_token + 1;
-        
-        // Check for the possible case of array lvalue
-        while (lookahead < num_tokens && 
-               (tokens[lookahead].type == LEFT_BRACKET || 
-                tokens[lookahead].type == RIGHT_BRACKET ||
-                tokens[lookahead].type == IDENTIFIER)) {
-            lookahead++;
+
+        // Check if array lvalue
+        if (current_token + 1 < num_tokens && tokens[current_token + 1].type == LEFT_BRACKET) {
+            lookahead = current_token + 2;
+
+            while (lookahead < num_tokens && tokens[lookahead].type != RIGHT_BRACKET) {
+                lookahead++;
+            }
+            
+            if (lookahead < num_tokens && tokens[lookahead].type == RIGHT_BRACKET) {
+                lookahead++;
+            }
+            else {
+                fprintf(stderr, "Error: Missing closing bracket in array access at line %d\n", tokens[current_token].line_number);
+                synchronize();
+            }
         }
-        
+
         if (lookahead < num_tokens && tokens[lookahead].type == ASSIGN) {
-            return parse_assignment();
+            ParseTreeNode *node = create_node("Assignment");
+
+            add_child(node, parse_identifier());
+
+            // Handle array access if present
+            if (current_token < num_tokens && tokens[current_token].type == LEFT_BRACKET) {
+                add_child(node, match_and_create_node(LEFT_BRACKET, "Left_Bracket"));
+                add_child(node, parse_const());
+                add_child(node, match_and_create_node(RIGHT_BRACKET, "Right_Bracket"));
+            }
+
+            add_child(node, match_and_create_node(ASSIGN, "Assign"));
+
+            // Recursively build sequence of assignment operators
+            add_child(node, parse_exp());
+
+            return node;
         }
     }
-    
+
     return parse_logical_or_exp();
 }
 
@@ -799,13 +825,13 @@ ParseTreeNode *parse_assignment() {
     return node;
 }
 
-// <logical_or_exp> ::= <factor> | <logical_or_exp>  "||" <factor> 
+// <logical_or_exp> ::= <logical_and_exp> | <logical_or_exp> "||" <logical_and_exp>
 ParseTreeNode *parse_logical_or_exp() {
-    ParseTreeNode *left = parse_factor();
+    ParseTreeNode *left = parse_logical_and_exp();
 
     // Only go through the parsing of OR's if it's not a lone factor 
     if (current_token < num_tokens && tokens[current_token].type == OR) {
-        ParseTreeNode *node = create_node("LogicalOr");
+        ParseTreeNode *node = create_logical_or_exp_node();
 
         // Add the factor (left operand) to the logical or node
         add_child(node, left);
@@ -815,12 +841,12 @@ ParseTreeNode *parse_logical_or_exp() {
             add_child(node, match_and_create_node(OR, "Operator"));
 
             // Add the factor (right operand) to the logical or node
-            ParseTreeNode *right = parse_factor();
+            ParseTreeNode *right = parse_logical_and_exp();
             add_child(node, right);
 
             // Assure left-associativity, create a new node above the previous if there are more ORs
             if (current_token < num_tokens && tokens[current_token].type == OR) {
-              ParseTreeNode *new_node = create_node("LogicalOr");
+              ParseTreeNode *new_node = create_logical_or_exp_node();
 
               // The previous OR node we built is added as a child to a new OR node
               add_child(new_node, node);
@@ -834,19 +860,29 @@ ParseTreeNode *parse_logical_or_exp() {
     return left; 
 }
 
+// <logical_and_exp> ::= <factor> | <logical_and_exp> "&&" <factor>
 ParseTreeNode *parse_logical_and_exp() {
-    ParseTreeNode *node = parse_equality_exp();
+    ParseTreeNode *left = parse_factor();
 
-    while (current_token < num_tokens && tokens[current_token].type == AND) {
-        TokenType op_type = tokens[current_token].type;
-        match(op_type);
-        ParseTreeNode *new_node = create_node("LogicalAnd");
-        add_child(new_node, node);
-        add_child(new_node, match_and_create_node(op_type, "Operator"));
-        add_child(new_node, parse_equality_exp());
-        node = new_node;
+    if (current_token < num_tokens && tokens[current_token].type == AND) {
+        ParseTreeNode *node = create_logical_and_exp_node();
+        add_child(node, left);
+
+        while (current_token < num_tokens && tokens[current_token].type == AND) {
+            add_child(node, match_and_create_node(AND, "Operator"));
+            ParseTreeNode *right = parse_factor();
+            add_child(node, right);
+
+            if (current_token < num_tokens && tokens[current_token].type == AND) {
+              ParseTreeNode *new_node = create_logical_and_exp_node();
+              add_child(new_node, node);
+              node = new_node;
+            }
+        }
+        return node;
     }
-    return node;
+
+    return left; 
 }
 
 ParseTreeNode *parse_equality_exp() {
@@ -1288,6 +1324,14 @@ ParseTreeNode *create_output_statement_node()
 
 ParseTreeNode *create_exp_node() {
     return create_node("Exp");
+}
+
+ParseTreeNode *create_logical_or_exp_node() {
+    return create_node("Logical_Or");
+}
+
+ParseTreeNode *create_logical_and_exp_node() {
+    return create_node("Logical_And");
 }
 
 ParseTreeNode *create_factor_node()
