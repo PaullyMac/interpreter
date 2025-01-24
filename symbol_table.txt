@@ -62,9 +62,9 @@ ________________________________________________________________________________
 26              | IDENTIFIER               | 13              | 12              | vars
 32              | INT                      | 14              | 5               | int
 26              | IDENTIFIER               | 14              | 9               | arr
-2               | LEFT_BRACKET             | 14              | 12              | [
+2               | left_bracket             | 14              | 12              | [
 28              | INTEGER_LITERAL          | 14              | 13              | 5
-3               | RIGHT_BRACKET            | 14              | 14              | ]
+3               | right_bracket            | 14              | 14              | ]
 16              | ASSIGN                   | 14              | 16              | =
 4               | LEFT_BRACE               | 14              | 18              | {
 28              | INTEGER_LITERAL          | 14              | 19              | 1
