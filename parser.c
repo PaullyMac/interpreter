@@ -39,6 +39,7 @@ ParseTreeNode *create_output_statement_node();
 ParseTreeNode *create_exp_node();
 ParseTreeNode *create_logical_or_exp_node();
 ParseTreeNode *create_logical_and_exp_node();
+ParseTreeNode *create_power_exp_node();
 ParseTreeNode *create_factor_node();
 ParseTreeNode *create_const_node();
 ParseTreeNode *create_int_literal_node();
@@ -862,7 +863,7 @@ ParseTreeNode *parse_logical_or_exp() {
 
 // <logical_and_exp> ::= <factor> | <logical_and_exp> "&&" <factor>
 ParseTreeNode *parse_logical_and_exp() {
-    ParseTreeNode *left = parse_factor();
+    ParseTreeNode *left = parse_power_exp();
 
     if (current_token < num_tokens && tokens[current_token].type == AND) {
         ParseTreeNode *node = create_logical_and_exp_node();
@@ -949,20 +950,27 @@ ParseTreeNode *parse_multiplicative_exp() {
     return node;
 }
 
+// <power_exp> ::= <unary_exp> | <unary_exp> ”^” <power_exp>
 ParseTreeNode *parse_power_exp() {
-    ParseTreeNode *node = parse_unary_exp();
 
-    // Right-associative exponent
-    while (current_token < num_tokens && tokens[current_token].type == EXPONENT) {
-        TokenType op_type = tokens[current_token].type;
-        match(op_type);
-        ParseTreeNode *new_node = create_node("Power");
-        add_child(new_node, node);
-        add_child(new_node, match_and_create_node(op_type, "Operator"));
-        add_child(new_node, parse_power_exp()); 
-        node = new_node;
+    // Start with the left operand (<unary_exp>)
+    ParseTreeNode *left = parse_factor(); 
+
+    // Check if there's a "^" operator.
+    if (current_token < num_tokens && tokens[current_token].type == EXPONENT) {
+        // Create the power expression node
+        ParseTreeNode *node = create_power_exp_node();
+        add_child(node, left);
+       
+       match_and_create_node(EXPONENT, "Exponent");  //match the '^'
+       ParseTreeNode *right = parse_power_exp(); // Recurse on right side to get the expression
+       add_child(node, right);
+
+        return node;
     }
-    return node;
+
+    // Return the left operand directly if there's no "^"
+    return left;
 }
 
 ParseTreeNode *parse_unary_exp() {
@@ -1332,6 +1340,10 @@ ParseTreeNode *create_logical_or_exp_node() {
 
 ParseTreeNode *create_logical_and_exp_node() {
     return create_node("Logical_And");
+}
+
+ParseTreeNode *create_power_exp_node(){
+    return create_node("Exponent");
 }
 
 ParseTreeNode *create_factor_node()
