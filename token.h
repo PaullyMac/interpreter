@@ -139,10 +139,10 @@ char* token_names[] = {
     "scanf",
     "true",
     "false",
-    "VOID",
-    "ERROR_INVALID_CHARACTER",
-    "ERROR_INVALID_IDENTIFIER",
-    "TOKEN_EOF"
+    "void",
+    "error_invalid_character",
+    "error_invalid_identifier",
+    "token_eof"
 };
 
 #endif //TOKEN_H
