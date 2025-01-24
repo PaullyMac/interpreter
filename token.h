@@ -95,8 +95,8 @@ typedef struct {
 
 // Token names array
 char* token_names[] = {
-    "LEFT_PARENTHESIS",
-    "RIGHT_PARENTHESIS",
+    "left_parenthesis",
+    "right_parenthesis",
     "LEFT_BRACKET",
     "RIGHT_BRACKET",
     "LEFT_BRACE",
