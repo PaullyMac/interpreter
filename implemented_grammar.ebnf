@@ -37,9 +37,10 @@
 <else-clause> ::= "else" <block>
                 | "else" <if_statement>
 
-<exp> ::= <factor> | (<identifier> | <identifier> "[" <const> "]" ) "=" <exp>  
+<exp> ::= <logical_or_exp> | (<identifier> | <identifier> "[" <const> "]" ) "=" <exp>  
 <logical_or_exp> ::= <logical_and_exp> | <logical_or_exp>  "||" <logical_and_exp> 
-<logical_and_exp> ::= <factor> | <logical_and_exp>  "&&" <factor> 
+<logical_and_exp> ::= <power_exp> | <logical_and_exp>  "&&" <power_exp>
+<power_exp> ::= <factor> | <factor> "^" <power_exp> 
 <factor> ::= <const>
             | <identifier>
             | "(" <exp> ")"

@@ -775,7 +775,7 @@ ParseTreeNode *parse_exp() {
         }
 
         if (lookahead < num_tokens && tokens[lookahead].type == ASSIGN) {
-            ParseTreeNode *node = create_node("Assignment");
+            ParseTreeNode *node = create_exp_node();
 
             add_child(node, parse_identifier());
 
@@ -861,7 +861,7 @@ ParseTreeNode *parse_logical_or_exp() {
     return left; 
 }
 
-// <logical_and_exp> ::= <factor> | <logical_and_exp> "&&" <factor>
+// <logical_and_exp> ::= <power_exp> | <logical_and_exp> "&&" <factor>
 ParseTreeNode *parse_logical_and_exp() {
     ParseTreeNode *left = parse_power_exp();
 
@@ -871,7 +871,7 @@ ParseTreeNode *parse_logical_and_exp() {
 
         while (current_token < num_tokens && tokens[current_token].type == AND) {
             add_child(node, match_and_create_node(AND, "Operator"));
-            ParseTreeNode *right = parse_factor();
+            ParseTreeNode *right = parse_power_exp();
             add_child(node, right);
 
             if (current_token < num_tokens && tokens[current_token].type == AND) {
@@ -950,26 +950,24 @@ ParseTreeNode *parse_multiplicative_exp() {
     return node;
 }
 
-// <power_exp> ::= <unary_exp> | <unary_exp> ”^” <power_exp>
+// <power_exp> ::= <factor> | <factor> ”^” <power_exp>
 ParseTreeNode *parse_power_exp() {
+    ParseTreeNode *node = create_power_exp_node();
 
     // Start with the left operand (<unary_exp>)
     ParseTreeNode *left = parse_factor(); 
 
     // Check if there's a "^" operator.
     if (current_token < num_tokens && tokens[current_token].type == EXPONENT) {
-        // Create the power expression node
-        ParseTreeNode *node = create_power_exp_node();
         add_child(node, left);
-       
-       match_and_create_node(EXPONENT, "Exponent");  //match the '^'
-       ParseTreeNode *right = parse_power_exp(); // Recurse on right side to get the expression
-       add_child(node, right);
+        add_child(node, match_and_create_node(EXPONENT, "Exponent_Op"));
+        ParseTreeNode *right = parse_power_exp(); // Recurse on right side to get the expression
+        add_child(node, right);
 
         return node;
     }
 
-    // Return the left operand directly if there's no "^"
+    // Pass to the next exp if power_exp unused
     return left;
 }
 
