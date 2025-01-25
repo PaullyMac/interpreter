@@ -2,7 +2,6 @@
 #define PARSER_H
 
 #include "token.h"
-#include <stdio.h>
 
 // Data structure for the parse tree
 typedef struct ParseTreeNode {
