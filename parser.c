@@ -618,140 +618,6 @@ ParseTreeNode *parse_argument_list() {
     return node;
 }
 
-// Function to parse a constant: <const> ::= <int> | <float> | <char> | <bool>
-ParseTreeNode *parse_const() {
-    ParseTreeNode *node = create_const_node();
-    
-    if (current_token < num_tokens) {
-        switch (tokens[current_token].type)
-        {
-            case INTEGER_LITERAL:
-                ParseTreeNode *int_node = parse_int_literal();
-                add_child(node, int_node);
-                break;
-            case FLOAT_LITERAL:
-                ParseTreeNode *float_node = parse_float_literal();
-                add_child(node, float_node);
-                break;
-            case CHARACTER_LITERAL:
-                ParseTreeNode *char_node = parse_char_literal();
-                add_child(node, char_node);
-                break;
-            case TRUE:
-            case FALSE:
-                ParseTreeNode *bool_node = parse_bool_literal();
-                add_child(node, bool_node);
-                break;
-            
-            default:
-                fprintf(stderr, "Error: Expected a constant (int, float, char, or bool) at line %d\n", tokens[current_token].line_number);
-                synchronize();
-        }
-    }
-
-    return node; 
-}
-
-ParseTreeNode *parse_factor() {
-    ParseTreeNode *node = create_node("Factor");
-
-    if (current_token < num_tokens) {
-        switch (tokens[current_token].type) {
-            case INTEGER_LITERAL:
-            case FLOAT_LITERAL:
-            case CHARACTER_LITERAL:
-            case TRUE:
-            case FALSE:
-                add_child(node, parse_const());
-                break;
-            case IDENTIFIER:
-                add_child(node, parse_identifier());
-                if (current_token < num_tokens && tokens[current_token].type == LEFT_PARENTHESIS) {
-                    add_child(node, match_and_create_node(LEFT_PARENTHESIS, "Left_Parenthesis"));
-                    if (current_token < num_tokens && tokens[current_token].type != RIGHT_PARENTHESIS) {
-                        add_child(node, parse_argument_list());
-                    }
-                    add_child(node, match_and_create_node(RIGHT_PARENTHESIS, "Right_Parenthesis"));
-                } else if (current_token < num_tokens && tokens[current_token].type == LEFT_BRACKET) {
-                    add_child(node, match_and_create_node(LEFT_BRACKET, "Left_Bracket"));
-                    add_child(node, parse_const());
-                    add_child(node, match_and_create_node(RIGHT_BRACKET, "Right_Bracket"));
-                }
-                break;
-            case LEFT_PARENTHESIS:
-                add_child(node, match_and_create_node(LEFT_PARENTHESIS, "Left_Parenthesis"));
-
-                ParseTreeNode *exp_node = parse_exp();
-                add_child(node, exp_node);
-                add_child(node, match_and_create_node(RIGHT_PARENTHESIS, "Right_Parenthesis"));
-                break;
-            default:
-                fprintf(stderr, "Error: Unexpected token in factor at line %d\n", tokens[current_token].line_number);
-                synchronize();
-                break;
-        }
-    }
-
-    return node;
-}
-
-// Add forward declarations so that parse_expression can call parse_unary without warnings
-ParseTreeNode *parse_unary();
-ParseTreeNode *parse_expression(int min_prec);
-
-static int get_precedence(TokenType t) {
-    switch (t) {
-        case EXPONENT: return 5;    // '^'
-        case MULTIPLY:
-        case DIVIDE:
-        case MODULO:    return 4;   // '*','/','%'
-        case PLUS:
-        case MINUS:     return 3;   // '+','-'
-        case LESS:
-        case LESS_EQUAL:
-        case GREATER:
-        case GREATER_EQUAL: return 2;
-        case EQUAL:
-        case NOT_EQUAL: return 1;
-        default: return 0;
-    }
-}
-
-// Parses expressions with operator precedence
-ParseTreeNode *parse_expression(int min_prec) {
-    ParseTreeNode *lhs = parse_unary(); // parse first piece
-
-    while (current_token < num_tokens) {
-        int prec = get_precedence(tokens[current_token].type);
-        if (prec < min_prec) break;
-
-        TokenType op_type = tokens[current_token].type;
-        match(op_type); // consume operator
-
-        ParseTreeNode *new_node = create_node("OpExpr");
-        add_child(new_node, lhs);
-        add_child(new_node, match_and_create_node(op_type, "Operator"));
-        ParseTreeNode *rhs = parse_expression(prec + (op_type == EXPONENT ? 0 : 1));
-        add_child(new_node, rhs);
-        lhs = new_node;
-    }
-    return lhs;
-}
-
-ParseTreeNode *parse_unary() {
-    if (tokens[current_token].type == PLUS ||
-        tokens[current_token].type == MINUS ||
-        tokens[current_token].type == NOT_EQUAL /* '!' if desired */) {
-        TokenType op_type = tokens[current_token].type;
-        match(op_type);
-        ParseTreeNode *node = create_node("UnaryOp");
-        add_child(node, match_and_create_node(op_type, "Unary_Operator"));
-        add_child(node, parse_unary());
-        return node;
-    }
-    return parse_factor();  
-}
-
 // <exp> ::= <logical_or_exp> | (<identifier> | <identifier> "[" <const> "]") "=" <exp>
 ParseTreeNode *parse_exp() {
     if (current_token < num_tokens && tokens[current_token].type == IDENTIFIER) {
@@ -796,34 +662,6 @@ ParseTreeNode *parse_exp() {
     }
 
     return parse_logical_or_exp();
-}
-
-// Parse assignment <identifier> ["[" <const> "]"] "=" <exp>
-ParseTreeNode *parse_assignment() {
-    ParseTreeNode *node = create_node("Assignment");
-
-    // Parse left-hand side
-    add_child(node, parse_identifier());
-    
-    // Handle array access if present
-    if (current_token < num_tokens && tokens[current_token].type == LEFT_BRACKET) {
-        add_child(node, match_and_create_node(LEFT_BRACKET, "Left_Bracket"));
-        add_child(node, parse_const());
-        add_child(node, match_and_create_node(RIGHT_BRACKET, "Right_Bracket"));
-    }
-
-    // Match assignment operator
-    add_child(node, match_and_create_node(ASSIGN, "Assign"));
-
-    // Parse right-hand side (which could be another assignment)
-    if (current_token < num_tokens && tokens[current_token].type == IDENTIFIER &&
-        current_token + 1 < num_tokens && tokens[current_token + 1].type == ASSIGN) {
-        add_child(node, parse_assignment());
-    } else {
-        add_child(node, parse_exp());
-    }
-
-    return node;
 }
 
 // <logical_or_exp> ::= <logical_and_exp> | <logical_or_exp> "||" <logical_and_exp>
@@ -886,6 +724,7 @@ ParseTreeNode *parse_logical_and_exp() {
     return left; 
 }
 
+// TODO
 ParseTreeNode *parse_equality_exp() {
     ParseTreeNode *node = parse_relational_exp();
 
@@ -902,6 +741,7 @@ ParseTreeNode *parse_equality_exp() {
     return node;
 }
 
+// TODO
 ParseTreeNode *parse_relational_exp() {
     ParseTreeNode *node = parse_additive_exp();
 
@@ -919,6 +759,7 @@ ParseTreeNode *parse_relational_exp() {
     return node;
 }
 
+// TODO
 ParseTreeNode *parse_additive_exp() {
     ParseTreeNode *node = parse_multiplicative_exp();
     while (current_token < num_tokens &&
@@ -934,6 +775,7 @@ ParseTreeNode *parse_additive_exp() {
     return node;
 }
 
+// TODO
 ParseTreeNode *parse_multiplicative_exp() {
     ParseTreeNode *node = parse_power_exp();
 
@@ -971,6 +813,7 @@ ParseTreeNode *parse_power_exp() {
     return left;
 }
 
+//  TODO
 ParseTreeNode *parse_unary_exp() {
     // <unary_exp> ::= <factor> | <unop> <unary_exp>
     if (tokens[current_token].type == PLUS ||
@@ -985,6 +828,84 @@ ParseTreeNode *parse_unary_exp() {
     }
     return parse_factor();
 }
+
+ParseTreeNode *parse_factor() {
+    ParseTreeNode *node = create_node("Factor");
+
+    if (current_token < num_tokens) {
+        switch (tokens[current_token].type) {
+            case INTEGER_LITERAL:
+            case FLOAT_LITERAL:
+            case CHARACTER_LITERAL:
+            case TRUE:
+            case FALSE:
+                add_child(node, parse_const());
+                break;
+            case IDENTIFIER:
+                add_child(node, parse_identifier());
+                if (current_token < num_tokens && tokens[current_token].type == LEFT_PARENTHESIS) {
+                    add_child(node, match_and_create_node(LEFT_PARENTHESIS, "Left_Parenthesis"));
+                    if (current_token < num_tokens && tokens[current_token].type != RIGHT_PARENTHESIS) {
+                        add_child(node, parse_argument_list());
+                    }
+                    add_child(node, match_and_create_node(RIGHT_PARENTHESIS, "Right_Parenthesis"));
+                } else if (current_token < num_tokens && tokens[current_token].type == LEFT_BRACKET) {
+                    add_child(node, match_and_create_node(LEFT_BRACKET, "Left_Bracket"));
+                    add_child(node, parse_const());
+                    add_child(node, match_and_create_node(RIGHT_BRACKET, "Right_Bracket"));
+                }
+                break;
+            case LEFT_PARENTHESIS:
+                add_child(node, match_and_create_node(LEFT_PARENTHESIS, "Left_Parenthesis"));
+
+                ParseTreeNode *exp_node = parse_exp();
+                add_child(node, exp_node);
+                add_child(node, match_and_create_node(RIGHT_PARENTHESIS, "Right_Parenthesis"));
+                break;
+            default:
+                fprintf(stderr, "Error: Unexpected token in factor at line %d\n", tokens[current_token].line_number);
+                synchronize();
+                break;
+        }
+    }
+
+    return node;
+}
+
+// Function to parse a constant: <const> ::= <int> | <float> | <char> | <bool>
+ParseTreeNode *parse_const() {
+    ParseTreeNode *node = create_const_node();
+    
+    if (current_token < num_tokens) {
+        switch (tokens[current_token].type)
+        {
+            case INTEGER_LITERAL:
+                ParseTreeNode *int_node = parse_int_literal();
+                add_child(node, int_node);
+                break;
+            case FLOAT_LITERAL:
+                ParseTreeNode *float_node = parse_float_literal();
+                add_child(node, float_node);
+                break;
+            case CHARACTER_LITERAL:
+                ParseTreeNode *char_node = parse_char_literal();
+                add_child(node, char_node);
+                break;
+            case TRUE:
+            case FALSE:
+                ParseTreeNode *bool_node = parse_bool_literal();
+                add_child(node, bool_node);
+                break;
+            
+            default:
+                fprintf(stderr, "Error: Expected a constant (int, float, char, or bool) at line %d\n", tokens[current_token].line_number);
+                synchronize();
+        }
+    }
+
+    return node; 
+}
+
 
 // Function to parse a return statement: "return" <const> ";"
 ParseTreeNode *parse_return_statement() {
