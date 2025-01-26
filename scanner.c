@@ -1,11 +1,15 @@
+/* Sebesta simple Lexical Analyzer example */
+
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <stdbool.h>
+
 #include "token.h"
-#include "scanner.h"
 
+/* Global declarations */
 
+/* Variables */
 char lexeme[MAX_LEXEME_LENGTH];
 int current_char;
 int lexeme_length;
@@ -16,10 +20,28 @@ int column_number = 0;
 int token_start_line;
 int token_start_column;
 int token_end_column;
+
 FILE *in_fp;
 FILE *symbol_fp;
 
+/* Function declarations */
+void add_char();
+char get_char();
+char get_non_blank();
+void lex();
+void add_token(TokenType token);
+void number();
+void identifier_function();
+void string_function();
+void add_eof();
+void character_literal_function();
+TokenType keywords(char *lexeme);
+int peek();
+void unget_char(int ch);
+void set_token_end_column();
 
+/******************************************************/
+/* main driver */
 int main(int argc, char* argv[argc + 1]) {
     if (argc != 2) {
         printf("Usage: ./%s <filename>\n", argv[0]);
@@ -59,12 +81,12 @@ int main(int argc, char* argv[argc + 1]) {
         lex();
 
         // Skip writing to symbol table if there's an error
-        if (next_token == -1 || next_token == ERROR_INVALID_CHARACTER) {
+        if (next_token == -1 || next_token == error_invalid_character) {
             continue;
         }
 
         // Handle TOKEN_EOF separately
-        if (next_token == TOKEN_EOF) {
+        if (next_token == token_eof) {
             printf("Next token is: %-30s Next lexeme: is %s\n", token_names[next_token], "EOF");
             fprintf(symbol_fp, "47              | TOKEN_EOF                | %d               | -1              | EOF\n", line_number);
             break;
@@ -80,7 +102,7 @@ int main(int argc, char* argv[argc + 1]) {
         }
 
         // Skip comments from symbol table
-        if (next_token == COMMENT) {
+        if (next_token == comment) {
             continue;
         }
 
@@ -91,7 +113,7 @@ int main(int argc, char* argv[argc + 1]) {
             fprintf(symbol_fp, "%-15d | %-24s | %-15d | %-15d | %s\n",
                 token_code, token_names[next_token], token_start_line, token_start_column, lexeme);
         }
-    } while (next_token != TOKEN_EOF);
+    } while (next_token != token_eof);
 
     // Design for footer
     for (int i = 0; i < 128; i++) fprintf(symbol_fp, "_");
@@ -156,7 +178,7 @@ void lex() {
 
     // Parse strings
     if (current_char == '"') {
-        string();
+        string_function();
         return;
     }
 
@@ -168,32 +190,32 @@ void lex() {
 
     // Parse identifiers
     if (isalpha(current_char) || current_char == '_') {
-        identifier();
+        identifier_function();
         return;
     }
 
     // Parse character literals
     if (current_char == '\'') {
-        character_literal();
+        character_literal_function();
         return;
     }
 
     // Parse one- or two-character tokens
     switch (current_char) {
         // Single-character operators
-        case '(': add_token(LEFT_PARENTHESIS); break;
-        case ')': add_token(RIGHT_PARENTHESIS); break;
-        case '[': add_token(LEFT_BRACKET); break;
-        case ']': add_token(RIGHT_BRACKET); break;
-        case '{': add_token(LEFT_BRACE); break;
-        case '}': add_token(RIGHT_BRACE); break;
-        case ',': add_token(COMMA); break;
-        case ';': add_token(SEMICOLON); break;
-        case '+': add_token(PLUS); break;
-        case '-': add_token(MINUS); break;
-        case '*': add_token(MULTIPLY); break;
-        case '^': add_token(EXPONENT); break;
-        case '%': add_token(MODULO); break;
+        case '(': add_token(left_parenthesis); break;
+        case ')': add_token(right_parenthesis); break;
+        case '[': add_token(left_bracket); break;
+        case ']': add_token(right_bracket); break;
+        case '{': add_token(left_brace); break;
+        case '}': add_token(right_brace); break;
+        case ',': add_token(comma); break;
+        case ';': add_token(semicolon); break;
+        case '+': add_token(plus); break;
+        case '-': add_token(minus); break;
+        case '*': add_token(multiply); break;
+        case '^': add_token(exponent); break;
+        case '%': add_token(modulo); break;
 
         // Multi-character operators handled directly
         case '=':
@@ -201,11 +223,11 @@ void lex() {
             current_char = get_char(); // Advance to next character
             if (current_char == '=') {
                 add_char(); // Add second '='
-                next_token = EQUAL;
+                next_token = equal;
                 set_token_end_column();
                 current_char = get_char();
             } else {
-                next_token = ASSIGN;
+                next_token = assign;
                 set_token_end_column();
             }
             break;
@@ -214,11 +236,11 @@ void lex() {
             current_char = get_char();
             if (current_char == '=') {
                 add_char();
-                next_token = GREATER_EQUAL;
+                next_token = greater_equal;
                 set_token_end_column();
                 current_char = get_char();
             } else {
-                next_token = GREATER;
+                next_token = greater;
                 set_token_end_column();
             }
             break;
@@ -227,11 +249,11 @@ void lex() {
             current_char = get_char();
             if (current_char == '=') {
                 add_char();
-                next_token = LESS_EQUAL;
+                next_token = less_equal;
                 set_token_end_column();
                 current_char = get_char();
             } else {
-                next_token = LESS;
+                next_token = less;
                 set_token_end_column();
             }
             break;
@@ -240,11 +262,11 @@ void lex() {
             current_char = get_char();
             if (current_char == '=') {
                 add_char();
-                next_token = NOT_EQUAL;
+                next_token = not_equal;
                 set_token_end_column();
                 current_char = get_char();
             } else {
-                next_token = NOT;
+                next_token = not;
                 set_token_end_column();
             }
             break;
@@ -253,11 +275,11 @@ void lex() {
             current_char = get_char();
             if (current_char == '&') {
                 add_char();
-                next_token = AND;
+                next_token = and;
                 set_token_end_column();
                 current_char = get_char();
             } else {
-                next_token = AMPERSAND;
+                next_token = ampersand;
                 set_token_end_column();
             }
             break;
@@ -266,11 +288,11 @@ void lex() {
             current_char = get_char();
             if (current_char == '|') {
                 add_char();
-                next_token = OR;
+                next_token = or;
                 set_token_end_column();
                 current_char = get_char();
             } else {
-                next_token = OR;
+                next_token = or;
                 set_token_end_column();
             }
             break;
@@ -278,7 +300,7 @@ void lex() {
             current_char = get_char();
             if (current_char == '/') {
                 // It's a comment
-                next_token = COMMENT;
+                next_token = comment;
                 token_start_column = column_number;
                 lexeme[lexeme_length++] = '/';
                 lexeme[lexeme_length++] = '/';
@@ -297,19 +319,19 @@ void lex() {
                 // It's a divide operator
                 unget_char(current_char);
                 current_char = '/';
-                add_token(DIVIDE);
+                add_token(divide);
                 break;
             }
             // If reached this, then must be invalid character
             default:
                 if (isalpha(current_char)) {
-                    identifier();
+                    identifier_function();
                     next_token = keywords(lexeme);
                 } else if (isdigit(current_char)) {
                     number();
                 } else {
                     printf("ERROR - invalid char %c\n", current_char);
-                    next_token = ERROR_INVALID_CHARACTER;
+                    next_token = error_invalid_character;
                     set_token_end_column();
                     current_char = get_char();
                 }
@@ -360,7 +382,7 @@ void number() {
             current_char = get_char();
             int digits = 0;
             while (digits < 3 && isdigit(current_char)) {
-               add_char();
+                add_char();
                 digits++;
                 current_char = get_char();
             }
@@ -463,14 +485,14 @@ void number() {
         }
     }
 
-    next_token = has_decimal ? FLOAT_LITERAL : INTEGER_LITERAL;
+    next_token = has_decimal ? float_literal : integer_literal;
     set_token_end_column();
     // current_char is already at the next character after the number
 }
 
 /******************************************************/
 /* identifier - reads the rest of the identifier and checks length <= 31 */
-void identifier() {
+void identifier_function() {
     char local_buffer[256];
     int local_length = 0;
 
@@ -515,246 +537,246 @@ void identifier() {
 /* keywords - a function to check if the lexeme is a keyword */
 TokenType keywords(char *lexeme) {
     char *current = lexeme;
-    KeywordState state = S;
+    KeywordState state = s;
 
     while (*current != '\0') {
         switch (state) {
-            case S:
+            case s:
                 switch (*current) {
-                    case 'b': state = B; break; // Possible 'bool'
-                    case 'c': state = C; break; // Possible 'char'
-                    case 'e': state = E; break; // Possible 'else'
-                    case 'f': state = F; break; // Possible 'false', 'float', 'for'
-                    case 'i': state = I; break; // Possible 'if', 'int'
-                    case 'p': state = P; break; // Possible 'printf'
-                    case 'r': state = R; break; // Possible 'return'
-                    case 's': state = S1; break; // Possible 'scanf'
-                    case 't': state = T; break; // Possible 'true'
-                    case 'w': state = W; break; // Possible 'while'
-                    case 'v': state = V; break; // Possible 'void'
-                    default: return IDENTIFIER; // Not a keyword
+                    case 'b': state = b; break; // Possible 'bool'
+                    case 'c': state = c; break; // Possible 'char'
+                    case 'e': state = e; break; // Possible 'else'
+                    case 'f': state = f; break; // Possible 'false', 'float', 'for'
+                    case 'i': state = i; break; // Possible 'if', 'int'
+                    case 'p': state = p; break; // Possible 'printf'
+                    case 'r': state = r; break; // Possible 'return'
+                    case 's': state = s1; break; // Possible 'scanf'
+                    case 't': state = t; break; // Possible 'true'
+                    case 'w': state = w; break; // Possible 'while'
+                    case 'v': state = v; break; // Possible 'void'
+                    default: return identifier; // Not a keyword
                 }
                 break;
 
             // States for 'bool'
-            case B:
-                if (*current == 'o') state = BO; else return IDENTIFIER;
+            case b:
+                if (*current == 'o') state = bo; else return identifier;
                 break;
-            case BO:
-                if (*current == 'o') state = BOO; else return IDENTIFIER;
+            case bo:
+                if (*current == 'o') state = boo; else return identifier;
                 break;
-            case BOO:
-                if (*current == 'l') state = FINAL_BOOL; else return IDENTIFIER;
+            case boo:
+                if (*current == 'l') state = final_bool; else return identifier;
                 break;
-            case FINAL_BOOL:
-                return (*current == '\0') ? BOOL : IDENTIFIER;
+            case final_bool:
+                return (*current == '\0') ? bool_kw : identifier;
 
             // States for 'char'
-            case C:
-                if (*current == 'h') state = CH; else return IDENTIFIER;
+            case c:
+                if (*current == 'h') state = ch; else return identifier;
                 break;
-            case CH:
-                if (*current == 'a') state = CHA; else return IDENTIFIER;
+            case ch:
+                if (*current == 'a') state = cha; else return identifier;
                 break;
-            case CHA:
-                if (*current == 'r') state = FINAL_CHAR; else return IDENTIFIER;
+            case cha:
+                if (*current == 'r') state = final_char; else return identifier;
                 break;
-            case FINAL_CHAR:
-                return (*current == '\0') ? CHAR : IDENTIFIER;
+            case final_char:
+                return (*current == '\0') ? char_kw : identifier;
 
             // States for 'else'
-            case E:
-                if (*current == 'l') state = EL; else return IDENTIFIER;
+            case e:
+                if (*current == 'l') state = el; else return identifier;
                 break;
-            case EL:
-                if (*current == 's') state = ELS; else return IDENTIFIER;
+            case el:
+                if (*current == 's') state = els; else return identifier;
                 break;
-            case ELS:
-                if (*current == 'e') state = FINAL_ELSE; else return IDENTIFIER;
+            case els:
+                if (*current == 'e') state = final_else; else return identifier;
                 break;
-            case FINAL_ELSE:
-                return (*current == '\0') ? ELSE : IDENTIFIER;
+            case final_else:
+                return (*current == '\0') ? else_kw : identifier;
 
             // States for 'false', 'float', 'for'
-            case F:
-                if (*current == 'a') state = FA;  // Possible 'false'
-                else if (*current == 'l') state = FL; // Possible 'float'
-                else if (*current == 'o') state = FO; // Possible 'for'
-                else return IDENTIFIER;
+            case f:
+                if (*current == 'a') state = fa;  // Possible 'false'
+                else if (*current == 'l') state = fl; // Possible 'float'
+                else if (*current == 'o') state = fo; // Possible 'for'
+                else return identifier;
                 break;
-            case FA:
-                if (*current == 'l') state = FAL; else return IDENTIFIER;
+            case fa:
+                if (*current == 'l') state = fal; else return identifier;
                 break;
-            case FAL:
-                if (*current == 's') state = FALS; else return IDENTIFIER;
+            case fal:
+                if (*current == 's') state = fals; else return identifier;
                 break;
-            case FALS:
-                if (*current == 'e') state = FINAL_FALSE; else return IDENTIFIER;
+            case fals:
+                if (*current == 'e') state = final_false; else return identifier;
                 break;
-            case FINAL_FALSE:
-                return (*current == '\0') ? FALSE : IDENTIFIER;
+            case final_false:
+                return (*current == '\0') ? false_kw : identifier;
 
-            case FL:
-                if (*current == 'o') state = FLO; else return IDENTIFIER;
+            case fl:
+                if (*current == 'o') state = flo; else return identifier;
                 break;
-            case FLO:
-                if (*current == 'a') state = FLOA; else return IDENTIFIER;
+            case flo:
+                if (*current == 'a') state = floa; else return identifier;
                 break;
-            case FLOA:
-                if (*current == 't') state = FINAL_FLOAT; else return IDENTIFIER;
+            case floa:
+                if (*current == 't') state = final_float; else return identifier;
                 break;
-            case FINAL_FLOAT:
-                return (*current == '\0') ? FLOAT : IDENTIFIER;
+            case final_float:
+                return (*current == '\0') ? float_kw : identifier;
 
-            case FO:
-                if (*current == 'r') state = FINAL_FOR; else return IDENTIFIER;
+            case fo:
+                if (*current == 'r') state = final_for; else return identifier;
                 break;
-            case FINAL_FOR:
-                return (*current == '\0') ? FOR : IDENTIFIER;
+            case final_for:
+                return (*current == '\0') ? for_kw : identifier;
 
             // States for 'if', 'int'
-            case I:
-                if (*current == 'f') state = FINAL_IF;
-                else if (*current == 'n') state = IN;
-                else return IDENTIFIER;
+            case i:
+                if (*current == 'f') state = final_if;
+                else if (*current == 'n') state = in;
+                else return identifier;
                 break;
-            case FINAL_IF:
-                return (*current == '\0') ? IF : IDENTIFIER;
+            case final_if:
+                return (*current == '\0') ? if_kw : identifier;
 
-            case IN:
-                if (*current == 't') state = FINAL_INT; else return IDENTIFIER;
+            case in:
+                if (*current == 't') state = final_int; else return identifier;
                 break;
-            case FINAL_INT:
-                return (*current == '\0') ? INT : IDENTIFIER;
+            case final_int:
+                return (*current == '\0') ? int_kw : identifier;
 
             // States for 'printf'
-            case P:
-                if (*current == 'r') state = PR; else return IDENTIFIER;
+            case p:
+                if (*current == 'r') state = pr; else return identifier;
                 break;
-            case PR:
-                if (*current == 'i') state = PRI; else return IDENTIFIER;
+            case pr:
+                if (*current == 'i') state = pri; else return identifier;
                 break;
-            case PRI:
-                if (*current == 'n') state = PRIN; else return IDENTIFIER;
+            case pri:
+                if (*current == 'n') state = prin; else return identifier;
                 break;
-            case PRIN:
-                if (*current == 't') state = PRINT; else return IDENTIFIER;
+            case prin:
+                if (*current == 't') state = print; else return identifier;
                 break;
-            case PRINT:
-                if (*current == 'f') state = FINAL_PRINTF; else return IDENTIFIER;
+            case print:
+                if (*current == 'f') state = final_printf; else return identifier;
                 break;
-            case FINAL_PRINTF:
-                return (*current == '\0') ? PRINTF : IDENTIFIER;
+            case final_printf:
+                return (*current == '\0') ? printf_kw : identifier;
 
             // States for 'return'
-            case R:
-                if (*current == 'e') state = RE; else return IDENTIFIER;
+            case r:
+                if (*current == 'e') state = re; else return identifier;
                 break;
-            case RE:
-                if (*current == 't') state = RET; else return IDENTIFIER;
+            case re:
+                if (*current == 't') state = ret; else return identifier;
                 break;
-            case RET:
-                if (*current == 'u') state = RETU; else return IDENTIFIER;
+            case ret:
+                if (*current == 'u') state = retu; else return identifier;
                 break;
-            case RETU:
-                if (*current == 'r') state = RETUR; else return IDENTIFIER;
+            case retu:
+                if (*current == 'r') state = retur; else return identifier;
                 break;
-            case RETUR:
-                if (*current == 'n') state = FINAL_RETURN; else return IDENTIFIER;
+            case retur:
+                if (*current == 'n') state = final_return; else return identifier;
                 break;
-            case FINAL_RETURN:
-                return (*current == '\0') ? RETURN : IDENTIFIER;
+            case final_return:
+                return (*current == '\0') ? return_kw : identifier;
 
             // States for 'scanf'
-            case S1:
-                if (*current == 'c') state = SC; else return IDENTIFIER;
+            case s1:
+                if (*current == 'c') state = sc; else return identifier;
                 break;
-            case SC:
-                if (*current == 'a') state = SCA; else return IDENTIFIER;
+            case sc:
+                if (*current == 'a') state = sca; else return identifier;
                 break;
-            case SCA:
-                if (*current == 'n') state = SCAN; else return IDENTIFIER;
+            case sca:
+                if (*current == 'n') state = scan; else return identifier;
                 break;
-            case SCAN:
-                if (*current == 'f') state = FINAL_SCANF; else return IDENTIFIER;
+            case scan:
+                if (*current == 'f') state = final_scanf; else return identifier;
                 break;
-            case FINAL_SCANF:
-                return (*current == '\0') ? SCANF : IDENTIFIER;
+            case final_scanf:
+                return (*current == '\0') ? scanf_kw : identifier;
 
             // States for 'true'
-            case T:
-                if (*current == 'r') state = TR; else return IDENTIFIER;
+            case t:
+                if (*current == 'r') state = tr; else return identifier;
                 break;
-            case TR:
-                if (*current == 'u') state = TRU; else return IDENTIFIER;
+            case tr:
+                if (*current == 'u') state = tru; else return identifier;
                 break;
-            case TRU:
-                if (*current == 'e') state = FINAL_TRUE; else return IDENTIFIER;
+            case tru:
+                if (*current == 'e') state = final_true; else return identifier;
                 break;
-            case FINAL_TRUE:
-                return (*current == '\0') ? TRUE : IDENTIFIER;
+            case final_true:
+                return (*current == '\0') ? true_kw : identifier;
 
             // States for 'while'
-            case W:
-                if (*current == 'h') state = WH; else return IDENTIFIER;
+            case w:
+                if (*current == 'h') state = wh; else return identifier;
                 break;
-            case WH:
-                if (*current == 'i') state = WHI; else return IDENTIFIER;
+            case wh:
+                if (*current == 'i') state = whi; else return identifier;
                 break;
-            case WHI:
-                if (*current == 'l') state = WHIL; else return IDENTIFIER;
+            case whi:
+                if (*current == 'l') state = whil; else return identifier;
                 break;
-            case WHIL:
-                if (*current == 'e') state = FINAL_WHILE; else return IDENTIFIER;
+            case whil:
+                if (*current == 'e') state = final_while; else return identifier;
                 break;
-            case FINAL_WHILE:
-                return (*current == '\0') ? WHILE : IDENTIFIER;
+            case final_while:
+                return (*current == '\0') ? while_kw : identifier;
 
             // States for 'void'
-            case V:
-                if (*current == 'o') state = VO; 
-                else return IDENTIFIER;
+            case v:
+                if (*current == 'o') state = vo; 
+                else return identifier;
                 break;
-            case VO:
-                if (*current == 'i') state = VOI; 
-                else return IDENTIFIER;
+            case vo:
+                if (*current == 'i') state = voi; 
+                else return identifier;
                 break;
-            case VOI:
-                if (*current == 'd') state = FINAL_VOID; 
-                else return IDENTIFIER;
+            case voi:
+                if (*current == 'd') state = final_void; 
+                else return identifier;
                 break;
-            case FINAL_VOID:
-                return (*current == '\0') ? VOID : IDENTIFIER;
+            case final_void:
+                return (*current == '\0') ? void_kw : identifier;
 
             default:
-                return IDENTIFIER;
+                return identifier;
         }
         current++;
     }
 
     // Handle end of string for each final state
     switch (state) {
-        case FINAL_BOOL: return BOOL;
-        case FINAL_CHAR: return CHAR;
-        case FINAL_ELSE: return ELSE;
-        case FINAL_FALSE: return FALSE;
-        case FINAL_FLOAT: return FLOAT;
-        case FINAL_FOR: return FOR;
-        case FINAL_IF: return IF;
-        case FINAL_INT: return INT;
-        case FINAL_PRINTF: return PRINTF;
-        case FINAL_RETURN: return RETURN;
-        case FINAL_SCANF: return SCANF;
-        case FINAL_TRUE: return TRUE;
-        case FINAL_WHILE: return WHILE;
-        case FINAL_VOID: return VOID;
-        default: return IDENTIFIER;
+        case final_bool: return bool_kw;
+        case final_char: return char_kw;
+        case final_else: return else_kw;
+        case final_false: return false_kw;
+        case final_float: return float_kw;
+        case final_for: return for_kw;
+        case final_if: return if_kw;
+        case final_int: return int_kw;
+        case final_printf: return printf_kw;
+        case final_return: return return_kw;
+        case final_scanf: return scanf_kw;
+        case final_true: return true_kw;
+        case final_while: return while_kw;
+        case final_void: return void_kw;
+        default: return identifier;
     }
 }
 
 /******************************************************/
 /* character_literal - reads the character literal */
-void character_literal()
+void character_literal_function()
 {
     add_char(); // Add the opening single quote
 
@@ -768,13 +790,13 @@ void character_literal()
             add_char(); // Add the escaped character
         }
         else {
-            next_token = ERROR_INVALID_CHARACTER;
+            next_token = error_invalid_character;
             printf("Error - unterminated character literal\n");
             return;
         }
     }
     else if (current_char == '\'' || current_char == EOF) { // Handle empty or malformed character literals
-        next_token = ERROR_INVALID_CHARACTER;
+        next_token = error_invalid_character;
         printf("Error - invalid or unterminated character literal\n");
         return;
     }
@@ -786,12 +808,12 @@ void character_literal()
     current_char = get_char();
     if (current_char == '\'') {
         add_char();
-        next_token = CHARACTER_LITERAL;
+        next_token = character_literal;
         set_token_end_column();
         current_char = get_char();
     }
     else { // Handle missing closing single quote
-        next_token = ERROR_INVALID_CHARACTER;
+        next_token = error_invalid_character;
         printf("Error - unterminated character literal\n");
     }
 }
@@ -803,7 +825,7 @@ void add_eof() {
     lexeme[1] = 'O';
     lexeme[2] = 'F';
     lexeme[3] = '\0';
-    next_token = TOKEN_EOF;
+    next_token = token_eof;
     token_start_line = line_number;
     token_start_column = -1;
     token_end_column = -1;
@@ -811,7 +833,7 @@ void add_eof() {
 
 /******************************************************/
 /* string - reads the rest of the string literal */
-void string()
+void string_function()
 {
     add_char();  // Add the opening quote to lexeme
     current_char = get_char();
@@ -831,14 +853,14 @@ void string()
 
     if (current_char == '"') {
         add_char();  // Add the closing quote to lexeme
-        next_token = STRING;
+        next_token = string;
         set_token_end_column();
         current_char = get_char();  // Advance to the next character
     }
     else {
         // Handle error for unterminated string
         printf("Error - unterminated string literal\n");
-        next_token = ERROR_INVALID_CHARACTER;
+        next_token = error_invalid_character;
     }
 }
 

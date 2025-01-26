@@ -56,7 +56,7 @@ typedef enum
     modulo,
 
     // Literals
-    ientifier,
+    identifier,
     string,
     integer_literal,
     float_literal,
