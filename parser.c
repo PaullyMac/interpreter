@@ -4,57 +4,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "token.h"
-
-// Data structure for the parse tree
-typedef struct ParseTreeNode {
-    char *name;
-    Token *token;
-    struct ParseTreeNode **children;
-    int num_children;
-} ParseTreeNode;
-
-// Function prototypes for creating parse tree nodes
-ParseTreeNode *create_program_node();
-ParseTreeNode *create_declaration_node();
-ParseTreeNode *create_function_declaration_node();
-ParseTreeNode *create_variable_declaration_node();
-ParseTreeNode *create_array_declaration_node();
-ParseTreeNode *create_data_type_node();
-ParseTreeNode *create_identifier_node();
-ParseTreeNode *create_parameter_list_node();
-ParseTreeNode *create_argument_list_node();
-ParseTreeNode *create_block_node();
-ParseTreeNode *create_block_item_list_node();
-ParseTreeNode *create_block_item_node();
-ParseTreeNode *create_statement_node();
-ParseTreeNode *create_return_statement_node();
-ParseTreeNode *create_expression_statement_node();
-ParseTreeNode *create_factor_statement_node();
-ParseTreeNode *create_const_statement_node();
-ParseTreeNode *create_while_statement_node();
-ParseTreeNode *create_for_statement_node();
-ParseTreeNode *create_if_statement_node();
-ParseTreeNode *create_input_statement_node();
-ParseTreeNode *create_output_statement_node();
-ParseTreeNode *create_exp_node();
-ParseTreeNode *create_logical_or_exp_node();
-ParseTreeNode *create_logical_and_exp_node();
-ParseTreeNode *create_factor_node();
-ParseTreeNode *create_const_node();
-ParseTreeNode *create_int_literal_node();
-ParseTreeNode *create_float_literal_node();
-ParseTreeNode *create_char_literal_node();
-ParseTreeNode *create_bool_literal_node();
-ParseTreeNode *create_node(const char *name);
-
-// Function prototypes for printing the parse tree
-void print_parse_tree(ParseTreeNode *node, int indent_level);
-void print_indent(int indent_level);
-
-void free_parse_tree(ParseTreeNode *node);
-
-void report_error(const char *message, TokenType expected);
-void synchronize();
+#include "parser.h"
 
 // Global variables to store the token list and the current token index
 Token *tokens;
@@ -65,51 +15,6 @@ bool panic_mode = false;
 // Global file pointer for the output file
 FILE *output_file;
 
-// Function prototypes
-Token *load_tokens(const char *filename, int *num_tokens);
-ParseTreeNode *parse_program();
-ParseTreeNode *parse_declaration();
-ParseTreeNode *parse_function_declaration();
-ParseTreeNode *parse_variable_declaration();
-ParseTreeNode *parse_array_declaration();
-ParseTreeNode *parse_data_type();
-ParseTreeNode *parse_identifier();
-ParseTreeNode *parse_parameter_list();
-ParseTreeNode *parse_argument_list();
-ParseTreeNode *parse_block();
-ParseTreeNode *parse_block_item_list();
-ParseTreeNode *parse_block_item();
-ParseTreeNode *parse_statement();
-ParseTreeNode *parse_return_statement();
-ParseTreeNode *parse_expression_statement();
-ParseTreeNode *parse_factor_statement();
-ParseTreeNode *parse_const_statement();
-ParseTreeNode *parse_while_statement();
-ParseTreeNode *parse_for_statement();
-ParseTreeNode *parse_input_statement();
-ParseTreeNode *parse_output_statement();
-ParseTreeNode *parse_if_statement();
-ParseTreeNode *parse_else_clause();
-ParseTreeNode *parse_exp();
-ParseTreeNode *parse_factor();
-ParseTreeNode *parse_const();
-ParseTreeNode *parse_int_literal();
-ParseTreeNode *parse_float_literal();
-ParseTreeNode *parse_char_literal();
-ParseTreeNode *parse_bool_literal();
-ParseTreeNode *parse_assignment();
-ParseTreeNode *parse_logical_or_exp();
-ParseTreeNode *parse_logical_and_exp();
-ParseTreeNode *parse_equality_exp();
-ParseTreeNode *parse_relational_exp();
-ParseTreeNode *parse_additive_exp();
-ParseTreeNode *parse_multiplicative_exp();
-ParseTreeNode *parse_power_exp();
-ParseTreeNode *parse_unary_exp();
-
-void match(TokenType type);
-void add_child(ParseTreeNode *parent, ParseTreeNode *child);
-ParseTreeNode *match_and_create_node(TokenType type, const char* node_name);
 
 int main(void) {
     tokens = load_tokens("symbol_table.txt", &num_tokens);
@@ -138,6 +43,75 @@ int main(void) {
     free_parse_tree(root);
     free(tokens);
     return 0;
+}
+
+
+Token *load_tokens(const char *filename, int *num_tokens) {
+    FILE *fp = fopen(filename, "r");
+    if (!fp) {
+        fprintf(stderr, "Error opening symbol table file: %s\n", filename);
+        synchronize();
+    }
+
+    Token *token_list = NULL;
+    size_t capacity = 16;
+    token_list = malloc(sizeof(Token) * capacity);
+
+    if (!token_list) {
+        fprintf(stderr, "Error: Memory allocation failed in load_tokens!\n");
+        fclose(fp);
+        synchronize();
+    }
+
+    *num_tokens = 0;
+
+    char line[256];
+    while (fgets(line, sizeof(line), fp) != NULL) {
+        if (*num_tokens >= capacity) {
+            capacity *= 2;
+            Token *new_list = realloc(token_list, sizeof(Token) * capacity);
+            if (!new_list) {
+                fprintf(stderr, "Error: Memory reallocation failed in load_tokens!\n");
+                free(token_list);
+                fclose(fp);
+                synchronize();
+            }
+            token_list = new_list;
+        }
+
+        int token_code;
+        char token_name[50];
+        char lexeme_val[MAX_LEXEME_LENGTH];
+        int line_num, col_num;
+
+        if (sscanf(line, "%d | %[^|] | %d | %d | %[^\n]", &token_code, token_name, &line_num, &col_num, lexeme_val) == 5) {
+                    token_list[*num_tokens].type = token_code;
+
+                    // Trim trailing spaces from token_name
+                    int len = strlen(token_name);
+                    while (len > 0 && isspace(token_name[len - 1])) {
+                        token_name[len - 1] = '\0';
+                        len--;
+                    }
+
+                    // Trim trailing spaces from lexeme_val
+                    len = strlen(lexeme_val);
+                    while (len > 0 && isspace(lexeme_val[len - 1])) {
+                        lexeme_val[len - 1] = '\0';
+                        len--;
+                    }
+                    
+                    strncpy(token_list[*num_tokens].lexeme, lexeme_val, MAX_LEXEME_LENGTH - 1);
+                    token_list[*num_tokens].lexeme[MAX_LEXEME_LENGTH - 1] = '\0';
+                    
+                    token_list[*num_tokens].line_number = line_num;
+                    token_list[*num_tokens].column_number = col_num;
+
+                    (*num_tokens)++;
+        }
+    }
+    fclose(fp);
+    return token_list;
 }
 
 // Helper function to add a child to a parse tree node
@@ -170,6 +144,114 @@ ParseTreeNode *match_and_create_node(TokenType type, const char* node_name) {
         synchronize();
     }
     return node;
+}
+
+void match(TokenType type) {
+    if (current_token < num_tokens && tokens[current_token].type == type) {
+        current_token++;
+    } else {
+        fprintf(stderr, "Error: Expected token type %s but found %s at line %d\n",
+               token_names[type], token_names[tokens[current_token].type],
+               tokens[current_token].line_number);
+        synchronize();
+    }
+}
+
+// Function to print the parse tree with proper indentation to a file
+void print_parse_tree(ParseTreeNode *node, int indent_level) {
+    if (node == NULL) {
+        return;
+    }
+
+    print_indent(indent_level);
+
+    // Check if the node is a terminal node (has a token)
+    if (node->token != NULL) {
+        // If it's a literal, print the token type and lexeme
+        if (node->token->type == INTEGER_LITERAL ||
+            node->token->type == FLOAT_LITERAL ||
+            node->token->type == CHARACTER_LITERAL ||
+            node->token->type == IDENTIFIER ||
+            node->token->type == STRING) {
+                // Only have a single set of quotations for String literals
+                if (node->token->type == STRING) {
+                    fprintf(output_file, "%s: %s", token_names[node->token->type], node->token->lexeme);
+                } else {
+                    fprintf(output_file, "%s: \"%s\"", token_names[node->token->type], node->token->lexeme);
+                }
+        }
+        // Otherwise, just print the token type
+        else {
+            fprintf(output_file, "%s", token_names[node->token->type]);
+        }
+    }
+    // If it's not a terminal node, print the node name and recurse
+    else {
+        fprintf(output_file, "%s(", node->name);
+
+        // Recursively print the children
+        if (node->num_children > 0) {
+            fprintf(output_file, "\n");
+            for (int i = 0; i < node->num_children; i++) {
+                print_parse_tree(node->children[i], indent_level + 1);
+                if (i < node->num_children - 1) {
+                    fprintf(output_file, ",\n");
+                }
+            }
+            fprintf(output_file, "\n");
+            print_indent(indent_level);
+        }
+        fprintf(output_file, ")");
+    }
+}
+
+
+// Helper function to print indentation to a file
+void print_indent(int indent_level) {
+    for (int i = 0; i < indent_level; i++) {
+        fprintf(output_file, "  ");
+    }
+}
+
+void free_parse_tree(ParseTreeNode *node) {
+    if (!node) return;
+    
+    for (int i = 0; i < node->num_children; i++) {
+        free_parse_tree(node->children[i]);
+    }
+    
+    free(node->token);
+    free(node->name);
+    free(node->children);
+    free(node);
+}
+
+void report_error(const char *message, TokenType expected) {
+    fprintf(stderr, "Error: %s, Expected: %s, Line: %d, Column: %d\n",
+            message,
+            token_names[expected],
+            tokens[current_token].line_number,
+            tokens[current_token].column_number);
+    panic_mode = true;
+}
+
+void synchronize() {
+    panic_mode = true;
+    while (current_token < num_tokens) {
+        // Synchronize on statement/declaration boundaries
+        if (tokens[current_token].type == SEMICOLON ||
+            tokens[current_token].type == RIGHT_BRACE ||
+            tokens[current_token].type == INT ||
+            tokens[current_token].type == FLOAT ||
+            tokens[current_token].type == CHAR ||
+            tokens[current_token].type == BOOL ||
+            tokens[current_token].type == FOR ||
+            tokens[current_token].type == WHILE ||
+            tokens[current_token].type == IF) {
+            return;
+        }
+        current_token++;
+    }
 }
 
 // <program> ::= { <declaration> }
@@ -532,74 +614,6 @@ ParseTreeNode *parse_statement() {
     return node;
 }
 
-Token *load_tokens(const char *filename, int *num_tokens) {
-    FILE *fp = fopen(filename, "r");
-    if (!fp) {
-        fprintf(stderr, "Error opening symbol table file: %s\n", filename);
-        synchronize();
-    }
-
-    Token *token_list = NULL;
-    size_t capacity = 16;
-    token_list = malloc(sizeof(Token) * capacity);
-
-    if (!token_list) {
-        fprintf(stderr, "Error: Memory allocation failed in load_tokens!\n");
-        fclose(fp);
-        synchronize();
-    }
-
-    *num_tokens = 0;
-
-    char line[256];
-    while (fgets(line, sizeof(line), fp) != NULL) {
-        if (*num_tokens >= capacity) {
-            capacity *= 2;
-            Token *new_list = realloc(token_list, sizeof(Token) * capacity);
-            if (!new_list) {
-                fprintf(stderr, "Error: Memory reallocation failed in load_tokens!\n");
-                free(token_list);
-                fclose(fp);
-                synchronize();
-            }
-            token_list = new_list;
-        }
-
-        int token_code;
-        char token_name[50];
-        char lexeme_val[MAX_LEXEME_LENGTH];
-        int line_num, col_num;
-
-        if (sscanf(line, "%d | %[^|] | %d | %d | %[^\n]", &token_code, token_name, &line_num, &col_num, lexeme_val) == 5) {
-                    token_list[*num_tokens].type = token_code;
-
-                    // Trim trailing spaces from token_name
-                    int len = strlen(token_name);
-                    while (len > 0 && isspace(token_name[len - 1])) {
-                        token_name[len - 1] = '\0';
-                        len--;
-                    }
-
-                    // Trim trailing spaces from lexeme_val
-                    len = strlen(lexeme_val);
-                    while (len > 0 && isspace(lexeme_val[len - 1])) {
-                        lexeme_val[len - 1] = '\0';
-                        len--;
-                    }
-                    
-                    strncpy(token_list[*num_tokens].lexeme, lexeme_val, MAX_LEXEME_LENGTH - 1);
-                    token_list[*num_tokens].lexeme[MAX_LEXEME_LENGTH - 1] = '\0';
-                    
-                    token_list[*num_tokens].line_number = line_num;
-                    token_list[*num_tokens].column_number = col_num;
-
-                    (*num_tokens)++;
-        }
-    }
-    fclose(fp);
-    return token_list;
-}
-
 ParseTreeNode *parse_argument_list() {
     ParseTreeNode *node = create_argument_list_node();
     // The first argument should be parsed as a full expression
@@ -617,38 +631,215 @@ ParseTreeNode *parse_argument_list() {
     return node;
 }
 
-// Function to parse a constant: <const> ::= <int> | <float> | <char> | <bool>
-ParseTreeNode *parse_const() {
-    ParseTreeNode *node = create_const_node();
-    
-    if (current_token < num_tokens) {
-        switch (tokens[current_token].type)
-        {
-            case INTEGER_LITERAL:
-                ParseTreeNode *int_node = parse_int_literal();
-                add_child(node, int_node);
-                break;
-            case FLOAT_LITERAL:
-                ParseTreeNode *float_node = parse_float_literal();
-                add_child(node, float_node);
-                break;
-            case CHARACTER_LITERAL:
-                ParseTreeNode *char_node = parse_char_literal();
-                add_child(node, char_node);
-                break;
-            case TRUE:
-            case FALSE:
-                ParseTreeNode *bool_node = parse_bool_literal();
-                add_child(node, bool_node);
-                break;
+// <exp> ::= <logical_or_exp> | (<identifier> | <identifier> "[" <const> "]") "=" <exp>
+ParseTreeNode *parse_exp() {
+    if (current_token < num_tokens && tokens[current_token].type == IDENTIFIER) {
+        int lookahead = current_token + 1;
+
+        // Check if array lvalue
+        if (current_token + 1 < num_tokens && tokens[current_token + 1].type == LEFT_BRACKET) {
+            lookahead = current_token + 2;
+
+            while (lookahead < num_tokens && tokens[lookahead].type != RIGHT_BRACKET) {
+                lookahead++;
+            }
             
-            default:
-                fprintf(stderr, "Error: Expected a constant (int, float, char, or bool) at line %d\n", tokens[current_token].line_number);
+            if (lookahead < num_tokens && tokens[lookahead].type == RIGHT_BRACKET) {
+                lookahead++;
+            }
+            else {
+                fprintf(stderr, "Error: Missing closing bracket in array access at line %d\n", tokens[current_token].line_number);
                 synchronize();
+            }
+        }
+
+        if (lookahead < num_tokens && tokens[lookahead].type == ASSIGN) {
+            ParseTreeNode *node = create_exp_node();
+
+            add_child(node, parse_identifier());
+
+            // Handle array access if present
+            if (current_token < num_tokens && tokens[current_token].type == LEFT_BRACKET) {
+                add_child(node, match_and_create_node(LEFT_BRACKET, "Left_Bracket"));
+                add_child(node, parse_const());
+                add_child(node, match_and_create_node(RIGHT_BRACKET, "Right_Bracket"));
+            }
+
+            add_child(node, match_and_create_node(ASSIGN, "Assign"));
+
+            // Recursively build sequence of assignment operators
+            add_child(node, parse_exp());
+
+            return node;
         }
     }
 
-    return node; 
+    return parse_logical_or_exp();
+}
+
+// <logical_or_exp> ::= <logical_and_exp> | <logical_or_exp> "||" <logical_and_exp>
+ParseTreeNode *parse_logical_or_exp() {
+    ParseTreeNode *left = parse_logical_and_exp();
+
+    // Only go through the parsing of OR's if it's not a lone factor 
+    if (current_token < num_tokens && tokens[current_token].type == OR) {
+        ParseTreeNode *node = create_logical_or_exp_node();
+
+        // Add the factor (left operand) to the logical or node
+        add_child(node, left);
+
+        // Build the logical OR nodes bottom-up
+        while (current_token < num_tokens && tokens[current_token].type == OR) {
+            add_child(node, match_and_create_node(OR, "Operator"));
+
+            // Add the factor (right operand) to the logical or node
+            ParseTreeNode *right = parse_logical_and_exp();
+            add_child(node, right);
+
+            // Assure left-associativity, create a new node above the previous if there are more ORs
+            if (current_token < num_tokens && tokens[current_token].type == OR) {
+              ParseTreeNode *new_node = create_logical_or_exp_node();
+
+              // The previous OR node we built is added as a child to a new OR node
+              add_child(new_node, node);
+              node = new_node;
+            }
+        }
+        return node;
+    }
+
+    // Return the factor directly if there's no OR
+    return left; 
+}
+
+// <logical_and_exp> ::= <power_exp> | <logical_and_exp> "&&" <factor>
+ParseTreeNode *parse_logical_and_exp() {
+    ParseTreeNode *left = parse_power_exp();
+
+    if (current_token < num_tokens && tokens[current_token].type == AND) {
+        ParseTreeNode *node = create_logical_and_exp_node();
+        add_child(node, left);
+
+        while (current_token < num_tokens && tokens[current_token].type == AND) {
+            add_child(node, match_and_create_node(AND, "Operator"));
+            ParseTreeNode *right = parse_power_exp();
+            add_child(node, right);
+
+            if (current_token < num_tokens && tokens[current_token].type == AND) {
+              ParseTreeNode *new_node = create_logical_and_exp_node();
+              add_child(new_node, node);
+              node = new_node;
+            }
+        }
+        return node;
+    }
+
+    return left; 
+}
+
+// TODO
+ParseTreeNode *parse_equality_exp() {
+    ParseTreeNode *node = parse_relational_exp();
+
+    while (current_token < num_tokens &&
+          (tokens[current_token].type == EQUAL || tokens[current_token].type == NOT_EQUAL)) {
+        TokenType op_type = tokens[current_token].type;
+        match(op_type);
+        ParseTreeNode *new_node = create_node("Equality");
+        add_child(new_node, node);
+        add_child(new_node, match_and_create_node(op_type, "Operator"));
+        add_child(new_node, parse_relational_exp());
+        node = new_node;
+    }
+    return node;
+}
+
+// TODO
+ParseTreeNode *parse_relational_exp() {
+    ParseTreeNode *node = parse_additive_exp();
+
+    while (current_token < num_tokens &&
+          (tokens[current_token].type == LESS || tokens[current_token].type == GREATER ||
+           tokens[current_token].type == LESS_EQUAL || tokens[current_token].type == GREATER_EQUAL)) {
+        TokenType op_type = tokens[current_token].type;
+        match(op_type);
+        ParseTreeNode *new_node = create_node("Relational");
+        add_child(new_node, node);
+        add_child(new_node, match_and_create_node(op_type, "Operator"));
+        add_child(new_node, parse_additive_exp());
+        node = new_node;
+    }
+    return node;
+}
+
+// TODO
+ParseTreeNode *parse_additive_exp() {
+    ParseTreeNode *node = parse_multiplicative_exp();
+    while (current_token < num_tokens &&
+          (tokens[current_token].type == PLUS || tokens[current_token].type == MINUS)) {
+        TokenType op_type = tokens[current_token].type;
+        match(op_type);
+        ParseTreeNode *new_node = create_node("AddSub");
+        add_child(new_node, node);
+        add_child(new_node, match_and_create_node(op_type, "Operator"));
+        add_child(new_node, parse_multiplicative_exp());
+        node = new_node;
+    }
+    return node;
+}
+
+// TODO
+ParseTreeNode *parse_multiplicative_exp() {
+    ParseTreeNode *node = parse_power_exp();
+
+    while (current_token < num_tokens &&
+          (tokens[current_token].type == MULTIPLY || tokens[current_token].type == DIVIDE || tokens[current_token].type == MODULO)) {
+        TokenType op_type = tokens[current_token].type;
+        match(op_type);
+        ParseTreeNode *new_node = create_node("MulDivMod");
+        add_child(new_node, node);
+        add_child(new_node, match_and_create_node(op_type, "Operator"));
+        add_child(new_node, parse_power_exp());
+        node = new_node;
+    }
+    return node;
+}
+
+// <power_exp> ::= <factor> | <factor> ”^” <power_exp>
+ParseTreeNode *parse_power_exp() {
+    ParseTreeNode *node = create_power_exp_node();
+
+    // Start with the left operand (<unary_exp>)
+    ParseTreeNode *left = parse_factor(); 
+
+    // Check if there's a "^" operator.
+    if (current_token < num_tokens && tokens[current_token].type == EXPONENT) {
+        add_child(node, left);
+        add_child(node, match_and_create_node(EXPONENT, "Exponent_Op"));
+        ParseTreeNode *right = parse_power_exp(); // Recurse on right side to get the expression
+        add_child(node, right);
+
+        return node;
+    }
+
+    // Pass to the next exp if power_exp unused
+    return left;
+}
+
+//  TODO
+ParseTreeNode *parse_unary_exp() {
+    // <unary_exp> ::= <factor> | <unop> <unary_exp>
+    if (tokens[current_token].type == PLUS ||
+        tokens[current_token].type == MINUS ||
+        tokens[current_token].type == NOT_EQUAL) {
+        ParseTreeNode *node = create_node("UnaryOp");
+        TokenType op = tokens[current_token].type;
+        match(op);
+        add_child(node, match_and_create_node(op, "Unary_Operator"));
+        add_child(node, parse_unary_exp());
+        return node;
+    }
+    return parse_factor();
 }
 
 ParseTreeNode *parse_factor() {
@@ -694,291 +885,40 @@ ParseTreeNode *parse_factor() {
     return node;
 }
 
-// Add forward declarations so that parse_expression can call parse_unary without warnings
-ParseTreeNode *parse_unary();
-ParseTreeNode *parse_expression(int min_prec);
-
-static int get_precedence(TokenType t) {
-    switch (t) {
-        case EXPONENT: return 5;    // '^'
-        case MULTIPLY:
-        case DIVIDE:
-        case MODULO:    return 4;   // '*','/','%'
-        case PLUS:
-        case MINUS:     return 3;   // '+','-'
-        case LESS:
-        case LESS_EQUAL:
-        case GREATER:
-        case GREATER_EQUAL: return 2;
-        case EQUAL:
-        case NOT_EQUAL: return 1;
-        default: return 0;
-    }
-}
-
-// Parses expressions with operator precedence
-ParseTreeNode *parse_expression(int min_prec) {
-    ParseTreeNode *lhs = parse_unary(); // parse first piece
-
-    while (current_token < num_tokens) {
-        int prec = get_precedence(tokens[current_token].type);
-        if (prec < min_prec) break;
-
-        TokenType op_type = tokens[current_token].type;
-        match(op_type); // consume operator
-
-        ParseTreeNode *new_node = create_node("OpExpr");
-        add_child(new_node, lhs);
-        add_child(new_node, match_and_create_node(op_type, "Operator"));
-        ParseTreeNode *rhs = parse_expression(prec + (op_type == EXPONENT ? 0 : 1));
-        add_child(new_node, rhs);
-        lhs = new_node;
-    }
-    return lhs;
-}
-
-ParseTreeNode *parse_unary() {
-    if (tokens[current_token].type == PLUS ||
-        tokens[current_token].type == MINUS ||
-        tokens[current_token].type == NOT_EQUAL /* '!' if desired */) {
-        TokenType op_type = tokens[current_token].type;
-        match(op_type);
-        ParseTreeNode *node = create_node("UnaryOp");
-        add_child(node, match_and_create_node(op_type, "Unary_Operator"));
-        add_child(node, parse_unary());
-        return node;
-    }
-    return parse_factor();  
-}
-
-// <exp> ::= <logical_or_exp> | (<identifier> | <identifier> "[" <const> "]") "=" <exp>
-ParseTreeNode *parse_exp() {
-    if (current_token < num_tokens && tokens[current_token].type == IDENTIFIER) {
-        int lookahead = current_token + 1;
-
-        // Check if array lvalue
-        if (current_token + 1 < num_tokens && tokens[current_token + 1].type == LEFT_BRACKET) {
-            lookahead = current_token + 2;
-
-            while (lookahead < num_tokens && tokens[lookahead].type != RIGHT_BRACKET) {
-                lookahead++;
-            }
-            
-            if (lookahead < num_tokens && tokens[lookahead].type == RIGHT_BRACKET) {
-                lookahead++;
-            }
-            else {
-                fprintf(stderr, "Error: Missing closing bracket in array access at line %d\n", tokens[current_token].line_number);
-                synchronize();
-            }
-        }
-
-        if (lookahead < num_tokens && tokens[lookahead].type == ASSIGN) {
-            ParseTreeNode *node = create_node("Assignment");
-
-            add_child(node, parse_identifier());
-
-            // Handle array access if present
-            if (current_token < num_tokens && tokens[current_token].type == LEFT_BRACKET) {
-                add_child(node, match_and_create_node(LEFT_BRACKET, "Left_Bracket"));
-                add_child(node, parse_const());
-                add_child(node, match_and_create_node(RIGHT_BRACKET, "Right_Bracket"));
-            }
-
-            add_child(node, match_and_create_node(ASSIGN, "Assign"));
-
-            // Recursively build sequence of assignment operators
-            add_child(node, parse_exp());
-
-            return node;
-        }
-    }
-
-    return parse_logical_or_exp();
-}
-
-// Parse assignment <identifier> ["[" <const> "]"] "=" <exp>
-ParseTreeNode *parse_assignment() {
-    ParseTreeNode *node = create_node("Assignment");
-
-    // Parse left-hand side
-    add_child(node, parse_identifier());
+// Function to parse a constant: <const> ::= <int> | <float> | <char> | <bool>
+ParseTreeNode *parse_const() {
+    ParseTreeNode *node = create_const_node();
     
-    // Handle array access if present
-    if (current_token < num_tokens && tokens[current_token].type == LEFT_BRACKET) {
-        add_child(node, match_and_create_node(LEFT_BRACKET, "Left_Bracket"));
-        add_child(node, parse_const());
-        add_child(node, match_and_create_node(RIGHT_BRACKET, "Right_Bracket"));
-    }
-
-    // Match assignment operator
-    add_child(node, match_and_create_node(ASSIGN, "Assign"));
-
-    // Parse right-hand side (which could be another assignment)
-    if (current_token < num_tokens && tokens[current_token].type == IDENTIFIER &&
-        current_token + 1 < num_tokens && tokens[current_token + 1].type == ASSIGN) {
-        add_child(node, parse_assignment());
-    } else {
-        add_child(node, parse_exp());
-    }
-
-    return node;
-}
-
-// <logical_or_exp> ::= <logical_and_exp> | <logical_or_exp> "||" <logical_and_exp>
-ParseTreeNode *parse_logical_or_exp() {
-    ParseTreeNode *left = parse_logical_and_exp();
-
-    // Only go through the parsing of OR's if it's not a lone factor 
-    if (current_token < num_tokens && tokens[current_token].type == OR) {
-        ParseTreeNode *node = create_logical_or_exp_node();
-
-        // Add the factor (left operand) to the logical or node
-        add_child(node, left);
-
-        // Build the logical OR nodes bottom-up
-        while (current_token < num_tokens && tokens[current_token].type == OR) {
-            add_child(node, match_and_create_node(OR, "Operator"));
-
-            // Add the factor (right operand) to the logical or node
-            ParseTreeNode *right = parse_logical_and_exp();
-            add_child(node, right);
-
-            // Assure left-associativity, create a new node above the previous if there are more ORs
-            if (current_token < num_tokens && tokens[current_token].type == OR) {
-              ParseTreeNode *new_node = create_logical_or_exp_node();
-
-              // The previous OR node we built is added as a child to a new OR node
-              add_child(new_node, node);
-              node = new_node;
-            }
+    if (current_token < num_tokens) {
+        switch (tokens[current_token].type)
+        {
+            case INTEGER_LITERAL:
+                ParseTreeNode *int_node = parse_int_literal();
+                add_child(node, int_node);
+                break;
+            case FLOAT_LITERAL:
+                ParseTreeNode *float_node = parse_float_literal();
+                add_child(node, float_node);
+                break;
+            case CHARACTER_LITERAL:
+                ParseTreeNode *char_node = parse_char_literal();
+                add_child(node, char_node);
+                break;
+            case TRUE:
+            case FALSE:
+                ParseTreeNode *bool_node = parse_bool_literal();
+                add_child(node, bool_node);
+                break;
+            
+            default:
+                fprintf(stderr, "Error: Expected a constant (int, float, char, or bool) at line %d\n", tokens[current_token].line_number);
+                synchronize();
         }
-        return node;
     }
 
-    // Return the factor directly if there's no OR
-    return left; 
+    return node; 
 }
 
-// <logical_and_exp> ::= <factor> | <logical_and_exp> "&&" <factor>
-ParseTreeNode *parse_logical_and_exp() {
-    ParseTreeNode *left = parse_factor();
-
-    if (current_token < num_tokens && tokens[current_token].type == AND) {
-        ParseTreeNode *node = create_logical_and_exp_node();
-        add_child(node, left);
-
-        while (current_token < num_tokens && tokens[current_token].type == AND) {
-            add_child(node, match_and_create_node(AND, "Operator"));
-            ParseTreeNode *right = parse_factor();
-            add_child(node, right);
-
-            if (current_token < num_tokens && tokens[current_token].type == AND) {
-              ParseTreeNode *new_node = create_logical_and_exp_node();
-              add_child(new_node, node);
-              node = new_node;
-            }
-        }
-        return node;
-    }
-
-    return left; 
-}
-
-ParseTreeNode *parse_equality_exp() {
-    ParseTreeNode *node = parse_relational_exp();
-
-    while (current_token < num_tokens &&
-          (tokens[current_token].type == EQUAL || tokens[current_token].type == NOT_EQUAL)) {
-        TokenType op_type = tokens[current_token].type;
-        match(op_type);
-        ParseTreeNode *new_node = create_node("Equality");
-        add_child(new_node, node);
-        add_child(new_node, match_and_create_node(op_type, "Operator"));
-        add_child(new_node, parse_relational_exp());
-        node = new_node;
-    }
-    return node;
-}
-
-ParseTreeNode *parse_relational_exp() {
-    ParseTreeNode *node = parse_additive_exp();
-
-    while (current_token < num_tokens &&
-          (tokens[current_token].type == LESS || tokens[current_token].type == GREATER ||
-           tokens[current_token].type == LESS_EQUAL || tokens[current_token].type == GREATER_EQUAL)) {
-        TokenType op_type = tokens[current_token].type;
-        match(op_type);
-        ParseTreeNode *new_node = create_node("Relational");
-        add_child(new_node, node);
-        add_child(new_node, match_and_create_node(op_type, "Operator"));
-        add_child(new_node, parse_additive_exp());
-        node = new_node;
-    }
-    return node;
-}
-
-ParseTreeNode *parse_additive_exp() {
-    ParseTreeNode *node = parse_multiplicative_exp();
-    while (current_token < num_tokens &&
-          (tokens[current_token].type == PLUS || tokens[current_token].type == MINUS)) {
-        TokenType op_type = tokens[current_token].type;
-        match(op_type);
-        ParseTreeNode *new_node = create_node("AddSub");
-        add_child(new_node, node);
-        add_child(new_node, match_and_create_node(op_type, "Operator"));
-        add_child(new_node, parse_multiplicative_exp());
-        node = new_node;
-    }
-    return node;
-}
-
-ParseTreeNode *parse_multiplicative_exp() {
-    ParseTreeNode *node = parse_power_exp();
-
-    while (current_token < num_tokens &&
-          (tokens[current_token].type == MULTIPLY || tokens[current_token].type == DIVIDE || tokens[current_token].type == MODULO)) {
-        TokenType op_type = tokens[current_token].type;
-        match(op_type);
-        ParseTreeNode *new_node = create_node("MulDivMod");
-        add_child(new_node, node);
-        add_child(new_node, match_and_create_node(op_type, "Operator"));
-        add_child(new_node, parse_power_exp());
-        node = new_node;
-    }
-    return node;
-}
-
-ParseTreeNode *parse_power_exp() {
-    ParseTreeNode *node = parse_unary_exp();
-
-    // Right-associative exponent
-    while (current_token < num_tokens && tokens[current_token].type == EXPONENT) {
-        TokenType op_type = tokens[current_token].type;
-        match(op_type);
-        ParseTreeNode *new_node = create_node("Power");
-        add_child(new_node, node);
-        add_child(new_node, match_and_create_node(op_type, "Operator"));
-        add_child(new_node, parse_power_exp()); 
-        node = new_node;
-    }
-    return node;
-}
-
-ParseTreeNode *parse_unary_exp() {
-    // <unary_exp> ::= <factor> | <unop> <unary_exp>
-    if (tokens[current_token].type == PLUS ||
-        tokens[current_token].type == MINUS ||
-        tokens[current_token].type == NOT_EQUAL) {
-        ParseTreeNode *node = create_node("UnaryOp");
-        TokenType op = tokens[current_token].type;
-        match(op);
-        add_child(node, match_and_create_node(op, "Unary_Operator"));
-        add_child(node, parse_unary_exp());
-        return node;
-    }
-    return parse_factor();
-}
 
 // Function to parse a return statement: "return" <const> ";"
 ParseTreeNode *parse_return_statement() {
@@ -1334,6 +1274,10 @@ ParseTreeNode *create_logical_and_exp_node() {
     return create_node("Logical_And");
 }
 
+ParseTreeNode *create_power_exp_node(){
+    return create_node("Exponent");
+}
+
 ParseTreeNode *create_factor_node()
 {
     return create_node("Factor");
@@ -1358,112 +1302,4 @@ ParseTreeNode *create_char_literal_node()
 ParseTreeNode *create_bool_literal_node()
 {
     return create_node("Bool");
-}
-
-void match(TokenType type) {
-    if (current_token < num_tokens && tokens[current_token].type == type) {
-        current_token++;
-    } else {
-        fprintf(stderr, "Error: Expected token type %s but found %s at line %d\n",
-               token_names[type], token_names[tokens[current_token].type],
-               tokens[current_token].line_number);
-        synchronize();
-    }
-}
-
-// Function to print the parse tree with proper indentation to a file
-void print_parse_tree(ParseTreeNode *node, int indent_level) {
-    if (node == NULL) {
-        return;
-    }
-
-    print_indent(indent_level);
-
-    // Check if the node is a terminal node (has a token)
-    if (node->token != NULL) {
-        // If it's a literal, print the token type and lexeme
-        if (node->token->type == INTEGER_LITERAL ||
-            node->token->type == FLOAT_LITERAL ||
-            node->token->type == CHARACTER_LITERAL ||
-            node->token->type == IDENTIFIER ||
-            node->token->type == STRING) {
-                // Only have a single set of quotations for String literals
-                if (node->token->type == STRING) {
-                    fprintf(output_file, "%s: %s", token_names[node->token->type], node->token->lexeme);
-                } else {
-                    fprintf(output_file, "%s: \"%s\"", token_names[node->token->type], node->token->lexeme);
-                }
-        }
-        // Otherwise, just print the token type
-        else {
-            fprintf(output_file, "%s", token_names[node->token->type]);
-        }
-    }
-    // If it's not a terminal node, print the node name and recurse
-    else {
-        fprintf(output_file, "%s(", node->name);
-
-        // Recursively print the children
-        if (node->num_children > 0) {
-            fprintf(output_file, "\n");
-            for (int i = 0; i < node->num_children; i++) {
-                print_parse_tree(node->children[i], indent_level + 1);
-                if (i < node->num_children - 1) {
-                    fprintf(output_file, ",\n");
-                }
-            }
-            fprintf(output_file, "\n");
-            print_indent(indent_level);
-        }
-        fprintf(output_file, ")");
-    }
-}
-
-
-// Helper function to print indentation to a file
-void print_indent(int indent_level) {
-    for (int i = 0; i < indent_level; i++) {
-        fprintf(output_file, "  ");
-    }
-}
-
-void free_parse_tree(ParseTreeNode *node) {
-    if (!node) return;
-    
-    for (int i = 0; i < node->num_children; i++) {
-        free_parse_tree(node->children[i]);
-    }
-    
-    free(node->token);
-    free(node->name);
-    free(node->children);
-    free(node);
-}
-
-void report_error(const char *message, TokenType expected) {
-    fprintf(stderr, "Error: %s, Expected: %s, Line: %d, Column: %d\n",
-            message,
-            token_names[expected],
-            tokens[current_token].line_number,
-            tokens[current_token].column_number);
-    panic_mode = true;
-}
-
-void synchronize() {
-    panic_mode = true;
-    while (current_token < num_tokens) {
-        // Synchronize on statement/declaration boundaries
-        if (tokens[current_token].type == SEMICOLON ||
-            tokens[current_token].type == RIGHT_BRACE ||
-            tokens[current_token].type == INT ||
-            tokens[current_token].type == FLOAT ||
-            tokens[current_token].type == CHAR ||
-            tokens[current_token].type == BOOL ||
-            tokens[current_token].type == FOR ||
-            tokens[current_token].type == WHILE ||
-            tokens[current_token].type == IF) {
-            return;
-        }
-        current_token++;
-    }
 }

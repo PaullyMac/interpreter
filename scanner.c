@@ -1,15 +1,11 @@
-/* Sebesta simple Lexical Analyzer example */
-
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <stdbool.h>
-
 #include "token.h"
+#include "scanner.h"
 
-/* Global declarations */
 
-/* Variables */
 char lexeme[MAX_LEXEME_LENGTH];
 int current_char;
 int lexeme_length;
@@ -20,28 +16,10 @@ int column_number = 0;
 int token_start_line;
 int token_start_column;
 int token_end_column;
-
 FILE *in_fp;
 FILE *symbol_fp;
 
-/* Function declarations */
-void add_char();
-char get_char();
-char get_non_blank();
-void lex();
-void add_token(TokenType token);
-void number();
-void identifier();
-void string();
-void add_eof();
-void character_literal();
-TokenType keywords(char *lexeme);
-int peek();
-void unget_char(int ch);
-void set_token_end_column();
 
-/******************************************************/
-/* main driver */
 int main(int argc, char* argv[argc + 1]) {
     if (argc != 2) {
         printf("Usage: ./%s <filename>\n", argv[0]);
