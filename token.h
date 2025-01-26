@@ -7,83 +7,83 @@
 
 // Moved from keywords_fsm.h
 typedef enum {
-    S,        // Start
-    B, BO, BOO, FINAL_BOOL, // States for 'bool'
-    C, CH, CHA, FINAL_CHAR, // States for 'char'
-    E, EL, ELS, FINAL_ELSE, // States for 'else'
-    F, FA, FAL, FALS, FINAL_FALSE, FL, FLO, FLOA, FINAL_FLOAT, FO, FINAL_FOR, // States for 'false', 'float', 'for'
-    I, IN, FINAL_IF, FINAL_INT, // States for 'if', 'int'
-    P, PR, PRI, PRIN, PRINT, FINAL_PRINTF, // States for 'printf'
-    R, RE, RET, RETU, RETUR, FINAL_RETURN, // States for 'return'
-    S1, SC, SCA, SCAN, FINAL_SCANF, // States for 'scanf'
-    T, TR, TRU, FINAL_TRUE, // States for 'true'
-    W, WH, WHI, WHIL, FINAL_WHILE, // States for 'while'
-    V, VO, VOI, FINAL_VOID // States for 'void'
+    s,        // Start
+    b, bo, boo, final_bool, // States for 'bool'
+    c, ch, cha, final_char, // States for 'char'
+    e, el, els, final_else, // States for 'else'
+    f, fa, fal, fals, final_false, fl, flo, floa, final_float, fo, final_for, // States for 'false', 'float', 'for'
+    i, in, final_if, final_int, // States for 'if', 'int'
+    p, pr, pri, prin, print, final_printf, // States for 'printf'
+    r, re, ret, retu, retur, final_return, // States for 'return'
+    s1, sc, sca, scan, final_scanf, // States for 'scanf'
+    t, tr, tru, final_true, // States for 'true'
+    w, wh, whi, whil, final_while, // States for 'while'
+    v, vo, voi, final_void // States for 'void'
 } KeywordState;
 
 typedef enum
 {
     // Tokens composed of characters exclusively part of single-character tokens
-    LEFT_PARENTHESIS,
-    RIGHT_PARENTHESIS,
-    LEFT_BRACKET,
-    RIGHT_BRACKET,
-    LEFT_BRACE,
-    RIGHT_BRACE,
-    COMMA,
-    SEMICOLON,
-    MULTIPLY,
-    EXPONENT,
-    AMPERSAND,
+    left_parenthesis,
+    right_parenthesis,
+    left_bracket,
+    right_bracket,
+    left_brace,
+    right_brace,
+    comma,
+    semicolon,
+    multiply,
+    exponent,
+    ampersand,
 
     // Possible multi-character tokens
-    PLUS,
-    MINUS,
-    DIVIDE,
-    EQUAL,
-    NOT_EQUAL,
-    ASSIGN,
-    LESS,
-    LESS_EQUAL,
-    GREATER,
-    GREATER_EQUAL,
-    NOT,
-    OR,
-    AND,
-    COMMENT,
+    plus,
+    minus,
+    divide,
+    equal,
+    not_equal,
+    assign,
+    less,
+    less_equal,
+    greater,
+    greater_equal,
+    not,
+    or,
+    and,
+    comment,
 
     // Tokens using the same characters
-    MODULO,
+    modulo,
 
     // Literals
-    IDENTIFIER,
-    STRING,
-    INTEGER_LITERAL,
-    FLOAT_LITERAL,
-    CHARACTER_LITERAL,
+    identifier,
+    string,
+    integer_literal,
+    float_literal,
+    character_literal,
     
     // Keywords
-    CHAR,
-    INT,
-    FLOAT,
-    BOOL,
-    IF,
-    ELSE,
-    FOR,
-    WHILE,
-    RETURN,
-    PRINTF,
-    SCANF,
-    TRUE,
-    FALSE,
-    VOID,
+    char_kw,
+    int_kw,
+    float_kw,
+    bool_kw,
+    if_kw,
+    else_kw,
+    for_kw,
+    while_kw,
+    return_kw,
+    printf_kw,
+    scanf_kw,
+    true_kw,
+    false_kw,
+    void_kw,
 
     // Error tokens, not part of the language just for the scanner
-    ERROR_INVALID_CHARACTER,
-    ERROR_INVALID_IDENTIFIER,
+    error_invalid_character,
+    error_invalid_identifier,
 
     // End of file token
-    TOKEN_EOF
+    token_eof
 } TokenType;
 
 typedef struct {
@@ -95,54 +95,54 @@ typedef struct {
 
 // Token names array
 char* token_names[] = {
-    "LEFT_PARENTHESIS",
-    "RIGHT_PARENTHESIS",
-    "LEFT_BRACKET",
-    "RIGHT_BRACKET",
-    "LEFT_BRACE",
-    "RIGHT_BRACE",
-    "COMMA",
-    "SEMICOLON",
-    "MULTIPLY",
-    "EXPONENT",
-    "AMPERSAND",
-    "PLUS",
-    "MINUS",
-    "DIVIDE",
-    "EQUAL",
-    "NOT_EQUAL",
-    "ASSIGN",
-    "LESS",
-    "LESS_EQUAL",
-    "GREATER",
-    "GREATER_EQUAL",
-    "NOT",
-    "OR",
-    "AND",
-    "COMMENT",
-    "MODULO",
-    "IDENTIFIER",
-    "STRING",
-    "INTEGER_LITERAL",
-    "FLOAT_LITERAL",
-    "CHARACTER_LITERAL",
-    "CHAR",
-    "INT",
-    "FLOAT",
-    "BOOL",
-    "IF",
-    "ELSE",
-    "FOR",
-    "WHILE",
-    "RETURN",
-    "PRINTF",
-    "SCANF",
-    "TRUE",
-    "FALSE",
-    "VOID",
-    "ERROR_INVALID_CHARACTER",
-    "ERROR_INVALID_IDENTIFIER",
-    "TOKEN_EOF"
+    "left_parenthesis",
+    "right_parenthesis",
+    "left_bracket",
+    "right_bracket",
+    "left_brace",
+    "right_brace",
+    "comma",
+    "semicolon",
+    "multiply",
+    "exponent",
+    "ampersand",
+    "plus",
+    "minus",
+    "divide",
+    "equal",
+    "not_equal",
+    "assign",
+    "less",
+    "less_equal",
+    "greater",
+    "greather_equal",
+    "not",
+    "or",
+    "and",
+    "comment",
+    "modulo",
+    "identifier",
+    "string",
+    "integer_literal",
+    "float_literal",
+    "character_literal",
+    "char",
+    "int",
+    "float",
+    "bool",
+    "if",
+    "else",
+    "for",
+    "while",
+    "return",
+    "printf",
+    "scanf",
+    "true",
+    "false",
+    "void",
+    "error_invalid_character",
+    "error_invalid_identifier",
+    "token_eof"
 };
 
 #endif //TOKEN_H
