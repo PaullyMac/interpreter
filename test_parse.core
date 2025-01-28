@@ -100,8 +100,13 @@ int main() {
         a = b = c = d = e = 10;
         a = b = (c = 2);
 
-    // Unary exp 
+    // Power exp 
+    1^2^3;
+    1 && 2^3^4^func();
+    a = 1 || 2 && 3 ^ 4;
+    a = 1 ^ 2 || 3 && 4;
 
+    // Unary exp 
     b = -1;
     c = ----3;
     b = -3 ^ -5;
