@@ -100,10 +100,11 @@ int main() {
         a = b = c = d = e = 10;
         a = b = (c = 2);
 
-    // Power exp statements 
-    b = a ^ c;
-    a = a ^ b ^ c; 
-    c = (a ^ b) ^ c;
+    // Unary exp 
+
+    b = -1;
+    c = ----3;
+    b = -3 ^ -5;
 
 }
 
