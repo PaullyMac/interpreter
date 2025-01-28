@@ -90,6 +90,7 @@ ParseTreeNode *create_exp_node();
 ParseTreeNode *create_logical_or_exp_node();
 ParseTreeNode *create_logical_and_exp_node();
 ParseTreeNode *create_equality_exp_node();
+ParseTreeNode *create_relational_exp_node(); // relational
 ParseTreeNode *create_power_exp_node();
 ParseTreeNode *create_factor_node();
 ParseTreeNode *create_const_node();
