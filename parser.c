@@ -1278,6 +1278,10 @@ ParseTreeNode *create_power_exp_node(){
     return create_node("Exponent");
 }
 
+ParseTreeNode *create_unary_exp_node(){
+    return create_node("Unary_Exp");
+}
+
 ParseTreeNode *create_factor_node()
 {
     return create_node("Factor");
