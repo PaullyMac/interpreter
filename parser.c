@@ -805,12 +805,12 @@ ParseTreeNode *parse_multiplicative_exp() {
     return node;
 }
 
-// <power_exp> ::= <factor> | <factor> ”^” <power_exp>
+// <power_exp> ::= <unary_exp> | <unary_exp> ”^” <power_exp>
 ParseTreeNode *parse_power_exp() {
     ParseTreeNode *node = create_power_exp_node();
 
     // Start with the left operand (<unary_exp>)
-    ParseTreeNode *left = parse_factor(); 
+    ParseTreeNode *left = parse_unary_exp(); 
 
     // Check if there's a "^" operator.
     if (current_token < num_tokens && tokens[current_token].type == exponent) {
@@ -826,20 +826,31 @@ ParseTreeNode *parse_power_exp() {
     return left;
 }
 
-//  TODO
+// <unary_exp> ::= <factor> | <unop> <unary_exp>
 ParseTreeNode *parse_unary_exp() {
-    // <unary_exp> ::= <factor> | <unop> <unary_exp>
-    if (tokens[current_token].type == plus ||
-        tokens[current_token].type == minus ||
-        tokens[current_token].type == not_equal) {
-        ParseTreeNode *node = create_node("UnaryOp");
-        TokenType op = tokens[current_token].type;
-        match(op);
-        add_child(node, match_and_create_node(op, "Unary_Operator"));
-        add_child(node, parse_unary_exp());
-        return node;
+    ParseTreeNode *node = create_node("Unary_Exp");
+
+    // Check if the current token is a unary operator
+    if (current_token < num_tokens && 
+        (tokens[current_token].type == plus || 
+         tokens[current_token].type == minus || 
+         tokens[current_token].type == not)) {
+        
+        // Create a node for the unary operator
+        ParseTreeNode *unary_op_node = match_and_create_node(tokens[current_token].type, "Unary_Op");
+        add_child(node, unary_op_node);
+
+        // Parse the operand (which is another unary expression)
+        ParseTreeNode *operand = parse_unary_exp();
+        add_child(node, operand);
+
+    } else {
+        // If there's no unary operator, just parse the factor
+        ParseTreeNode *factor = parse_factor();
+        add_child(node, factor);
     }
-    return parse_factor();
+
+    return node;
 }
 
 ParseTreeNode *parse_factor() {
@@ -1278,7 +1289,8 @@ ParseTreeNode *create_power_exp_node(){
     return create_node("Exponent");
 }
 
-ParseTreeNode *create_unary_exp_node(){
+ParseTreeNode *create_unary_exp_node()
+{
     return create_node("Unary_Exp");
 }
 
