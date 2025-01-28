@@ -778,7 +778,7 @@ ParseTreeNode *parse_equality_exp() {
 //RELATIONAL
 // TODO
 ParseTreeNode *parse_relational_exp() {
-    ParseTreeNode *left = parse_power_exp();
+    ParseTreeNode *left = parse_additive_exp();
 
     if (current_token < num_tokens &&
         (tokens[current_token].type == less || tokens[current_token].type == greater ||
@@ -796,7 +796,7 @@ ParseTreeNode *parse_relational_exp() {
 
 
 
-            ParseTreeNode *right = parse_power_exp();
+            ParseTreeNode *right = parse_additive_exp();
             add_child(node, right);
 
             if (current_token < num_tokens && (tokens[current_token].type == less || tokens[current_token].type == greater ||
@@ -833,19 +833,33 @@ ParseTreeNode *parse_relational_exp() {
 */
 // TODO
 ParseTreeNode *parse_additive_exp() {
-    ParseTreeNode *node = parse_multiplicative_exp();
-    while (current_token < num_tokens &&
+    ParseTreeNode *left = parse_power_exp();
+
+    if (current_token < num_tokens &&
         (tokens[current_token].type == plus || tokens[current_token].type == minus)) {
-        TokenType op_type = tokens[current_token].type;
-        match(op_type);
-        ParseTreeNode *new_node = create_node("AddSub");
-        add_child(new_node, node);
-        add_child(new_node, match_and_create_node(op_type, "Operator"));
-        add_child(new_node, parse_multiplicative_exp());
-        node = new_node;
+        ParseTreeNode *node = create_additive_exp_node();
+
+        add_child(node, left);
+
+        while (current_token < num_tokens &&
+            (tokens[current_token].type == plus || tokens[current_token].type == minus)) {
+
+            add_child(node, match_and_create_node(tokens[current_token].type, "Operator"));
+            ParseTreeNode *right = parse_power_exp();
+            add_child(node, right);
+
+            if (current_token < num_tokens && (tokens[current_token].type == plus || tokens[current_token].type == minus)) {
+                ParseTreeNode *new_node = create_additive_exp_node();
+                add_child(new_node, node);
+                node = new_node;
+            }
+        }
+        return node;
     }
-    return node;
+    return left;
 }
+
+
 
 // TODO
 ParseTreeNode *parse_multiplicative_exp() {
@@ -1350,6 +1364,14 @@ ParseTreeNode *create_equality_exp_node() {
 
 ParseTreeNode *create_relational_exp_node() {
     return create_node("Relational");
+}
+
+ParseTreeNode *create_additive_exp_node() {
+    return create_node("Additive");
+}
+
+ParseTreeNode *create_multiplicative_exp_node() {
+    return create_node("Multiplicative");
 }
 
 ParseTreeNode *create_power_exp_node(){
