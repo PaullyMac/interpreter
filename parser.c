@@ -812,28 +812,10 @@ ParseTreeNode *parse_relational_exp() {
 }
 
 
-/*
-// TODO
-ParseTreeNode *parse_relational_exp() {
-    ParseTreeNode *node = parse_factor();
 
-    while (current_token < num_tokens &&
-        (tokens[current_token].type == less || tokens[current_token].type == greater ||
-        tokens[current_token].type == less_equal || tokens[current_token].type == greater_equal)) {
-        TokenType op_type = tokens[current_token].type;
-        match(op_type);
-        ParseTreeNode *new_node = create_node("Relational");
-        add_child(new_node, node);
-        add_child(new_node, match_and_create_node(op_type, "Operator"));
-        add_child(new_node, parse_factor());
-        node = new_node;
-    }
-    return node;
-}
-*/
 // TODO
 ParseTreeNode *parse_additive_exp() {
-    ParseTreeNode *left = parse_power_exp();
+    ParseTreeNode *left = parse_multiplicative_exp();
 
     if (current_token < num_tokens &&
         (tokens[current_token].type == plus || tokens[current_token].type == minus)) {
@@ -845,7 +827,7 @@ ParseTreeNode *parse_additive_exp() {
             (tokens[current_token].type == plus || tokens[current_token].type == minus)) {
 
             add_child(node, match_and_create_node(tokens[current_token].type, "Operator"));
-            ParseTreeNode *right = parse_power_exp();
+            ParseTreeNode *right = parse_multiplicative_exp();
             add_child(node, right);
 
             if (current_token < num_tokens && (tokens[current_token].type == plus || tokens[current_token].type == minus)) {
@@ -859,23 +841,32 @@ ParseTreeNode *parse_additive_exp() {
     return left;
 }
 
-
-
 // TODO
 ParseTreeNode *parse_multiplicative_exp() {
-    ParseTreeNode *node = parse_power_exp();
+    ParseTreeNode *left = parse_power_exp();
 
-    while (current_token < num_tokens &&
+    if (current_token < num_tokens &&
         (tokens[current_token].type == multiply || tokens[current_token].type == divide || tokens[current_token].type == modulo)) {
-        TokenType op_type = tokens[current_token].type;
-        match(op_type);
-        ParseTreeNode *new_node = create_node("MulDivMod");
-        add_child(new_node, node);
-        add_child(new_node, match_and_create_node(op_type, "Operator"));
-        add_child(new_node, parse_power_exp());
-        node = new_node;
+        ParseTreeNode *node = create_multiplicative_exp_node();
+
+        add_child(node, left);
+
+        while (current_token < num_tokens &&
+            (tokens[current_token].type == multiply || tokens[current_token].type == divide || tokens[current_token].type == modulo)) {
+
+            add_child(node, match_and_create_node(tokens[current_token].type, "Operator"));
+            ParseTreeNode *right = parse_power_exp();
+            add_child(node, right);
+
+            if (current_token < num_tokens && (tokens[current_token].type == multiply || tokens[current_token].type == divide || tokens[current_token].type == modulo)) {
+                ParseTreeNode *new_node = create_multiplicative_exp_node();
+                add_child(new_node, node);
+                node = new_node;
+            }
+        }
+        return node;
     }
-    return node;
+    return left;
 }
 
 // <power_exp> ::= <unary_exp> | <unary_exp> ”^” <power_exp>
