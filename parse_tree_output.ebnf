@@ -12,150 +12,226 @@ Program(
       right_parenthesis,
       Block(
         left_brace,
-        Block_Item(
-          Statement(
-            Expression_Statement(
-              Exp(
-                Multiplicative(
-                  Unary_Exp(
-                    Factor(
-                      Const(
-                        Int(
-                          integer_literal: "2"
+        Block_Item_List(
+          Block_Item(
+            Statement(
+              Expression_Statement(
+                Exp(
+                  Exponent(
+                    Unary_Exp(
+                      Factor(
+                        Const(
+                          Int(
+                            integer_literal: "1"
+                          )
                         )
                       )
-                    )
-                  ),
-                  multiply,
-                  Unary_Exp(
-                    Factor(
-                      Const(
-                        Int(
-                          integer_literal: "3"
+                    ),
+                    exponent,
+                    Exponent(
+                      Unary_Exp(
+                        Factor(
+                          Const(
+                            Int(
+                              integer_literal: "2"
+                            )
+                          )
                         )
-                      )
-                    )
-                  )
-                )
-              ),
-              semicolon
-            )
-          )
-        ),
-        Block_Item(
-          Statement(
-            Expression_Statement(
-              Exp(
-                Multiplicative(
-                  Unary_Exp(
-                    Factor(
-                      Const(
-                        Int(
-                          integer_literal: "5"
+                      ),
+                      exponent,
+                      Unary_Exp(
+                        Factor(
+                          Const(
+                            Int(
+                              integer_literal: "3"
+                            )
+                          )
                         )
-                      )
-                    )
-                  ),
-                  modulo,
-                  Unary_Exp(
-                    Factor(
-                      Const(
-                        Int(
-                          integer_literal: "2"
-                        )
-                      )
-                    )
-                  )
-                )
-              ),
-              semicolon
-            )
-          )
-        ),
-        Block_Item(
-          Statement(
-            Multiplicative(
-              Unary_Exp(
-                Factor(
-                  Identifier(
-                    identifier: "x"
-                  )
-                )
-              ),
-              multiply,
-              Unary_Exp(
-                Factor(
-                  Identifier(
-                    identifier: "y"
-                  )
-                )
-              )
-            ),
-            semicolon
-          )
-        ),
-        Block_Item(
-          Statement(
-            Multiplicative(
-              Unary_Exp(
-                Factor(
-                  Identifier(
-                    identifier: "x"
-                  )
-                )
-              ),
-              divide,
-              Unary_Exp(
-                Factor(
-                  Identifier(
-                    identifier: "y"
-                  )
-                )
-              )
-            ),
-            semicolon
-          )
-        ),
-        Block_Item(
-          Statement(
-            Multiplicative(
-              Multiplicative(
-                Multiplicative(
-                  Unary_Exp(
-                    Factor(
-                      Identifier(
-                        identifier: "x"
-                      )
-                    )
-                  ),
-                  modulo,
-                  Unary_Exp(
-                    Factor(
-                      Identifier(
-                        identifier: "y"
                       )
                     )
                   )
                 ),
-                multiply,
-                Unary_Exp(
-                  Factor(
-                    Identifier(
-                      identifier: "z"
+                semicolon
+              )
+            )
+          ),
+          Block_Item(
+            Statement(
+              Expression_Statement(
+                Exp(
+                  Logical_And(
+                    Unary_Exp(
+                      Factor(
+                        Const(
+                          Int(
+                            integer_literal: "1"
+                          )
+                        )
+                      )
+                    ),
+                    and,
+                    Exponent(
+                      Unary_Exp(
+                        Factor(
+                          Const(
+                            Int(
+                              integer_literal: "2"
+                            )
+                          )
+                        )
+                      ),
+                      exponent,
+                      Exponent(
+                        Unary_Exp(
+                          Factor(
+                            Const(
+                              Int(
+                                integer_literal: "3"
+                              )
+                            )
+                          )
+                        ),
+                        exponent,
+                        Exponent(
+                          Unary_Exp(
+                            Factor(
+                              Const(
+                                Int(
+                                  integer_literal: "4"
+                                )
+                              )
+                            )
+                          ),
+                          exponent,
+                          Unary_Exp(
+                            Factor(
+                              Identifier(
+                                identifier: "func"
+                              ),
+                              left_parenthesis,
+                              right_parenthesis
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                ),
+                semicolon
+              )
+            )
+          ),
+          Block_Item(
+            Statement(
+              Exp(
+                Identifier(
+                  identifier: "a"
+                ),
+                assign,
+                Logical_Or(
+                  Unary_Exp(
+                    Factor(
+                      Const(
+                        Int(
+                          integer_literal: "1"
+                        )
+                      )
+                    )
+                  ),
+                  or,
+                  Logical_And(
+                    Unary_Exp(
+                      Factor(
+                        Const(
+                          Int(
+                            integer_literal: "2"
+                          )
+                        )
+                      )
+                    ),
+                    and,
+                    Exponent(
+                      Unary_Exp(
+                        Factor(
+                          Const(
+                            Int(
+                              integer_literal: "3"
+                            )
+                          )
+                        )
+                      ),
+                      exponent,
+                      Unary_Exp(
+                        Factor(
+                          Const(
+                            Int(
+                              integer_literal: "4"
+                            )
+                          )
+                        )
+                      )
                     )
                   )
                 )
               ),
-              divide,
-              Unary_Exp(
-                Factor(
-                  Identifier(
-                    identifier: "a"
+              semicolon
+            )
+          ),
+          Block_Item(
+            Statement(
+              Exp(
+                Identifier(
+                  identifier: "a"
+                ),
+                assign,
+                Logical_Or(
+                  Exponent(
+                    Unary_Exp(
+                      Factor(
+                        Const(
+                          Int(
+                            integer_literal: "1"
+                          )
+                        )
+                      )
+                    ),
+                    exponent,
+                    Unary_Exp(
+                      Factor(
+                        Const(
+                          Int(
+                            integer_literal: "2"
+                          )
+                        )
+                      )
+                    )
+                  ),
+                  or,
+                  Logical_And(
+                    Unary_Exp(
+                      Factor(
+                        Const(
+                          Int(
+                            integer_literal: "3"
+                          )
+                        )
+                      )
+                    ),
+                    and,
+                    Unary_Exp(
+                      Factor(
+                        Const(
+                          Int(
+                            integer_literal: "4"
+                          )
+                        )
+                      )
+                    )
                   )
                 )
-              )
-            ),
-            semicolon
+              ),
+              semicolon
+            )
           )
         ),
         right_brace

@@ -499,29 +499,21 @@ ParseTreeNode *parse_identifier() {
     return node;
 }
 
-// <block> ::= "{" <block-item-list>  "}"
+// <block> ::= "{" <block_item_list>  "}"
 ParseTreeNode *parse_block() {
     ParseTreeNode *node = create_block_node();
     add_child(node, match_and_create_node(left_brace, "Left_Brace"));
 
-    while (current_token < num_tokens && tokens[current_token].type != right_brace) {
-        ParseTreeNode *block_item = parse_block_item();
-        if (block_item != NULL) {
-            add_child(node, block_item);
-        } else {
-            synchronize();
-            if (current_token >= num_tokens || 
-                tokens[current_token].type == right_brace) {
-                break;
-            }
-        }
-    }
+    // Call the parse_block_item_list
+    ParseTreeNode *block_item_list = parse_block_item_list();
+    add_child(node, block_item_list);
 
+    // Check for closing brace
     if (current_token < num_tokens && tokens[current_token].type == right_brace) {
         add_child(node, match_and_create_node(right_brace, "Right_Brace"));
     } else {
-        fprintf(stderr, "Error: Missing closing brace at line %d\n", 
-                tokens[current_token-1].line_number);
+        fprintf(stderr, "Error: Missing closing brace at line %d\n",
+                tokens[current_token > 0 ? current_token - 1 : 0].line_number);
         synchronize();
     }
 
@@ -531,15 +523,15 @@ ParseTreeNode *parse_block() {
 // <block_item_list> ::= (<block_item_list> <block_item>) | <block_item>
 ParseTreeNode *parse_block_item_list() {
     ParseTreeNode *node = create_block_item_list_node();
-    while (current_token < num_tokens) {
-        if (tokens[current_token].type == right_brace) {
-            break; // Exit the loop if we encounter a RIGHT_BRACE
-        }
+    while (current_token < num_tokens && tokens[current_token].type != right_brace) {
         ParseTreeNode *block_item = parse_block_item();
         if (block_item != NULL) {
             add_child(node, block_item);
         } else {
-            return node;
+            synchronize();
+            if (current_token >= num_tokens || tokens[current_token].type == right_brace) {
+                break;
+            }
         }
     }
     return node;
