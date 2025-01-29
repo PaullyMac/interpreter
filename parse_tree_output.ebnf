@@ -2,39 +2,43 @@ Program(
   Declaration(
     Function_Declaration(
       Data_Type(
-        INT
+        int
       ),
       Identifier(
-        IDENTIFIER: "main"
+        identifier: "main"
       ),
-      LEFT_PARENTHESIS,
+      left_parenthesis,
       Parameter_List(),
-      RIGHT_PARENTHESIS,
+      right_parenthesis,
       Block(
-        LEFT_BRACE,
+        left_brace,
         Block_Item(
           Statement(
             Expression_Statement(
               Exp(
-                Logical_Or(
-                  Factor(
-                    Const(
-                      Int(
-                        INTEGER_LITERAL: "1"
+                Multiplicative(
+                  Unary_Exp(
+                    Factor(
+                      Const(
+                        Int(
+                          integer_literal: "2"
+                        )
                       )
                     )
                   ),
-                  OR,
-                  Factor(
-                    Const(
-                      Int(
-                        INTEGER_LITERAL: "2"
+                  multiply,
+                  Unary_Exp(
+                    Factor(
+                      Const(
+                        Int(
+                          integer_literal: "3"
+                        )
                       )
                     )
                   )
                 )
               ),
-              SEMICOLON
+              semicolon
             )
           )
         ),
@@ -42,163 +46,119 @@ Program(
           Statement(
             Expression_Statement(
               Exp(
-                Logical_Or(
-                  Logical_Or(
+                Multiplicative(
+                  Unary_Exp(
                     Factor(
                       Const(
                         Int(
-                          INTEGER_LITERAL: "1"
-                        )
-                      )
-                    ),
-                    OR,
-                    Factor(
-                      Const(
-                        Int(
-                          INTEGER_LITERAL: "2"
+                          integer_literal: "5"
                         )
                       )
                     )
                   ),
-                  OR,
-                  Factor(
-                    Const(
-                      Int(
-                        INTEGER_LITERAL: "3"
+                  modulo,
+                  Unary_Exp(
+                    Factor(
+                      Const(
+                        Int(
+                          integer_literal: "2"
+                        )
                       )
                     )
                   )
                 )
               ),
-              SEMICOLON
+              semicolon
             )
           )
         ),
         Block_Item(
           Statement(
-            Assignment(
-              Identifier(
-                IDENTIFIER: "a"
-              ),
-              ASSIGN,
-              Logical_Or(
-                Logical_Or(
-                  Factor(
-                    Const(
-                      Int(
-                        INTEGER_LITERAL: "1"
-                      )
-                    )
-                  ),
-                  OR,
-                  Factor(
-                    Const(
-                      Int(
-                        INTEGER_LITERAL: "2"
-                      )
-                    )
-                  )
-                ),
-                OR,
+            Multiplicative(
+              Unary_Exp(
                 Factor(
-                  Const(
-                    Int(
-                      INTEGER_LITERAL: "3"
-                    )
+                  Identifier(
+                    identifier: "x"
+                  )
+                )
+              ),
+              multiply,
+              Unary_Exp(
+                Factor(
+                  Identifier(
+                    identifier: "y"
                   )
                 )
               )
             ),
-            SEMICOLON
+            semicolon
           )
         ),
         Block_Item(
           Statement(
-            Assignment(
-              Identifier(
-                IDENTIFIER: "a"
-              ),
-              ASSIGN,
-              Logical_Or(
+            Multiplicative(
+              Unary_Exp(
                 Factor(
-                  Const(
-                    Int(
-                      INTEGER_LITERAL: "1"
-                    )
+                  Identifier(
+                    identifier: "x"
                   )
-                ),
-                OR,
+                )
+              ),
+              divide,
+              Unary_Exp(
                 Factor(
-                  LEFT_PARENTHESIS,
-                  Logical_Or(
-                    Factor(
-                      Const(
-                        Int(
-                          INTEGER_LITERAL: "2"
-                        )
-                      )
-                    ),
-                    OR,
-                    Factor(
-                      Const(
-                        Int(
-                          INTEGER_LITERAL: "3"
-                        )
-                      )
-                    )
-                  ),
-                  RIGHT_PARENTHESIS
+                  Identifier(
+                    identifier: "y"
+                  )
                 )
               )
             ),
-            SEMICOLON
+            semicolon
           )
         ),
         Block_Item(
           Statement(
-            Assignment(
-              Identifier(
-                IDENTIFIER: "a"
-              ),
-              ASSIGN,
-              Assignment(
-                Identifier(
-                  IDENTIFIER: "b"
-                ),
-                ASSIGN,
-                Logical_Or(
-                  Logical_Or(
+            Multiplicative(
+              Multiplicative(
+                Multiplicative(
+                  Unary_Exp(
                     Factor(
-                      Const(
-                        Int(
-                          INTEGER_LITERAL: "1"
-                        )
-                      )
-                    ),
-                    OR,
-                    Factor(
-                      Const(
-                        Int(
-                          INTEGER_LITERAL: "2"
-                        )
+                      Identifier(
+                        identifier: "x"
                       )
                     )
                   ),
-                  OR,
-                  Factor(
-                    Const(
-                      Int(
-                        INTEGER_LITERAL: "3"
+                  modulo,
+                  Unary_Exp(
+                    Factor(
+                      Identifier(
+                        identifier: "y"
                       )
                     )
+                  )
+                ),
+                multiply,
+                Unary_Exp(
+                  Factor(
+                    Identifier(
+                      identifier: "z"
+                    )
+                  )
+                )
+              ),
+              divide,
+              Unary_Exp(
+                Factor(
+                  Identifier(
+                    identifier: "a"
                   )
                 )
               )
             ),
-            SEMICOLON
+            semicolon
           )
         ),
-        RIGHT_BRACE
+        right_brace
       )
     )
   )

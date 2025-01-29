@@ -39,7 +39,9 @@
 
 <exp> ::= <logical_or_exp> | (<identifier> | <identifier> "[" <const> "]" ) "=" <exp>  
 <logical_or_exp> ::= <logical_and_exp> | <logical_or_exp>  "||" <logical_and_exp> 
-<logical_and_exp> ::= <power_exp> | <logical_and_exp>  "&&" <power_exp>
+<logical_and_exp> ::= <equality_exp_exp> | <logical_and_exp>  "&&" <equality_exp>
+<equality_exp> ::= <factor> | <equality_exp>  ("==" | "!=") <factor>
+<relational_exp> ::= <factor> | <relational_exp> ("<" | ">" | "<=" | ">=") <factor>
 <power_exp> ::= <unary_exp> | <unary_exp> "^" <power_exp> 
 <unary_exp> ::= <factor> | <unop><unary_exp>
 <factor> ::= <const>
