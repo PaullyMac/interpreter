@@ -1,9 +1,9 @@
-bool array[5] = {1, 2};
+bool array[5] = {1, 2, int};
 int array[10];
 
 // Test variables
 int a, b, c, char a;
-int d = (int);
+int d = (int)5;
 int c = bar(1000, 2, 3);
 int b = a; 
 
