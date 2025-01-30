@@ -29,10 +29,11 @@
               | <block>
               | <for_statement>
               | "while" "(" <factor> ")" <block>
-              | "for" "(" (<variable_declaration> | <array_declaration> | <factor> ";") <factor> ";" <factor> ")" <block>
               | <if_statement>
               | <input_statement>
               | <outout_statement>
+
+<for_statement> ::= "for" "(" (<variable_declaration> | <array_declaration> | <exp> ";") <exp> ";" <exp> ")" <block>  
 
 <input_statement> ::= "scanf" "(" <string> { "," "&" <identifier> } ")" ";"
 
