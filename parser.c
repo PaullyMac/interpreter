@@ -236,20 +236,29 @@ void report_error(const char *message, TokenType expected) {
 }
 
 void synchronize() {
+    //printf("Entering synchronization mode\n");
     panic_mode = true;
+    current_token++; // Consume the erroneous token
+
     while (current_token < num_tokens) {
-        // Synchronize on statement/declaration boundaries
-        if (tokens[current_token].type == semicolon ||
-            tokens[current_token].type == right_brace ||
-            tokens[current_token].type == int_kw ||
-            tokens[current_token].type == float_kw ||
-            tokens[current_token].type == char_kw ||
-            tokens[current_token].type == bool_kw ||
-            tokens[current_token].type == for_kw ||
-            tokens[current_token].type == while_kw ||
-            tokens[current_token].type == if_kw) {
+        // Synchronization tokens for declarations
+        if (tokens[current_token].type == int_kw || tokens[current_token].type == float_kw ||
+            tokens[current_token].type == char_kw || tokens[current_token].type == bool_kw ||
+            tokens[current_token].type == token_eof) {
+            // printf("Synchronized on declaration token: %s\n", token_names[tokens[current_token].type]);
             return;
         }
+
+        // Synchronization tokens for statements
+        if (tokens[current_token].type == return_kw || tokens[current_token].type == semicolon ||
+            tokens[current_token].type == while_kw || tokens[current_token].type == for_kw ||
+            tokens[current_token].type == left_brace || tokens[current_token].type == integer_literal ||
+            tokens[current_token].type == float_literal || tokens[current_token].type == character_literal ||
+            tokens[current_token].type == true_kw || tokens[current_token].type == false_kw) {
+            //printf("Synchronized on statement token: %s\n", token_names[tokens[current_token].type]);
+            return;
+        }
+
         current_token++;
     }
 }
