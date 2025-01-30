@@ -59,7 +59,15 @@
 
 <relational_exp> ::= <additive_exp> | <relational_exp> ("<" | ">" | "<=" | ">=") <additive_exp> 
 
-<power_exp> ::= <factor> | <factor> "^" <power_exp> 
+<additive_exp> ::= <multiplicative_exp> | <additive_exp> ("+" | "-") <multiplicative_exp> 
+
+<multiplicative_exp> ::= <power_exp> | <multiplicative_exp> ("*" | "/" | "%") <power_exp>
+
+<power_exp> ::= <unary_exp> | <unary_exp> "^" <power_exp> 
+
+<unary_exp> ::= <factor> | <unop> <unary_exp>
+
+<unop> ::= "!" | "+" | "-"
 
 <factor> ::= <const>
             | <identifier>
