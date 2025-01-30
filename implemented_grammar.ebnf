@@ -23,7 +23,7 @@
 
 <block_item> ::= <statement> | <variable_declaration> | <array_declaration>
 
-<statement> ::= "return" <factor> ";"
+<statement> ::= "return" <exp> ";"
               | <exp> ";"
               | ";"
               | <block>
