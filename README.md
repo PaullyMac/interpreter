@@ -66,7 +66,7 @@ Will serve to show our progress on parser.c, and will eventually match our gramm
 <const> ::= <int> | <float> | <char> | <bool>
 <string> ::= STRING
 <identifier> ::= identifier
-<int> ::= INTEGER_LITERAL
+<int> ::= integer_literal
 <float> ::= FLOAT_LITERAL
 <char> ::= CHARACTER_LITERAL
 <bool> ::= "true" | "false"
@@ -130,10 +130,10 @@ Program(
       Identifier(
         identifier: "array"
       ),
-      LEFT_BRACKET,
+      l,
       Const(
         Int(
-          INTEGER_LITERAL: "5"
+          integer_literal: "5"
         )
       ),
       RIGHT_BRACKET,
@@ -143,7 +143,7 @@ Program(
         Factor(
           Const(
             Int(
-              INTEGER_LITERAL: "1"
+              integer_literal: "1"
             )
           )
         ),
@@ -151,7 +151,7 @@ Program(
         Factor(
           Const(
             Int(
-              INTEGER_LITERAL: "2"
+              integer_literal: "2"
             )
           )
         )
@@ -171,7 +171,7 @@ Program(
       LEFT_BRACKET,
       Const(
         Int(
-          INTEGER_LITERAL: "10"
+          integer_literal: "10"
         )
       ),
       RIGHT_BRACKET,
@@ -209,7 +209,7 @@ Program(
       Factor(
         Const(
           Int(
-            INTEGER_LITERAL: "5"
+            integer_literal: "5"
           )
         )
       ),
@@ -234,7 +234,7 @@ Program(
           Factor(
             Const(
               Int(
-                INTEGER_LITERAL: "1000"
+                integer_literal: "1000"
               )
             )
           ),
@@ -242,7 +242,7 @@ Program(
           Factor(
             Const(
               Int(
-                INTEGER_LITERAL: "2"
+                integer_literal: "2"
               )
             )
           ),
@@ -250,7 +250,7 @@ Program(
           Factor(
             Const(
               Int(
-                INTEGER_LITERAL: "3"
+                integer_literal: "3"
               )
             )
           )
@@ -288,7 +288,7 @@ Program(
       LEFT_BRACKET,
       Const(
         Int(
-          INTEGER_LITERAL: "3"
+          integer_literal: "3"
         )
       ),
       RIGHT_BRACKET,
@@ -306,7 +306,7 @@ Program(
               Factor(
                 Const(
                   Int(
-                    INTEGER_LITERAL: "5"
+                    integer_literal: "5"
                   )
                 )
               )
@@ -323,7 +323,7 @@ Program(
           LEFT_BRACKET,
           Const(
             Int(
-              INTEGER_LITERAL: "20"
+              integer_literal: "20"
             )
           ),
           RIGHT_BRACKET
@@ -443,6 +443,16 @@ We can have `<function_declaration>` within `<block>`, and since the body of a f
 ```
 int arr[]; // is this allowed?
 ```
+## Future Work and Development Roadmap
+
+The next stages of this project involve the following development milestones:
+
+- **Full Grammar Implementation:** Complete implementation of all grammar rules according to our desired C subset.
+- **Improved Error Handling:** Enhance the parser's error detection and recovery capabilities.
+- **Semantic Analysis:** Implement a semantic analyzer to check for type compatibility, scope issues, and other semantic errors.
+- **Intermediate Representation (IR):** Generate an intermediate code representation, such as three-address code, as a step before code generation.
+- **Code Generation:** Develop a code generator to translate the intermediate representation into machine code or assembly.
+- **Optimization:** Explore opportunities for optimization, such as constant folding or register allocation.
 
 ## References
 
