@@ -53,7 +53,9 @@
 
 <logical_or_exp> ::= <logical_and_exp> | <logical_or_exp>  "||" <logical_and_exp> 
 
-<logical_and_exp> ::= <power_exp> | <logical_and_exp>  "&&" <power_exp>
+<logical_and_exp> ::= <power_exp> | <logical_and_exp>  "&&" <equality_exp>
+
+<equality_exp> ::= <relational_exp> | <equality_exp>  ("==" | "!=") <relational_exp> 
 
 <power_exp> ::= <factor> | <factor> "^" <power_exp> 
 
