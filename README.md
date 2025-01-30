@@ -65,7 +65,7 @@ Will serve to show our progress on parser.c, and will eventually match our gramm
             | <identifier> "[" <const> "]" 
 <const> ::= <int> | <float> | <char> | <bool>
 <string> ::= STRING
-<identifier> ::= IDENTIFIER
+<identifier> ::= identifier
 <int> ::= INTEGER_LITERAL
 <float> ::= FLOAT_LITERAL
 <char> ::= CHARACTER_LITERAL
@@ -125,10 +125,10 @@ Program(
   Declaration(
     Array_Declaration(
       Data_Type(
-        BOOL
+        bool
       ),
       Identifier(
-        IDENTIFIER: "array"
+        identifier: "array"
       ),
       LEFT_BRACKET,
       Const(
@@ -166,7 +166,7 @@ Program(
         INT
       ),
       Identifier(
-        IDENTIFIER: "array"
+        identifier: "array"
       ),
       LEFT_BRACKET,
       Const(
@@ -184,15 +184,15 @@ Program(
         INT
       ),
       Identifier(
-        IDENTIFIER: "a"
+        identifier: "a"
       ),
       COMMA,
       Identifier(
-        IDENTIFIER: "b"
+        identifier: "b"
       ),
       COMMA,
       Identifier(
-        IDENTIFIER: "c"
+        identifier: "c"
       ),
       SEMICOLON
     )
@@ -203,7 +203,7 @@ Program(
         INT
       ),
       Identifier(
-        IDENTIFIER: "d"
+        identifier: "d"
       ),
       ASSIGN,
       Factor(
@@ -222,12 +222,12 @@ Program(
         INT
       ),
       Identifier(
-        IDENTIFIER: "c"
+        identifier: "c"
       ),
       ASSIGN,
       Factor(
         Identifier(
-          IDENTIFIER: "bar"
+          identifier: "bar"
         ),
         LEFT_PARENTHESIS,
         Argument_List(
@@ -266,12 +266,12 @@ Program(
         INT
       ),
       Identifier(
-        IDENTIFIER: "b"
+        identifier: "b"
       ),
       ASSIGN,
       Factor(
         Identifier(
-          IDENTIFIER: "a"
+          identifier: "a"
         )
       ),
       SEMICOLON
@@ -283,7 +283,7 @@ Program(
         INT
       ),
       Identifier(
-        IDENTIFIER: "arr"
+        identifier: "arr"
       ),
       LEFT_BRACKET,
       Const(
@@ -299,7 +299,7 @@ Program(
           LEFT_PARENTHESIS,
           Factor(
             Identifier(
-              IDENTIFIER: "foo"
+              identifier: "foo"
             ),
             LEFT_PARENTHESIS,
             Argument_List(
@@ -318,7 +318,7 @@ Program(
         COMMA,
         Factor(
           Identifier(
-            IDENTIFIER: "a"
+            identifier: "a"
           ),
           LEFT_BRACKET,
           Const(
@@ -331,7 +331,7 @@ Program(
         COMMA,
         Factor(
           Identifier(
-            IDENTIFIER: "multiply"
+            identifier: "multiply"
           ),
 ...
 ```
@@ -407,7 +407,7 @@ Program(
   Declaration(
     Function_Declaration(
       Data_type(INT),
-      IDENTIFIER("main"),
+      identifier("main"),
       LEFT_PARENTHESIS,
       Parameter_List(),
       Block(
@@ -415,13 +415,13 @@ Program(
         Block_Item_List(
           Block_Item(
             Statement(
-              SEMICOLON
+              semicolon
             )
           )
         )
-        RIGHT_BRACE
+        right_brace
       )
-      RIGHT_PARENTHESIS,
+      right_parenthesis,
     )
   )
 )
@@ -444,20 +444,8 @@ We can have `<function_declaration>` within `<block>`, and since the body of a f
 int arr[]; // is this allowed?
 ```
 
-## Future Work and Development Roadmap
-
-The next stages of this project involve the following development milestones:
-
-- **Full Grammar Implementation:** Complete implementation of all grammar rules according to our desired C subset.
-- **Improved Error Handling:** Enhance the parser's error detection and recovery capabilities.
-- **Semantic Analysis:** Implement a semantic analyzer to check for type compatibility, scope issues, and other semantic errors.
-- **Intermediate Representation (IR):** Generate an intermediate code representation, such as three-address code, as a step before code generation.
-- **Code Generation:** Develop a code generator to translate the intermediate representation into machine code or assembly.
-- **Optimization:** Explore opportunities for optimization, such as constant folding or register allocation.
-
 ## References
 
 - [Crafting Interpreters](https://craftinginterpreters.com/) creates two implementations of their language `lox`:
 a Java interpreter `jlox` and a C interpreter/compiler to bytecode `clox`
 - [Sebesta - Concepts of Programming Languages](https://www.pearson.com/en-us/subject-catalog/p/concepts-of-programming-languages/P200000003361) assigned book
-
