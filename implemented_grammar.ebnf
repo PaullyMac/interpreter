@@ -57,6 +57,8 @@
 
 <equality_exp> ::= <relational_exp> | <equality_exp>  ("==" | "!=") <relational_exp> 
 
+<relational_exp> ::= <additive_exp> | <relational_exp> ("<" | ">" | "<=" | ">=") <additive_exp> 
+
 <power_exp> ::= <factor> | <factor> "^" <power_exp> 
 
 <factor> ::= <const>
