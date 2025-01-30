@@ -20,7 +20,7 @@ int main() {
     scanf(" ");
 
     // Test output
-    printf"Hello, Universe!"); 
+    printf("Hello, Universe!"); 
     printf(name)
     printf("Hello, your grade is %d %d", grade);
     printf("Hello, your grade is %d %d", grade, year);
@@ -96,10 +96,11 @@ int main() {
     int arr[3] = {(foo(5)), a[20], multiply(a)};
 
     // Assignment statements
-        a = 1;
-        a = b = c = d = e = 10;
-        a = b = (c = 2);
+    a = 1;
+    a = b = c = d = e = 10;
+    a = b = (c = 2);
 
+    // TODO: Add different combinations of expressions
 }
 
 
