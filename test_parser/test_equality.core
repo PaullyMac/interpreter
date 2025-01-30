@@ -1,0 +1,11 @@
+   int main() {
+    //Equality_exp
+    a == b;
+    a != b;
+    a == b == c;
+    a == b != c;
+    x != y == z; 
+    a == b == c != d != e;
+}
+   
+   

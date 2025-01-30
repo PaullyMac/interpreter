@@ -236,20 +236,29 @@ void report_error(const char *message, TokenType expected) {
 }
 
 void synchronize() {
+    //printf("Entering synchronization mode\n");
     panic_mode = true;
+    current_token++; // Consume the erroneous token
+
     while (current_token < num_tokens) {
-        // Synchronize on statement/declaration boundaries
-        if (tokens[current_token].type == semicolon ||
-            tokens[current_token].type == right_brace ||
-            tokens[current_token].type == int_kw ||
-            tokens[current_token].type == float_kw ||
-            tokens[current_token].type == char_kw ||
-            tokens[current_token].type == bool_kw ||
-            tokens[current_token].type == for_kw ||
-            tokens[current_token].type == while_kw ||
-            tokens[current_token].type == if_kw) {
+        // Synchronization tokens for declarations
+        if (tokens[current_token].type == int_kw || tokens[current_token].type == float_kw ||
+            tokens[current_token].type == char_kw || tokens[current_token].type == bool_kw ||
+            tokens[current_token].type == token_eof) {
+            // printf("Synchronized on declaration token: %s\n", token_names[tokens[current_token].type]);
             return;
         }
+
+        // Synchronization tokens for statements
+        if (tokens[current_token].type == return_kw || tokens[current_token].type == semicolon ||
+            tokens[current_token].type == while_kw || tokens[current_token].type == for_kw ||
+            tokens[current_token].type == left_brace || tokens[current_token].type == integer_literal ||
+            tokens[current_token].type == float_literal || tokens[current_token].type == character_literal ||
+            tokens[current_token].type == true_kw || tokens[current_token].type == false_kw) {
+            //printf("Synchronized on statement token: %s\n", token_names[tokens[current_token].type]);
+            return;
+        }
+
         current_token++;
     }
 }
@@ -499,29 +508,21 @@ ParseTreeNode *parse_identifier() {
     return node;
 }
 
-// <block> ::= "{" <block-item-list>  "}"
+// <block> ::= "{" <block_item_list>  "}"
 ParseTreeNode *parse_block() {
     ParseTreeNode *node = create_block_node();
     add_child(node, match_and_create_node(left_brace, "Left_Brace"));
 
-    while (current_token < num_tokens && tokens[current_token].type != right_brace) {
-        ParseTreeNode *block_item = parse_block_item();
-        if (block_item != NULL) {
-            add_child(node, block_item);
-        } else {
-            synchronize();
-            if (current_token >= num_tokens || 
-                tokens[current_token].type == right_brace) {
-                break;
-            }
-        }
-    }
+    // Call the parse_block_item_list
+    ParseTreeNode *block_item_list = parse_block_item_list();
+    add_child(node, block_item_list);
 
+    // Check for closing brace
     if (current_token < num_tokens && tokens[current_token].type == right_brace) {
         add_child(node, match_and_create_node(right_brace, "Right_Brace"));
     } else {
-        fprintf(stderr, "Error: Missing closing brace at line %d\n", 
-                tokens[current_token-1].line_number);
+        fprintf(stderr, "Error: Missing closing brace at line %d\n",
+                tokens[current_token > 0 ? current_token - 1 : 0].line_number);
         synchronize();
     }
 
@@ -531,15 +532,15 @@ ParseTreeNode *parse_block() {
 // <block_item_list> ::= (<block_item_list> <block_item>) | <block_item>
 ParseTreeNode *parse_block_item_list() {
     ParseTreeNode *node = create_block_item_list_node();
-    while (current_token < num_tokens) {
-        if (tokens[current_token].type == right_brace) {
-            break; // Exit the loop if we encounter a RIGHT_BRACE
-        }
+    while (current_token < num_tokens && tokens[current_token].type != right_brace) {
         ParseTreeNode *block_item = parse_block_item();
         if (block_item != NULL) {
             add_child(node, block_item);
         } else {
-            return node;
+            synchronize();
+            if (current_token >= num_tokens || tokens[current_token].type == right_brace) {
+                break;
+            }
         }
     }
     return node;
@@ -714,7 +715,7 @@ ParseTreeNode *parse_logical_or_exp() {
 
 // <logical_and_exp> ::= <power_exp> | <logical_and_exp> "&&" <factor>
 ParseTreeNode *parse_logical_and_exp() {
-    ParseTreeNode *left = parse_power_exp();
+    ParseTreeNode *left = parse_equality_exp();
 
     if (current_token < num_tokens && tokens[current_token].type == and) {
         ParseTreeNode *node = create_logical_and_exp_node();
@@ -722,7 +723,7 @@ ParseTreeNode *parse_logical_and_exp() {
 
         while (current_token < num_tokens && tokens[current_token].type == and) {
             add_child(node, match_and_create_node(and, "Operator"));
-            ParseTreeNode *right = parse_power_exp();
+            ParseTreeNode *right = parse_equality_exp();
             add_child(node, right);
 
             if (current_token < num_tokens && tokens[current_token].type == and) {
@@ -739,78 +740,142 @@ ParseTreeNode *parse_logical_and_exp() {
 
 // TODO
 ParseTreeNode *parse_equality_exp() {
-    ParseTreeNode *node = parse_relational_exp();
+    ParseTreeNode *left = parse_relational_exp();
 
-    while (current_token < num_tokens &&
-        (tokens[current_token].type == equal || tokens[current_token].type == not_equal)) {
-        TokenType op_type = tokens[current_token].type;
-        match(op_type);
-        ParseTreeNode *new_node = create_node("Equality");
-        add_child(new_node, node);
-        add_child(new_node, match_and_create_node(op_type, "Operator"));
-        add_child(new_node, parse_relational_exp());
-        node = new_node;
+    // Only go through the parsing of OR's if it's not a lone factor 
+    if (current_token < num_tokens && (tokens[current_token].type == equal || current_token < num_tokens && tokens[current_token].type == not_equal)) { // check operator if equal or not
+        ParseTreeNode *node = create_equality_exp_node();
+
+        // Add the factor (left operand) to the logical or node 
+        add_child(node, left); 
+
+        
+        while (current_token < num_tokens && (tokens[current_token].type == equal || 
+            current_token < num_tokens && tokens[current_token].type == not_equal)) { 
+            add_child(node, match_and_create_node(tokens[current_token].type, "Operator")); // if statement pag kukunin type // check if token type is equal or not equal  if tokentype is equal == equal
+
+
+            // Add the factor (right operand) to the logical or node
+            ParseTreeNode *right = parse_relational_exp(); //next
+            add_child(node, right);
+
+            // Assure left-associativity, create a new node above the previous if there are more ORs
+            if (current_token < num_tokens && (tokens[current_token].type == equal || current_token < num_tokens && tokens[current_token].type == not_equal)) {
+              ParseTreeNode *new_node = create_equality_exp_node();
+
+              // The previous OR node we built is added as a child to a new OR node
+            add_child(new_node, node);
+            node = new_node;
+            }
+        }
+        return node;
     }
-    return node;
+
+    // Return the factor directly if there's no OR
+    return left; 
 }
 
+
+//RELATIONAL
 // TODO
 ParseTreeNode *parse_relational_exp() {
-    ParseTreeNode *node = parse_additive_exp();
+    ParseTreeNode *left = parse_additive_exp();
 
-    while (current_token < num_tokens &&
+    if (current_token < num_tokens &&
         (tokens[current_token].type == less || tokens[current_token].type == greater ||
         tokens[current_token].type == less_equal || tokens[current_token].type == greater_equal)) {
-        TokenType op_type = tokens[current_token].type;
-        match(op_type);
-        ParseTreeNode *new_node = create_node("Relational");
-        add_child(new_node, node);
-        add_child(new_node, match_and_create_node(op_type, "Operator"));
-        add_child(new_node, parse_additive_exp());
-        node = new_node;
+        
+        ParseTreeNode *node = create_relational_exp_node();
+
+        add_child(node, left);
+
+        while (current_token < num_tokens &&
+            (tokens[current_token].type == less || tokens[current_token].type == greater ||
+            tokens[current_token].type == less_equal || tokens[current_token].type == greater_equal)) {
+            
+            add_child(node, match_and_create_node(tokens[current_token].type, "Operator"));
+
+
+
+            ParseTreeNode *right = parse_additive_exp();
+            add_child(node, right);
+
+            if (current_token < num_tokens && (tokens[current_token].type == less || tokens[current_token].type == greater ||
+                tokens[current_token].type == less_equal || tokens[current_token].type == greater_equal)) {
+                ParseTreeNode *new_node = create_relational_exp_node();
+                add_child(new_node, node);
+                node = new_node;
+            }
+        }
+        return node;
     }
-    return node;
+    return left;
 }
+
+
 
 // TODO
 ParseTreeNode *parse_additive_exp() {
-    ParseTreeNode *node = parse_multiplicative_exp();
-    while (current_token < num_tokens &&
+    ParseTreeNode *left = parse_multiplicative_exp();
+
+    if (current_token < num_tokens &&
         (tokens[current_token].type == plus || tokens[current_token].type == minus)) {
-        TokenType op_type = tokens[current_token].type;
-        match(op_type);
-        ParseTreeNode *new_node = create_node("AddSub");
-        add_child(new_node, node);
-        add_child(new_node, match_and_create_node(op_type, "Operator"));
-        add_child(new_node, parse_multiplicative_exp());
-        node = new_node;
+        ParseTreeNode *node = create_additive_exp_node();
+
+        add_child(node, left);
+
+        while (current_token < num_tokens &&
+            (tokens[current_token].type == plus || tokens[current_token].type == minus)) {
+
+            add_child(node, match_and_create_node(tokens[current_token].type, "Operator"));
+            ParseTreeNode *right = parse_multiplicative_exp();
+            add_child(node, right);
+
+            if (current_token < num_tokens && (tokens[current_token].type == plus || tokens[current_token].type == minus)) {
+                ParseTreeNode *new_node = create_additive_exp_node();
+                add_child(new_node, node);
+                node = new_node;
+            }
+        }
+        return node;
     }
-    return node;
+    return left;
 }
 
 // TODO
 ParseTreeNode *parse_multiplicative_exp() {
-    ParseTreeNode *node = parse_power_exp();
+    ParseTreeNode *left = parse_power_exp();
 
-    while (current_token < num_tokens &&
+    if (current_token < num_tokens &&
         (tokens[current_token].type == multiply || tokens[current_token].type == divide || tokens[current_token].type == modulo)) {
-        TokenType op_type = tokens[current_token].type;
-        match(op_type);
-        ParseTreeNode *new_node = create_node("MulDivMod");
-        add_child(new_node, node);
-        add_child(new_node, match_and_create_node(op_type, "Operator"));
-        add_child(new_node, parse_power_exp());
-        node = new_node;
+        ParseTreeNode *node = create_multiplicative_exp_node();
+
+        add_child(node, left);
+
+        while (current_token < num_tokens &&
+            (tokens[current_token].type == multiply || tokens[current_token].type == divide || tokens[current_token].type == modulo)) {
+
+            add_child(node, match_and_create_node(tokens[current_token].type, "Operator"));
+            ParseTreeNode *right = parse_power_exp();
+            add_child(node, right);
+
+            if (current_token < num_tokens && (tokens[current_token].type == multiply || tokens[current_token].type == divide || tokens[current_token].type == modulo)) {
+                ParseTreeNode *new_node = create_multiplicative_exp_node();
+                add_child(new_node, node);
+                node = new_node;
+            }
+        }
+        return node;
     }
-    return node;
+    return left;
 }
 
-// <power_exp> ::= <factor> | <factor> ”^” <power_exp>
+// <power_exp> ::= <unary_exp> | <unary_exp> ”^” <power_exp>
 ParseTreeNode *parse_power_exp() {
     ParseTreeNode *node = create_power_exp_node();
 
     // Start with the left operand (<unary_exp>)
-    ParseTreeNode *left = parse_factor(); 
+    ParseTreeNode *left = parse_unary_exp(); 
 
     // Check if there's a "^" operator.
     if (current_token < num_tokens && tokens[current_token].type == exponent) {
@@ -826,20 +891,31 @@ ParseTreeNode *parse_power_exp() {
     return left;
 }
 
-//  TODO
+// <unary_exp> ::= <factor> | <unop> <unary_exp>
 ParseTreeNode *parse_unary_exp() {
-    // <unary_exp> ::= <factor> | <unop> <unary_exp>
-    if (tokens[current_token].type == plus ||
-        tokens[current_token].type == minus ||
-        tokens[current_token].type == not_equal) {
-        ParseTreeNode *node = create_node("UnaryOp");
-        TokenType op = tokens[current_token].type;
-        match(op);
-        add_child(node, match_and_create_node(op, "Unary_Operator"));
-        add_child(node, parse_unary_exp());
-        return node;
+    ParseTreeNode *node = create_node("Unary_Exp");
+
+    // Check if the current token is a unary operator
+    if (current_token < num_tokens && 
+        (tokens[current_token].type == plus || 
+         tokens[current_token].type == minus || 
+         tokens[current_token].type == not)) {
+        
+        // Create a node for the unary operator
+        ParseTreeNode *unary_op_node = match_and_create_node(tokens[current_token].type, "Unary_Op");
+        add_child(node, unary_op_node);
+
+        // Parse the operand (which is another unary expression)
+        ParseTreeNode *operand = parse_unary_exp();
+        add_child(node, operand);
+
+    } else {
+        // If there's no unary operator, just parse the factor
+        ParseTreeNode *factor = parse_factor();
+        add_child(node, factor);
     }
-    return parse_factor();
+
+    return node;
 }
 
 ParseTreeNode *parse_factor() {
@@ -1274,8 +1350,29 @@ ParseTreeNode *create_logical_and_exp_node() {
     return create_node("Logical_And");
 }
 
+ParseTreeNode *create_equality_exp_node() {
+    return create_node("Equality");
+}
+
+ParseTreeNode *create_relational_exp_node() {
+    return create_node("Relational");
+}
+
+ParseTreeNode *create_additive_exp_node() {
+    return create_node("Additive");
+}
+
+ParseTreeNode *create_multiplicative_exp_node() {
+    return create_node("Multiplicative");
+}
+
 ParseTreeNode *create_power_exp_node(){
     return create_node("Exponent");
+}
+
+ParseTreeNode *create_unary_exp_node()
+{
+    return create_node("Unary_Exp");
 }
 
 ParseTreeNode *create_factor_node()

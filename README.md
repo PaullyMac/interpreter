@@ -65,8 +65,8 @@ Will serve to show our progress on parser.c, and will eventually match our gramm
             | <identifier> "[" <const> "]" 
 <const> ::= <int> | <float> | <char> | <bool>
 <string> ::= STRING
-<identifier> ::= IDENTIFIER
-<int> ::= INTEGER_LITERAL
+<identifier> ::= identifier
+<int> ::= integer_literal
 <float> ::= FLOAT_LITERAL
 <char> ::= CHARACTER_LITERAL
 <bool> ::= "true" | "false"
@@ -115,6 +115,7 @@ int main(void) {
     } else {
         bool b;
     }
+}
 ...
 ```
 
@@ -125,33 +126,33 @@ Program(
   Declaration(
     Array_Declaration(
       Data_Type(
-        BOOL
+        bool
       ),
       Identifier(
-        IDENTIFIER: "array"
+        identifier: "array"
       ),
-      LEFT_BRACKET,
+      l,
       Const(
         Int(
-          INTEGER_LITERAL: "5"
+          integer_literal: "5"
         )
       ),
       RIGHT_BRACKET,
       ASSIGN,
-      LEFT_BRACE,
+      left_brace,
       Argument_List(
         Factor(
           Const(
             Int(
-              INTEGER_LITERAL: "1"
+              integer_literal: "1"
             )
           )
         ),
-        COMMA,
+       comma,
         Factor(
           Const(
             Int(
-              INTEGER_LITERAL: "2"
+              integer_literal: "2"
             )
           )
         )
@@ -166,12 +167,12 @@ Program(
         INT
       ),
       Identifier(
-        IDENTIFIER: "array"
+        identifier: "array"
       ),
-      LEFT_BRACKET,
+      left_bracket,
       Const(
         Int(
-          INTEGER_LITERAL: "10"
+          integer_literal: "10"
         )
       ),
       RIGHT_BRACKET,
@@ -184,15 +185,15 @@ Program(
         INT
       ),
       Identifier(
-        IDENTIFIER: "a"
+        identifier: "a"
       ),
-      COMMA,
+     comma,
       Identifier(
-        IDENTIFIER: "b"
+        identifier: "b"
       ),
-      COMMA,
+     comma,
       Identifier(
-        IDENTIFIER: "c"
+        identifier: "c"
       ),
       SEMICOLON
     )
@@ -203,13 +204,13 @@ Program(
         INT
       ),
       Identifier(
-        IDENTIFIER: "d"
+        identifier: "d"
       ),
       ASSIGN,
       Factor(
         Const(
           Int(
-            INTEGER_LITERAL: "5"
+            integer_literal: "5"
           )
         )
       ),
@@ -222,35 +223,35 @@ Program(
         INT
       ),
       Identifier(
-        IDENTIFIER: "c"
+        identifier: "c"
       ),
       ASSIGN,
       Factor(
         Identifier(
-          IDENTIFIER: "bar"
+          identifier: "bar"
         ),
-        LEFT_PARENTHESIS,
+        left_parenthesis,
         Argument_List(
           Factor(
             Const(
               Int(
-                INTEGER_LITERAL: "1000"
+                integer_literal: "1000"
               )
             )
           ),
-          COMMA,
+         comma,
           Factor(
             Const(
               Int(
-                INTEGER_LITERAL: "2"
+                integer_literal: "2"
               )
             )
           ),
-          COMMA,
+         comma,
           Factor(
             Const(
               Int(
-                INTEGER_LITERAL: "3"
+                integer_literal: "3"
               )
             )
           )
@@ -266,12 +267,12 @@ Program(
         INT
       ),
       Identifier(
-        IDENTIFIER: "b"
+        identifier: "b"
       ),
       ASSIGN,
       Factor(
         Identifier(
-          IDENTIFIER: "a"
+          identifier: "a"
         )
       ),
       SEMICOLON
@@ -283,30 +284,30 @@ Program(
         INT
       ),
       Identifier(
-        IDENTIFIER: "arr"
+        identifier: "arr"
       ),
-      LEFT_BRACKET,
+      left_bracket,
       Const(
         Int(
-          INTEGER_LITERAL: "3"
+          integer_literal: "3"
         )
       ),
       RIGHT_BRACKET,
       ASSIGN,
-      LEFT_BRACE,
+      left_brace,
       Argument_List(
         Factor(
-          LEFT_PARENTHESIS,
+          left_parenthesis,
           Factor(
             Identifier(
-              IDENTIFIER: "foo"
+              identifier: "foo"
             ),
-            LEFT_PARENTHESIS,
+            left_parenthesis,
             Argument_List(
               Factor(
                 Const(
                   Int(
-                    INTEGER_LITERAL: "5"
+                    integer_literal: "5"
                   )
                 )
               )
@@ -315,23 +316,23 @@ Program(
           ),
           RIGHT_PARENTHESIS
         ),
-        COMMA,
+       comma,
         Factor(
           Identifier(
-            IDENTIFIER: "a"
+            identifier: "a"
           ),
-          LEFT_BRACKET,
+          left_bracket,
           Const(
             Int(
-              INTEGER_LITERAL: "20"
+              integer_literal: "20"
             )
           ),
           RIGHT_BRACKET
         ),
-        COMMA,
+       comma,
         Factor(
           Identifier(
-            IDENTIFIER: "multiply"
+            identifier: "multiply"
           ),
 ...
 ```
@@ -407,21 +408,21 @@ Program(
   Declaration(
     Function_Declaration(
       Data_type(INT),
-      IDENTIFIER("main"),
-      LEFT_PARENTHESIS,
+      identifier("main"),
+      left_parenthesis,
       Parameter_List(),
       Block(
-        LEFT_BRACE,
+        left_brace,
         Block_Item_List(
           Block_Item(
             Statement(
-              SEMICOLON
+              semicolon
             )
           )
         )
-        RIGHT_BRACE
+        right_brace
       )
-      RIGHT_PARENTHESIS,
+      right_parenthesis,
     )
   )
 )
@@ -443,6 +444,16 @@ We can have `<function_declaration>` within `<block>`, and since the body of a f
 ```
 int arr[]; // is this allowed?
 ```
+## Future Work and Development Roadmap
+
+The next stages of this project involve the following development milestones:
+
+- **Full Grammar Implementation:** Complete implementation of all grammar rules according to our desired C subset.
+- **Improved Error Handling:** Enhance the parser's error detection and recovery capabilities.
+- **Semantic Analysis:** Implement a semantic analyzer to check for type compatibility, scope issues, and other semantic errors.
+- **Intermediate Representation (IR):** Generate an intermediate code representation, such as three-address code, as a step before code generation.
+- **Code Generation:** Develop a code generator to translate the intermediate representation into machine code or assembly.
+- **Optimization:** Explore opportunities for optimization, such as constant folding or register allocation.
 
 ## References
 
