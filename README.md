@@ -115,6 +115,7 @@ int main(void) {
     } else {
         bool b;
     }
+}
 ...
 ```
 
@@ -138,7 +139,7 @@ Program(
       ),
       RIGHT_BRACKET,
       ASSIGN,
-      LEFT_BRACE,
+      left_brace,
       Argument_List(
         Factor(
           Const(
@@ -147,7 +148,7 @@ Program(
             )
           )
         ),
-        COMMA,
+       comma,
         Factor(
           Const(
             Int(
@@ -168,7 +169,7 @@ Program(
       Identifier(
         identifier: "array"
       ),
-      LEFT_BRACKET,
+      left_bracket,
       Const(
         Int(
           integer_literal: "10"
@@ -186,11 +187,11 @@ Program(
       Identifier(
         identifier: "a"
       ),
-      COMMA,
+     comma,
       Identifier(
         identifier: "b"
       ),
-      COMMA,
+     comma,
       Identifier(
         identifier: "c"
       ),
@@ -229,7 +230,7 @@ Program(
         Identifier(
           identifier: "bar"
         ),
-        LEFT_PARENTHESIS,
+        left_parenthesis,
         Argument_List(
           Factor(
             Const(
@@ -238,7 +239,7 @@ Program(
               )
             )
           ),
-          COMMA,
+         comma,
           Factor(
             Const(
               Int(
@@ -246,7 +247,7 @@ Program(
               )
             )
           ),
-          COMMA,
+         comma,
           Factor(
             Const(
               Int(
@@ -285,7 +286,7 @@ Program(
       Identifier(
         identifier: "arr"
       ),
-      LEFT_BRACKET,
+      left_bracket,
       Const(
         Int(
           integer_literal: "3"
@@ -293,15 +294,15 @@ Program(
       ),
       RIGHT_BRACKET,
       ASSIGN,
-      LEFT_BRACE,
+      left_brace,
       Argument_List(
         Factor(
-          LEFT_PARENTHESIS,
+          left_parenthesis,
           Factor(
             Identifier(
               identifier: "foo"
             ),
-            LEFT_PARENTHESIS,
+            left_parenthesis,
             Argument_List(
               Factor(
                 Const(
@@ -315,12 +316,12 @@ Program(
           ),
           RIGHT_PARENTHESIS
         ),
-        COMMA,
+       comma,
         Factor(
           Identifier(
             identifier: "a"
           ),
-          LEFT_BRACKET,
+          left_bracket,
           Const(
             Int(
               integer_literal: "20"
@@ -328,7 +329,7 @@ Program(
           ),
           RIGHT_BRACKET
         ),
-        COMMA,
+       comma,
         Factor(
           Identifier(
             identifier: "multiply"
@@ -408,10 +409,10 @@ Program(
     Function_Declaration(
       Data_type(INT),
       identifier("main"),
-      LEFT_PARENTHESIS,
+      left_parenthesis,
       Parameter_List(),
       Block(
-        LEFT_BRACE,
+        left_brace,
         Block_Item_List(
           Block_Item(
             Statement(
