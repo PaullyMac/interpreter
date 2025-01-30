@@ -444,8 +444,20 @@ We can have `<function_declaration>` within `<block>`, and since the body of a f
 int arr[]; // is this allowed?
 ```
 
+## Future Work and Development Roadmap
+
+The next stages of this project involve the following development milestones:
+
+- **Full Grammar Implementation:** Complete implementation of all grammar rules according to our desired C subset.
+- **Improved Error Handling:** Enhance the parser's error detection and recovery capabilities.
+- **Semantic Analysis:** Implement a semantic analyzer to check for type compatibility, scope issues, and other semantic errors.
+- **Intermediate Representation (IR):** Generate an intermediate code representation, such as three-address code, as a step before code generation.
+- **Code Generation:** Develop a code generator to translate the intermediate representation into machine code or assembly.
+- **Optimization:** Explore opportunities for optimization, such as constant folding or register allocation.
+
 ## References
 
 - [Crafting Interpreters](https://craftinginterpreters.com/) creates two implementations of their language `lox`:
 a Java interpreter `jlox` and a C interpreter/compiler to bytecode `clox`
 - [Sebesta - Concepts of Programming Languages](https://www.pearson.com/en-us/subject-catalog/p/concepts-of-programming-languages/P200000003361) assigned book
+
