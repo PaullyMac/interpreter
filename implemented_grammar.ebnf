@@ -77,9 +77,9 @@
 
 <const> ::= <int> | <float> | <char> | <bool>
 
-<string> ::= STRING
-<identifier> ::= IDENTIFIER
-<int> ::= INTEGER_LITERAL
-<float> ::= FLOAT_LITERAL
-<char> ::= CHARACTER_LITERAL
+<string> ::= "string"
+<identifier> ::= "identifier"
+<int> ::= "integer_literal"
+<float> ::= "float_literal"
+<char> ::= "character_literal"
 <bool> ::= "true" | "false"
