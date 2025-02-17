@@ -446,14 +446,13 @@ int arr[]; // is this allowed?
 ```
 ## Future Work and Development Roadmap
 
-The next stages of this project involve the following development milestones:
+The next stages of this project will be individually continued by Paul Macaraeg and will involve the following development milestones:
 
-- **Full Grammar Implementation:** Complete implementation of all grammar rules according to our desired C subset.
-- **Improved Error Handling:** Enhance the parser's error detection and recovery capabilities.
-- **Semantic Analysis:** Implement a semantic analyzer to check for type compatibility, scope issues, and other semantic errors.
-- **Intermediate Representation (IR):** Generate an intermediate code representation, such as three-address code, as a step before code generation.
-- **Code Generation:** Develop a code generator to translate the intermediate representation into machine code or assembly.
-- **Optimization:** Explore opportunities for optimization, such as constant folding or register allocation.
+- [ ] Add GUI / Web Application Implementation for a better user interface instead of the CLI.
+- [ ] Complete implementation of all grammar rules according to our desired C subset.
+- [ ] Improved Error Handling: Enhance the parser's error detection and recovery capabilities.
+- [ ] Semantic Analysis: Implement a semantic analyzer to check for type compatibility, scope issues, and other semantic errors.
+
 
 ## References
 
